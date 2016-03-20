@@ -22,7 +22,7 @@ namespace NWebDav.Server.Handlers
             var splitUri = RequestHelper.SplitUri(request.Url);
 
             // Obtain collection
-            var collection = await storeResolver.GetCollectionAsync(splitUri.CollectionUri, principal);
+            var collection = await storeResolver.GetCollectionAsync(splitUri.CollectionUri, principal).ConfigureAwait(false);
             if (collection == null)
             {
                 // Source not found
@@ -31,7 +31,7 @@ namespace NWebDav.Server.Handlers
             }
 
             // Obtain the item
-            var result = await collection.CreateItemAsync(splitUri.Name, true, principal);
+            var result = await collection.CreateItemAsync(splitUri.Name, true, principal).ConfigureAwait(false);
             var status = result.Result;
             if (status == DavStatusCode.Created || status == DavStatusCode.NoContent)
             {
@@ -40,7 +40,7 @@ namespace NWebDav.Server.Handlers
                 {
                     using (var destinationStream = result.Item.GetWritableStream(principal))
                     {
-                        await request.InputStream.CopyToAsync(destinationStream);
+                        await request.InputStream.CopyToAsync(destinationStream).ConfigureAwait(false);
                     }
                 }
                 catch (IOException ioException) when (ioException.IsDiskFull())

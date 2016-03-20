@@ -9,11 +9,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
+using log4net;
 
 namespace NWebDav.Server.Helpers
 {
     public static class ResponseHelper
     {
+        private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         public static void SendResponse(this HttpListenerResponse response, DavStatusCode statusCode, string statusDescription = null)
         {
             response.StatusCode = (int)statusCode;
@@ -45,8 +48,20 @@ namespace NWebDav.Server.Helpers
                     xDocument.WriteTo(xmlWriter);
                 }
 
-                //Flush
+                // Flush
                 ms.Flush();
+
+#if DEBUG
+                // Reset stream and write the stream to the result
+                ms.Seek(0, SeekOrigin.Begin);
+
+                // Dump the XML document to the logging
+                if (Log.IsDebugEnabled)
+                {
+                    var reader = new StreamReader(ms);
+                    Log.Debug(reader.ReadToEnd());
+                }
+#endif
 
                 // Set content type/length
                 response.ContentType = " text/xml; charset=\"utf-8\"";
@@ -54,7 +69,7 @@ namespace NWebDav.Server.Helpers
 
                 // Reset stream and write the stream to the result
                 ms.Seek(0, SeekOrigin.Begin);
-                await ms.CopyToAsync(response.OutputStream);
+                await ms.CopyToAsync(response.OutputStream).ConfigureAwait(false);
             }
         }
 

@@ -20,7 +20,7 @@ namespace NWebDav.Server.Handlers
             var head = request.HttpMethod == "HEAD";
 
             // Obtain the WebDAV collection
-            var item = await storeResolver.GetItemAsync(request.Url, principal);
+            var item = await storeResolver.GetItemAsync(request.Url, principal).ConfigureAwait(false);
             if (item == null)
             {
                 // Set status to not found
@@ -31,25 +31,30 @@ namespace NWebDav.Server.Handlers
             // Set the response
             response.StatusCode = (int)DavStatusCode.OK;
 
-            // Add last modification timestamp
-            var lastModifiedUtc = item.LastModifiedUtc;
-            if (lastModifiedUtc.HasValue)
-                response.AppendHeader("Last-Modified", lastModifiedUtc.Value.ToString("R"));
+            // Add non-expensive headers based on properties
+            var propertyManager = item.PropertyManager;
+            if (propertyManager != null)
+            {
+                // Add Last-Modified header
+                var lastModifiedUtc = (string)propertyManager.GetProperty(item, WebDavNamespaces.DavNs + "getlastmodified", true);
+                if (lastModifiedUtc != null)
+                    response.AppendHeader("Last-Modified", lastModifiedUtc);
 
-            // Add ETag
-            var etag = item.Etag;
-            if (etag != null)
-                response.AppendHeader("Etag", etag);
+                // Add ETag
+                var etag = (string)propertyManager.GetProperty(item, WebDavNamespaces.DavNs + "getetag", true);
+                if (etag != null)
+                    response.AppendHeader("Etag", etag);
 
-            // Add type
-            var contentType = item.ContentType;
-            if (contentType != null)
-                response.AppendHeader("Content-Type", contentType);
+                // Add type
+                var contentType = (string)propertyManager.GetProperty(item, WebDavNamespaces.DavNs + "getcontenttype", true);
+                if (contentType != null)
+                    response.AppendHeader("Content-Type", contentType);
 
-            // Add language
-            var contentLanguage = item.ContentLanguage;
-            if (contentLanguage != null)
-                response.AppendHeader("Content-Language", contentLanguage);
+                // Add language
+                var contentLanguage = (string)propertyManager.GetProperty(item, WebDavNamespaces.DavNs + "getcontentlanguage", true);
+                if (contentLanguage != null)
+                    response.AppendHeader("Content-Language", contentLanguage);
+            }
 
             // HEAD method doesn't require the actual item data
             if (head)
@@ -59,15 +64,21 @@ namespace NWebDav.Server.Handlers
             }
             else
             {
-                // Set the expected content length
-                var contentLength = item.ContentLength;
-                if (contentLength.HasValue)
-                    response.ContentLength64 = contentLength.Value;
-
                 // Stream the actual item
                 using (var stream = item.GetReadableStream(principal))
                 {
-                    await stream.CopyToAsync(response.OutputStream);
+                    // Set the expected content length
+                    try
+                    {
+                        if (stream.CanSeek)
+                            response.ContentLength64 = stream.Length;
+                    }
+                    catch (NotSupportedException)
+                    {
+                        // If the content length is not supported, then we just skip it
+                    }
+
+                    await stream.CopyToAsync(response.OutputStream).ConfigureAwait(false);
                 }
             }
 

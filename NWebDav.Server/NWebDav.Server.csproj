@@ -66,10 +66,18 @@
     <Compile Include="IStoreResolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Handlers\RequestHandlerFactory.cs" />
+    <Compile Include="Props\IPropertyManager.cs" />
+    <Compile Include="Props\DavProperty.cs" />
+    <Compile Include="Props\DavTypedProperties.cs" />
+    <Compile Include="Props\MsExtensionProperties.cs" />
+    <Compile Include="Props\PropertyInfo.cs" />
+    <Compile Include="Props\PropertyManager.cs" />
+    <Compile Include="Props\StandardProperties.cs" />
+    <Compile Include="Props\Win32Properties.cs" />
     <Compile Include="Stores\DiskStore.cs" />
     <Compile Include="Stores\MultiStore.cs" />
     <Compile Include="VerbAttribute.cs" />
-    <Compile Include="WebDavConstants.cs" />
+    <Compile Include="WebDavNamespaces.cs" />
     <Compile Include="WebDavServer.cs" />
   </ItemGroup>
   <ItemGroup />

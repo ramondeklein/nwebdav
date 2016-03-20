@@ -23,9 +23,9 @@ namespace NWebDav.Server.Handlers
             {
                 var href = Uri.AbsoluteUri;
                 var statusText = $"HTTP/1.1 {(int)Result} {ResponseHelper.GetStatusDescription(Result)}";
-                return new XElement(WebDavConstants.DavNs + "response",
-                    new XElement(WebDavConstants.DavNs + "href", href),
-                    new XElement(WebDavConstants.DavNs + "status", statusText));
+                return new XElement(WebDavNamespaces.DavNs + "response",
+                    new XElement(WebDavNamespaces.DavNs + "href", href),
+                    new XElement(WebDavNamespaces.DavNs + "status", statusText));
             }
         }
 
@@ -40,7 +40,7 @@ namespace NWebDav.Server.Handlers
 
         public XElement GetXmlMultiStatus()
         {
-            var xMultiStatus = new XElement(WebDavConstants.DavNs + "multistatus");
+            var xMultiStatus = new XElement(WebDavNamespaces.DavNs + "multistatus");
             foreach (var result in _results)
                 xMultiStatus.Add(result.GetXmlResponse());
             return xMultiStatus;

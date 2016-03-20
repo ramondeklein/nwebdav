@@ -9,6 +9,7 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using NWebDav.Server.Props;
 
 namespace NWebDav.Server
 {
@@ -46,18 +47,9 @@ namespace NWebDav.Server
     {
         // Item properties
         string Name { get; }
-        string ContentLanguage { get; }
-        long? ContentLength { get; }
-        string ContentType { get; }
-        DateTime? CreationUtc { get; }
-        DateTime? LastModifiedUtc { get; }
-        string Etag { get; }
 
         // Property support
-        IList<XName> CheapProperties { get; }
-        IList<XName> ExpensiveProperties { get; }
-        string GetProperty(XName propertyName);
-        bool SetProperty(XName propertyName, string value);
+        IPropertyManager PropertyManager { get; }
     }
 
     public interface IStoreCollection : IStoreCollectionEntry

@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security;
 using System.Security.Cryptography;
 using System.Security.Principal;
-using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using NWebDav.Server.Helpers;
+using NWebDav.Server.Props;
 
 namespace NWebDav.Server.Stores
 {
@@ -25,42 +24,72 @@ namespace NWebDav.Server.Stores
 
         private class StoreItem : IStoreItem
         {
-            private static readonly XName[] CheapFileProperties =
+            private static readonly PropertyManager<StoreItem> ItemPropertyManager = new PropertyManager<StoreItem>(new DavProperty<StoreItem>[]
             {
                 // RFC-2518 properties
-                WebDavConstants.DavNs + "creationdate",
-                WebDavConstants.DavNs + "displayname",
-                WebDavConstants.DavNs + "getcontentlength",
-                WebDavConstants.DavNs + "getcontenttype",
-                //WebDavConstants.DavNs + "getetag",            // We don't have an efficient method to calculate the ETag
-                WebDavConstants.DavNs + "getlastmodified",
-                //WebDavConstants.DavNs + "lockdiscovery",      // Locks are not supported (yet)
-                //WebDavConstants.DavNs + "resourcetype",
-                //WebDavConstants.DavNs + "supportedlock",
+                new DavCreationDate<StoreItem>
+                {
+                    Getter = item => item._fileInfo.CreationTimeUtc,
+                    Setter = (item, value) => { item._fileInfo.CreationTimeUtc = value; return true; }
+                },
+                new DavDisplayName<StoreItem>
+                {
+                    Getter = item => item._fileInfo.Name
+                },
+                new DavGetContentLength<StoreItem>
+                {
+                    Getter = item => item._fileInfo.Length
+                },
+                new DavGetContentType<StoreItem>
+                {
+                    Getter = item => item.DetermineContentType()
+                },
+                new DavGetEtag<StoreItem>
+                {
+                    // Calculating the Etag is an expensive operation,
+                    // because we need to scan the entire file.
+                    IsExpensive = true,             
+                    Getter = item => item.CalculateEtag()
+                },
+                new DavGetLastModified<StoreItem>
+                {
+                    Getter = item => item._fileInfo.LastWriteTimeUtc,
+                    Setter = (item, value) => { item._fileInfo.LastWriteTimeUtc = value; return true; }
+                },
+                new DavGetResourceType<StoreItem>
+                {
+                    Getter= item => null
+                },
 
                 // Hopmann/Lippert collection properties
-                // (useless for items, but some WebDAV clients do ask for it)
-                WebDavConstants.DavNs + "childcount",
-                WebDavConstants.DavNs + "iscollection",
-                WebDavConstants.DavNs + "isfolder",
-                WebDavConstants.DavNs + "ishidden",
-                WebDavConstants.DavNs + "hassubs",
-                WebDavConstants.DavNs + "nosubs",
-                WebDavConstants.DavNs + "objectcount",
-                WebDavConstants.DavNs + "visiblecount",
+                // (although not a collection, the IsHidden property might be valuable)
+                new DavIsHidden<StoreItem>
+                {
+                    Getter = item => (item._fileInfo.Attributes & FileAttributes.Hidden) != 0
+                },
 
                 // Win32 extensions
-                WebDavConstants.Win32Ns + "Win32CreationTime",
-                WebDavConstants.Win32Ns + "Win32LastAccessTime",
-                WebDavConstants.Win32Ns + "Win32LastModifiedTime",
-                WebDavConstants.Win32Ns + "Win32FileAttributes",
-            };
-
-            private static readonly XName[] ExpensiveFileProperties =
-            {
-                // RFC-2518 properties
-                WebDavConstants.DavNs + "getetag"
-            };
+                new Win32CreationTime<StoreItem>
+                {
+                    Getter = item => item._fileInfo.CreationTimeUtc,
+                    Setter = (item, value) => { item._fileInfo.CreationTimeUtc = value; return true; }
+                },
+                new Win32LastAccessTime<StoreItem>
+                {
+                    Getter = item => item._fileInfo.LastAccessTimeUtc,
+                    Setter = (item, value) => { item._fileInfo.LastAccessTimeUtc = value; return true; }
+                },
+                new Win32LastModifiedTime<StoreItem>
+                {
+                    Getter = item => item._fileInfo.LastWriteTimeUtc,
+                    Setter = (item, value) => { item._fileInfo.LastWriteTimeUtc = value; return true; }
+                },
+                new Win32FileAttributes<StoreItem>
+                {
+                    Getter = item => item._fileInfo.Attributes,
+                    Setter = (item, value) => { item._fileInfo.Attributes = value; return true; }
+                }
+            });
 
             private readonly FileInfo _fileInfo;
 
@@ -70,14 +99,9 @@ namespace NWebDav.Server.Stores
             }
 
             public string Name => _fileInfo.Name;
-            public string ContentLanguage => null;
-            public long? ContentLength => _fileInfo.Length;
-            public string ContentType => "application/octet-stream";
-            public DateTime? CreationUtc => _fileInfo.CreationTimeUtc;
-            public DateTime? LastModifiedUtc => _fileInfo.LastWriteTimeUtc;
-            public string Etag => CalcEtag(_fileInfo.FullName);
             public Stream GetReadableStream(IPrincipal principal) => _fileInfo.OpenRead();
             public Stream GetWritableStream(IPrincipal principal) => _fileInfo.OpenWrite();
+            public IPropertyManager PropertyManager => ItemPropertyManager;
 
             public async Task<DavStatusCode> CopyToAsync(IStoreCollection destination, string name, bool overwrite, IPrincipal principal)
             {
@@ -104,7 +128,7 @@ namespace NWebDav.Server.Stores
                     else
                     {
                         // Create the item in the destination collection
-                        var result = await destination.CreateItemAsync(name, overwrite, principal);
+                        var result = await destination.CreateItemAsync(name, overwrite, principal).ConfigureAwait(false);
 
                         // Check if the item could be created
                         if (result.Item != null)
@@ -112,7 +136,7 @@ namespace NWebDav.Server.Stores
                             using (var destinationStream = result.Item.GetWritableStream(principal))
                             using (var sourceStream = GetReadableStream(principal))
                             {
-                                await sourceStream.CopyToAsync(destinationStream);
+                                await sourceStream.CopyToAsync(destinationStream).ConfigureAwait(false);
                             }
                         }
 
@@ -132,73 +156,15 @@ namespace NWebDav.Server.Stores
                 }
             }
 
-            public IList<XName> CheapProperties => CheapFileProperties;
-            public IList<XName> ExpensiveProperties => ExpensiveFileProperties;
-
-            public string GetProperty(XName propertyName)
+            private string DetermineContentType()
             {
-                if (propertyName.Namespace == WebDavConstants.DavNs)
-                {
-                    switch (propertyName.LocalName)
-                    {
-                        case "creationdate": return CreationUtc.Value.ToString("s") + "Z";
-                        case "displayname": return Name;
-                        case "getcontentlength": return ContentLength.Value.ToString(CultureInfo.InvariantCulture);
-                        case "getcontenttype": return ContentType;
-                        case "getetag": return Etag;
-                        case "getlastmodified": return LastModifiedUtc.Value.ToString("s") + "Z";
-                        case "childcount": return "0";
-                        case "iscollection":
-                        case "isfolder": return "0";
-                        case "ishidden": return ((_fileInfo .Attributes & FileAttributes.Hidden) != 0) ? "1" : "0";
-                        case "hassubs": return "0";
-                        case "nosubs": return "1";
-                        case "objectcount": return "0";
-                        case "visiblecount": return "0";
-                    }
-                }
-                else if (propertyName.Namespace == WebDavConstants.Win32Ns)
-                {
-                    switch (propertyName.LocalName)
-                    {
-                        case "Win32CreationTime": return _fileInfo.CreationTimeUtc.ToString("s") + "Z";
-                        case "Win32LastAccessTime": return _fileInfo.LastAccessTimeUtc.ToString("s") + "Z";
-                        case "Win32LastModifiedTime": return _fileInfo.LastWriteTimeUtc.ToString("s") + "Z";
-                        case "Win32FileAttributes": return ((int)_fileInfo.Attributes).ToString("X8");
-                    }
-                }
-
-                // Unknown
-                return null;
+                // TODO: Determine content type based on extension
+                return "application/octet-stream";
             }
 
-            public bool SetProperty(XName propertyName, string value)
+            private string CalculateEtag()
             {
-                if (propertyName.Namespace == WebDavConstants.Win32Ns)
-                {
-                    switch (propertyName.LocalName)
-                    {
-                        case "Win32CreationTime":
-                            _fileInfo.CreationTimeUtc = Convert.ToDateTime(value);
-                            return true;
-                        case "Win32LastAccessTime":
-                            _fileInfo.LastAccessTimeUtc = Convert.ToDateTime(value);
-                            return true;
-                        case "Win32LastModifiedTime":
-                            _fileInfo.LastWriteTimeUtc = Convert.ToDateTime(value);
-                            return true;
-                        case "Win32FileAttributes":
-                            _fileInfo.Attributes = (FileAttributes)Convert.ToInt32(value, 16);
-                            return true;
-                    }
-                }
-
-                return false;
-            }
-
-            private string CalcEtag(string path)
-            {
-                using (var stream = File.OpenRead(path))
+                using (var stream = File.OpenRead(_fileInfo.FullName))
                 {
                     var hash = new SHA256Managed().ComputeHash(stream);
                     return BitConverter.ToString(hash).Replace("-", string.Empty);
@@ -208,40 +174,84 @@ namespace NWebDav.Server.Stores
 
         private class StoreCollection : IStoreCollection
         {
-            private static readonly XName[] CheapCollectionProperties =
+            private static readonly PropertyManager<StoreCollection> CollectionPropertyManager = new PropertyManager<StoreCollection>(new DavProperty<StoreCollection>[]
             {
                 // RFC-2518 properties
-                WebDavConstants.DavNs + "creationdate",
-                WebDavConstants.DavNs + "displayname",
-                //WebDavConstants.DavNs + "getcontentlength",
-                //WebDavConstants.DavNs + "getcontenttype",
-                //WebDavConstants.DavNs + "getetag",
-                WebDavConstants.DavNs + "getlastmodified",
-                //WebDavConstants.DavNs + "lockdiscovery",
-                //WebDavConstants.DavNs + "resoucetype",
-                //WebDavConstants.DavNs + "supportedlock",
+                new DavCreationDate<StoreCollection>
+                {
+                    Getter = collection => collection._directoryInfo.CreationTimeUtc,
+                    Setter = (collection, value) => { collection._directoryInfo.CreationTimeUtc = value; return true; }
+                },
+                new DavDisplayName<StoreCollection>
+                {
+                    Getter = collection => collection._directoryInfo.Name
+                },
+                new DavGetLastModified<StoreCollection>
+                {
+                    Getter = collection => collection._directoryInfo.LastWriteTimeUtc,
+                    Setter = (collection, value) => { collection._directoryInfo.LastWriteTimeUtc = value; return true; }
+                },
+                new DavGetResourceType<StoreCollection>
+                {
+                    Getter = collection => new XElement(WebDavNamespaces.DavNs + "collection")
+                },
 
                 // Hopmann/Lippert collection properties
-                WebDavConstants.DavNs + "childcount",
-                WebDavConstants.DavNs + "iscollection",
-                WebDavConstants.DavNs + "isfolder",
-                WebDavConstants.DavNs + "ishidden",
-                WebDavConstants.DavNs + "hassubs",
-                WebDavConstants.DavNs + "nosubs",
-                WebDavConstants.DavNs + "objectcount",
-                WebDavConstants.DavNs + "visiblecount",
-
+                new DavChildCount<StoreCollection>
+                {
+                    Getter = collection => collection._directoryInfo.EnumerateFiles().Count() + collection._directoryInfo.EnumerateDirectories().Count()
+                },
+                new DavIsCollection<StoreCollection>
+                {
+                    Getter = collection => true
+                },
+                new DavIsFolder<StoreCollection>
+                {
+                    Getter = collection => true
+                },
+                new DavIsHidden<StoreCollection>
+                {
+                    Getter = collection => (collection._directoryInfo.Attributes & FileAttributes.Hidden) != 0
+                },
+                new DavHasSubs<StoreCollection>
+                {
+                    Getter = collection => collection._directoryInfo.EnumerateDirectories().Any()
+                },
+                new DavNoSubs<StoreCollection>
+                {
+                    Getter = collection => false
+                },
+                new DavObjectCount<StoreCollection>
+                {
+                    Getter = collection => collection._directoryInfo.EnumerateFiles().Count()
+                },
+                new DavVisibleCount<StoreCollection>
+                {
+                    Getter = collection => collection._directoryInfo.EnumerateFiles().Count(fi => (fi.Attributes & FileAttributes.Hidden) == 0)
+                },
+                
                 // Win32 extensions
-                WebDavConstants.Win32Ns + "Win32CreationTime",
-                WebDavConstants.Win32Ns + "Win32LastAccessTime",
-                WebDavConstants.Win32Ns + "Win32LastModifiedTime",
-                WebDavConstants.Win32Ns + "Win32FileAttributes",
-            };
-
-            private static readonly XName[] ExpensiveCollectionProperties =
-            {
-                // No expensive properties known
-            };
+                new Win32CreationTime<StoreCollection>
+                {
+                    Getter = collection => collection._directoryInfo.CreationTimeUtc,
+                    Setter = (collection, value) => { collection._directoryInfo.CreationTimeUtc = value; return true; }
+                },
+                new Win32LastAccessTime<StoreCollection>
+                {
+                    Getter = collection => collection._directoryInfo.LastAccessTimeUtc,
+                    Setter = (collection, value) => { collection._directoryInfo.LastAccessTimeUtc = value; return true; }
+                },
+                new Win32LastModifiedTime<StoreCollection>
+                {
+                    Getter = collection => collection._directoryInfo.LastWriteTimeUtc,
+                    Setter = (collection, value) => { collection._directoryInfo.LastWriteTimeUtc = value; return true; }
+                },
+                new Win32FileAttributes<StoreCollection>
+                {
+                    Getter = collection => collection._directoryInfo.Attributes,
+                    Setter = (collection, value) => { collection._directoryInfo.Attributes = value; return true; }
+                }
+            });
 
             private readonly DiskStore _diskStore;
             private readonly DirectoryInfo _directoryInfo;
@@ -254,14 +264,8 @@ namespace NWebDav.Server.Stores
             }
 
             public string Name => _directoryInfo.Name;
-            public string ContentLanguage => null;
-            public long? ContentLength => null;
-            public string ContentType => null;
-            public DateTime? CreationUtc => _directoryInfo.CreationTimeUtc;
-            public DateTime? LastModifiedUtc => _directoryInfo.LastWriteTimeUtc;
-            public DateTime? LastAccessUtc => _directoryInfo.LastAccessTimeUtc;
-            public string Etag => null;
             public string FullPath => _directoryInfo.FullName;
+            public IPropertyManager PropertyManager => CollectionPropertyManager;
 
             public Task<IList<IStoreCollectionEntry>> GetEntriesAsync(IPrincipal principal)
             {
@@ -399,67 +403,6 @@ namespace NWebDav.Server.Stores
             }
 
             public bool AllowInfiniteDepthProperties => false;
-
-            public IList<XName> CheapProperties => CheapCollectionProperties;
-            public IList<XName> ExpensiveProperties => ExpensiveCollectionProperties;
-
-            public string GetProperty(XName propertyName)
-            {
-                if (propertyName.Namespace == WebDavConstants.DavNs)
-                {
-                    switch (propertyName.LocalName)
-                    {
-                        case "creationdate": return CreationUtc.Value.ToString("s") + "Z";
-                        case "displayname": return Name;
-                        case "getlastmodified": return LastModifiedUtc.Value.ToString("s") + "Z";
-                        case "childcount": return (_directoryInfo.EnumerateFiles().Count() + _directoryInfo.EnumerateDirectories().Count()).ToString(CultureInfo.InvariantCulture);
-                        case "iscollection":
-                        case "isfolder": return "1";
-                        case "ishidden": return ((_directoryInfo.Attributes & FileAttributes.Hidden) != 0) ? "1" : "0";
-                        case "hassubs": return _directoryInfo.EnumerateDirectories().Any() ? "1" : "0";
-                        case "nosubs": return "0";
-                        case "objectcount": return _directoryInfo.EnumerateFiles().Count().ToString(CultureInfo.InvariantCulture);
-                        case "visiblecount": return _directoryInfo.EnumerateFiles().Count(fi => (fi.Attributes & FileAttributes.Hidden) == 0).ToString(CultureInfo.InvariantCulture);
-                    }
-                }
-                else if (propertyName.Namespace == WebDavConstants.Win32Ns)
-                {
-                    switch (propertyName.LocalName)
-                    {
-                        case "Win32CreationTime": return _directoryInfo.CreationTimeUtc.ToString("s") + "Z";
-                        case "Win32LastAccessTime": return _directoryInfo.LastAccessTimeUtc.ToString("s") + "Z";
-                        case "Win32LastModifiedTime": return _directoryInfo.LastWriteTimeUtc.ToString("s") + "Z";
-                        case "Win32FileAttributes": return ((int)_directoryInfo.Attributes).ToString("X8");
-                    }
-                }
-
-                // Unknown
-                return null;
-            }
-
-            public bool SetProperty(XName propertyName, string value)
-            {
-                if (propertyName.Namespace == WebDavConstants.Win32Ns)
-                {
-                    switch (propertyName.LocalName)
-                    {
-                        case "Win32CreationTime":
-                            _directoryInfo.CreationTimeUtc = Convert.ToDateTime(value);
-                            return true;
-                        case "Win32LastAccessTime":
-                            _directoryInfo.LastAccessTimeUtc = Convert.ToDateTime(value);
-                            return true;
-                        case "Win32LastModifiedTime":
-                            _directoryInfo.LastWriteTimeUtc = Convert.ToDateTime(value);
-                            return true;
-                        case "Win32FileAttributes":
-                            _directoryInfo.Attributes = (FileAttributes)Convert.ToInt32(value, 16);
-                            return true;
-                    }
-                }
-
-                return false;
-            }
         }
 
         public Task<IStoreItem> GetItemAsync(Uri uri, IPrincipal principal)

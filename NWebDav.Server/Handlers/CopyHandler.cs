@@ -41,7 +41,7 @@ namespace NWebDav.Server.Handlers
             var destination = RequestHelper.SplitUri(destinationUri);
 
             // Obtain the destination collection
-            var destinationCollection = await storeResolver.GetCollectionAsync(destination.CollectionUri, principal);
+            var destinationCollection = await storeResolver.GetCollectionAsync(destination.CollectionUri, principal).ConfigureAwait(false);
             if (destinationCollection == null)
             {
                 // Source not found
@@ -53,11 +53,11 @@ namespace NWebDav.Server.Handlers
             var errors = new UriResultCollection();
 
             // Obtain the source item
-            var item = await storeResolver.GetItemAsync(request.Url, principal);
+            var item = await storeResolver.GetItemAsync(request.Url, principal).ConfigureAwait(false);
             if (item == null)
             {
                 // Obtain collection
-                var collection = await storeResolver.GetCollectionAsync(request.Url, principal);
+                var collection = await storeResolver.GetCollectionAsync(request.Url, principal).ConfigureAwait(false);
                 if (collection == null)
                 {
                     // Source not found
@@ -69,12 +69,12 @@ namespace NWebDav.Server.Handlers
                 var depth = request.GetDepth();
 
                 // Copy collection
-                await CopyCollectionAsync(collection, destinationCollection, destination.Name, overwrite, depth, principal, destination.CollectionUri, errors);
+                await CopyCollectionAsync(collection, destinationCollection, destination.Name, overwrite, depth, principal, destination.CollectionUri, errors).ConfigureAwait(false);
             }
             else
             {
                 // Copy item
-                await CopyItemAsync(item, destinationCollection, destination.Name, overwrite, principal, destination.CollectionUri, errors);
+                await CopyItemAsync(item, destinationCollection, destination.Name, overwrite, principal, destination.CollectionUri, errors).ConfigureAwait(false);
             }
 
             // Check if there are any errors
@@ -84,7 +84,7 @@ namespace NWebDav.Server.Handlers
                 var xDocument = new XDocument(errors.GetXmlMultiStatus());
 
                 // Stream the document
-                await response.SendResponseAsync(DavStatusCode.MultiStatus, xDocument);
+                await response.SendResponseAsync(DavStatusCode.MultiStatus, xDocument).ConfigureAwait(false);
             }
             else
             {
@@ -98,7 +98,7 @@ namespace NWebDav.Server.Handlers
         private async Task CopyItemAsync(IStoreItem sourceItem, IStoreCollection destinationCollection, string name, bool overwrite, IPrincipal principal, Uri baseUri, UriResultCollection errors)
         {
             // Copy the item
-            var storeResult = await sourceItem.CopyToAsync(destinationCollection, name, overwrite, principal);
+            var storeResult = await sourceItem.CopyToAsync(destinationCollection, name, overwrite, principal).ConfigureAwait(false);
 
             // Make sure the item can be copied
             if (storeResult != DavStatusCode.Created && storeResult != DavStatusCode.NoContent)
@@ -111,7 +111,7 @@ namespace NWebDav.Server.Handlers
             var newBaseUri = new Uri(baseUri, name);
 
             // Copy the collection itself
-            var newCollectionResult = await sourceCollection.CopyToAsync(destinationCollection, name, overwrite, principal);
+            var newCollectionResult = await sourceCollection.CopyToAsync(destinationCollection, name, overwrite, principal).ConfigureAwait(false);
             if (newCollectionResult.Result != DavStatusCode.Created && newCollectionResult.Result != DavStatusCode.NoContent)
             {
                 errors.AddResult(newBaseUri, newCollectionResult.Result);
@@ -119,19 +119,19 @@ namespace NWebDav.Server.Handlers
             else if (depth > 0)
             {
                 // If the depth is set, then the content needs to be copied too
-                foreach (var entry in await sourceCollection.GetEntriesAsync(principal))
+                foreach (var entry in await sourceCollection.GetEntriesAsync(principal).ConfigureAwait(false))
                 {
                     var collection = entry as IStoreCollection;
                     if (collection != null)
                     {
                         // Copy collection
-                        await CopyCollectionAsync(collection, newCollectionResult.Collection, collection.Name, overwrite, depth-1, principal, newBaseUri, errors);
+                        await CopyCollectionAsync(collection, newCollectionResult.Collection, collection.Name, overwrite, depth-1, principal, newBaseUri, errors).ConfigureAwait(false);
                     }
                     else
                     {
                         // Copy item
                         var item = (IStoreItem)entry;
-                        await CopyItemAsync(item, newCollectionResult.Collection, item.Name, overwrite, principal, newBaseUri, errors);
+                        await CopyItemAsync(item, newCollectionResult.Collection, item.Name, overwrite, principal, newBaseUri, errors).ConfigureAwait(false);
                     }
                 }
             }

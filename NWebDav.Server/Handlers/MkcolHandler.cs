@@ -19,7 +19,7 @@ namespace NWebDav.Server.Handlers
             var splitUri = RequestHelper.SplitUri(request.Url);
 
             // Obtain collection
-            var collection = await storeResolver.GetCollectionAsync(splitUri.CollectionUri, principal);
+            var collection = await storeResolver.GetCollectionAsync(splitUri.CollectionUri, principal).ConfigureAwait(false);
             if (collection == null)
             {
                 // Source not found
@@ -28,7 +28,7 @@ namespace NWebDav.Server.Handlers
             }
 
             // Create the collection
-            var result = await collection.CreateCollectionAsync(splitUri.Name, false, principal);
+            var result = await collection.CreateCollectionAsync(splitUri.Name, false, principal).ConfigureAwait(false);
 
             // Finished
             response.SendResponse(result.Result);

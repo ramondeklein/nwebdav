@@ -1,4 +1,4 @@
-# nwebdav
+# NWebDAV
 .NET implementation of the WebDAV protocol
 
 ## Overview

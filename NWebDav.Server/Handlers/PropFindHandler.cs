@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using NWebDav.Server.Handlers;
 using NWebDav.Server.Helpers;
+using NWebDav.Server.Props;
 
 namespace NWebDav.Server.Handlers
 {
@@ -50,7 +51,7 @@ namespace NWebDav.Server.Handlers
             var entries = new List<PropertyEntry>();
 
             // Obtain collection
-            var collection = await storeResolver.GetCollectionAsync(request.Url, principal);
+            var collection = await storeResolver.GetCollectionAsync(request.Url, principal).ConfigureAwait(false);
             if (collection != null)
             {
                 // Determine depth
@@ -64,12 +65,12 @@ namespace NWebDav.Server.Handlers
                 }
 
                 // Add all the entries
-                await AddEntriesAsync(collection, depth, principal, request.Url, entries);
+                await AddEntriesAsync(collection, depth, principal, request.Url, entries).ConfigureAwait(false);
             }
             else
             {
                 // Find the item
-                var item = await storeResolver.GetItemAsync(request.Url, principal);
+                var item = await storeResolver.GetItemAsync(request.Url, principal).ConfigureAwait(false);
                 if (item == null)
                 {
                     response.SendResponse(DavStatusCode.NotFound);
@@ -81,52 +82,57 @@ namespace NWebDav.Server.Handlers
             }
 
             // Obtain the status document
-            var xMultiStatus = new XElement(WebDavConstants.DavNs + "multistatus");
+            var xMultiStatus = new XElement(WebDavNamespaces.DavNs + "multistatus");
             var xDocument = new XDocument(xMultiStatus);
 
             // Add all the properties
             foreach (var entry in entries)
             {
                 // Create the property
-                var xResponse = new XElement(WebDavConstants.DavNs + "response",
-                    new XElement(WebDavConstants.DavNs + "href", entry.Uri.AbsoluteUri));
+                var xResponse = new XElement(WebDavNamespaces.DavNs + "response",
+                    new XElement(WebDavNamespaces.DavNs + "href", entry.Uri.AbsoluteUri));
 
                 // Create tags for property values
-                var xPropStatValues = new XElement(WebDavConstants.DavNs + "propstat");
+                var xPropStatValues = new XElement(WebDavNamespaces.DavNs + "propstat");
 
-                // Handle based on the property mode
-                if (propertyMode == PropertyMode.PropertyNames)
+                // Check if the entry supports properties
+                var propertyManager = entry.Entry.PropertyManager;
+                if (propertyManager != null)
                 {
-                    // Add all properties
-                    foreach (var propertyName in entry.Entry.CheapProperties.Concat(entry.Entry.ExpensiveProperties))
-                        xPropStatValues.Add(new XElement(propertyName));
-
-                    // Add the values
-                    xResponse.Add(xPropStatValues);
-                }
-                else
-                {
-                    var xPropStatErrors = new XElement(WebDavConstants.DavNs + "propstat");
-                    var addedProperties = new List<XName>();
-                    if ((propertyMode & PropertyMode.AllProperties) != 0)
+                    // Handle based on the property mode
+                    if (propertyMode == PropertyMode.PropertyNames)
                     {
-                        foreach (var propertyName in entry.Entry.CheapProperties)
-                            AddProperty(xPropStatValues, xPropStatErrors, entry.Entry, propertyName, addedProperties);
-                    }
+                        // Add all properties
+                        foreach (var property in propertyManager.Properties)
+                            xPropStatValues.Add(new XElement(property.Name));
 
-                    if ((propertyMode & PropertyMode.SelectedProperties) != 0)
+                        // Add the values
+                        xResponse.Add(xPropStatValues);
+                    }
+                    else
                     {
-                        foreach (var propertyName in propertyList)
-                            AddProperty(xPropStatValues, xPropStatErrors, entry.Entry, propertyName, addedProperties);
+                        var xPropStatErrors = new XElement(WebDavNamespaces.DavNs + "propstat");
+                        var addedProperties = new List<XName>();
+                        if ((propertyMode & PropertyMode.AllProperties) != 0)
+                        {
+                            foreach (var propertyName in propertyManager.Properties.Where(p => !p.IsExpensive).Select(p => p.Name))
+                                AddProperty(xPropStatValues, xPropStatErrors, propertyManager, entry.Entry, propertyName, addedProperties);
+                        }
+
+                        if ((propertyMode & PropertyMode.SelectedProperties) != 0)
+                        {
+                            foreach (var propertyName in propertyList)
+                                AddProperty(xPropStatValues, xPropStatErrors, propertyManager, entry.Entry, propertyName, addedProperties);
+                        }
+
+                        // Add the values (if any)
+                        if (xPropStatValues.HasElements)
+                            xResponse.Add(xPropStatValues);
+
+                        // Add the errors (if any)
+                        if (xPropStatErrors.HasElements)
+                            xResponse.Add(xPropStatValues);
                     }
-
-                    // Add the values (if any)
-                    if (xPropStatValues.HasElements)
-                        xResponse.Add(xPropStatValues);
-
-                    // Add the errors (if any)
-                    if (xPropStatErrors.HasElements)
-                        xResponse.Add(xPropStatValues);
                 }
 
                 // Add the property
@@ -134,20 +140,20 @@ namespace NWebDav.Server.Handlers
             }
 
             // Stream the document
-            await response.SendResponseAsync(DavStatusCode.MultiStatus, xDocument);
+            await response.SendResponseAsync(DavStatusCode.MultiStatus, xDocument).ConfigureAwait(false);
 
             // Finished writing
             return true;
         }
 
-        private void AddProperty(XElement xPropStatValues, XElement xPropStatErrors, IStoreCollectionEntry entry, XName propertyName, IList<XName> addedProperties)
+        private void AddProperty(XElement xPropStatValues, XElement xPropStatErrors, IPropertyManager propertyManager, IStoreCollectionEntry entry, XName propertyName, IList<XName> addedProperties)
         {
             if (!addedProperties.Contains(propertyName))
             {
                 try
                 {
                     addedProperties.Add(propertyName);
-                    var value = entry.GetProperty(propertyName);
+                    var value = propertyManager.GetProperty(entry, propertyName);
                     xPropStatValues.Add(new XElement(propertyName, value));
                 }
                 catch (Exception)
@@ -165,7 +171,7 @@ namespace NWebDav.Server.Handlers
 
             // Create an XML document from the stream
             var xDocument = XDocument.Load(request.InputStream);
-            if (xDocument.Root == null || xDocument.Root.Name != WebDavConstants.DavNs + "propfind")
+            if (xDocument.Root == null || xDocument.Root.Name != WebDavNamespaces.DavNs + "propfind")
             {
                 // TODO: Log
                 return PropertyMode.AllProperties;
@@ -184,15 +190,15 @@ namespace NWebDav.Server.Handlers
             foreach (var xProp in xPropFind.Descendants())
             {
                 // Check if we should fetch all property names
-                if (xProp.Name == WebDavConstants.DavNs + "propname")
+                if (xProp.Name == WebDavNamespaces.DavNs + "propname")
                 {
                     propertyMode = PropertyMode.PropertyNames;
                 }
-                else if (xProp.Name == WebDavConstants.DavNs + "propall")
+                else if (xProp.Name == WebDavNamespaces.DavNs + "propall")
                 {
                     propertyMode = PropertyMode.AllProperties;
                 }
-                else if (xProp.Name == WebDavConstants.DavNs + "include")
+                else if (xProp.Name == WebDavNamespaces.DavNs + "include")
                 {
                     // Include properties
                     propertyMode = PropertyMode.AllProperties | PropertyMode.SelectedProperties;
@@ -220,12 +226,12 @@ namespace NWebDav.Server.Handlers
             if (depth > 0)
             {
                 // Add all child collections
-                foreach (var childEntry in await collection.GetEntriesAsync(principal))
+                foreach (var childEntry in await collection.GetEntriesAsync(principal).ConfigureAwait(false))
                 {
                     var subUri = new Uri(uri, childEntry.Name);
                     var subCollection = childEntry as IStoreCollection;
                     if (subCollection != null)
-                        await AddEntriesAsync(subCollection, depth - 1, principal, subUri, entries);
+                        await AddEntriesAsync(subCollection, depth - 1, principal, subUri, entries).ConfigureAwait(false);
                     else
                         entries.Add(new PropertyEntry(subUri, childEntry));
                 }
