@@ -7,6 +7,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NWebDav.Server", "NWebDav.S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NWebDav.App", "NWebDav.App\NWebDav.App.csproj", "{F7271AB3-E0B3-415A-934D-5CD24585AEE2}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Files", "Files", "{942BBBEF-03F3-4CDC-80B5-09F975CDC9DC}"
+	ProjectSection(SolutionItems) = preProject
+		NWebDav.Server.nuspec = NWebDav.Server.nuspec
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
