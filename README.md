@@ -1,4 +1,4 @@
-u# NWebDAV
+# NWebDAV
 .NET implementation of the WebDAV protocol
 
 ## Overview
@@ -18,5 +18,6 @@ The following features are currently missing:
 
 * Moving files (coming soon)
 * Patching properties (coming soon)
+* Need some work returning the proper error codes (coming soon)
 * Locking. I am still thinking about a flexible and scalable solution. I think I will use an in-memory locking database for single
   instance servers and a Redis-based locking database for distributed installations.
