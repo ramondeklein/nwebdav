@@ -5,22 +5,22 @@ using System.Xml.Linq;
 
 namespace NWebDav.Server.Props
 {
-    public class Win32CreationTime<TEntry> : DavRfc1123Date<TEntry> where TEntry : IStoreCollectionEntry
+    public class Win32CreationTime<TEntry> : DavRfc1123Date<TEntry> where TEntry : IStoreItem
     {
         public override XName Name => WebDavNamespaces.DavNs + "Win32CreationTime";
     }
 
-    public class Win32LastAccessTime<TEntry> : DavRfc1123Date<TEntry> where TEntry : IStoreCollectionEntry
+    public class Win32LastAccessTime<TEntry> : DavRfc1123Date<TEntry> where TEntry : IStoreItem
     {
         public override XName Name => WebDavNamespaces.DavNs + "Win32LastAccessTime";
     }
 
-    public class Win32LastModifiedTime<TEntry> : DavRfc1123Date<TEntry> where TEntry : IStoreCollectionEntry
+    public class Win32LastModifiedTime<TEntry> : DavRfc1123Date<TEntry> where TEntry : IStoreItem
     {
         public override XName Name => WebDavNamespaces.DavNs + "Win32LastModifiedTime";
     }
 
-    public class Win32FileAttributes<TEntry> : DavTypedProperty<TEntry, FileAttributes> where TEntry : IStoreCollectionEntry
+    public class Win32FileAttributes<TEntry> : DavTypedProperty<TEntry, FileAttributes> where TEntry : IStoreItem
     {
         private class FileAttributesValidator : IValidator
         {

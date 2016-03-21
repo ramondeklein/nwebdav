@@ -18,7 +18,7 @@ namespace NWebDav.Server.Handlers
             // The collection must always be created inside another collection
             var splitUri = RequestHelper.SplitUri(request.Url);
 
-            // Obtain collection
+            // Obtain the parent entry
             var collection = await storeResolver.GetCollectionAsync(splitUri.CollectionUri, principal).ConfigureAwait(false);
             if (collection == null)
             {

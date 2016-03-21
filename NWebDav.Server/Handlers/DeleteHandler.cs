@@ -73,7 +73,7 @@ namespace NWebDav.Server.Handlers
         private async Task DeleteCollectionAsync(IStoreCollection collection, IPrincipal principal, Uri baseUri, UriResultCollection errors)
         {
             // Delete all entries first
-            foreach (var entry in await collection.GetEntriesAsync(principal).ConfigureAwait(false))
+            foreach (var entry in await collection.GetItemsAsync(principal).ConfigureAwait(false))
             {
                 var subCollection = entry as IStoreCollection;
                 if (subCollection != null)
@@ -89,7 +89,7 @@ namespace NWebDav.Server.Handlers
             }
 
             // Delete the collection itself
-            var storeResult = await collection.DeleteAsync(principal).ConfigureAwait(false);
+            var storeResult = await collection.DeleteCollectionAsync(principal).ConfigureAwait(false);
             if (storeResult != DavStatusCode.OK)
                 errors.AddResult(baseUri, storeResult);
         }

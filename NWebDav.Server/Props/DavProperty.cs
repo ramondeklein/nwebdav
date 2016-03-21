@@ -16,7 +16,7 @@ namespace NWebDav.Server.Props
     }
 
     [DebuggerDisplay("{Name}")]
-    public abstract class DavProperty<TEntry> where TEntry : IStoreCollectionEntry
+    public abstract class DavProperty<TEntry> where TEntry : IStoreItem
     {
         private class DummyValidator : IValidator
         {

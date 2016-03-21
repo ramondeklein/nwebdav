@@ -3,42 +3,42 @@ using System.Xml.Linq;
 
 namespace NWebDav.Server.Props
 {
-    public class DavChildCount<TEntry> : DavInt32<TEntry> where TEntry : IStoreCollectionEntry
+    public class DavChildCount<TEntry> : DavInt32<TEntry> where TEntry : IStoreItem
     {
         public override XName Name => WebDavNamespaces.DavNs + "childcount";
     }
 
-    public class DavIsCollection<TEntry> : DavBoolean<TEntry> where TEntry : IStoreCollectionEntry
+    public class DavIsCollection<TEntry> : DavBoolean<TEntry> where TEntry : IStoreItem
     {
         public override XName Name => WebDavNamespaces.DavNs + "iscollection";
     }
 
-    public class DavIsFolder<TEntry> : DavBoolean<TEntry> where TEntry : IStoreCollectionEntry
+    public class DavIsFolder<TEntry> : DavBoolean<TEntry> where TEntry : IStoreItem
     {
         public override XName Name => WebDavNamespaces.DavNs + "isfolder";
     }
 
-    public class DavIsHidden<TEntry> : DavBoolean<TEntry> where TEntry : IStoreCollectionEntry
+    public class DavIsHidden<TEntry> : DavBoolean<TEntry> where TEntry : IStoreItem
     {
         public override XName Name => WebDavNamespaces.DavNs + "ishidden";
     }
 
-    public class DavHasSubs<TEntry> : DavBoolean<TEntry> where TEntry : IStoreCollectionEntry
+    public class DavHasSubs<TEntry> : DavBoolean<TEntry> where TEntry : IStoreItem
     {
         public override XName Name => WebDavNamespaces.DavNs + "hassubs";
     }
 
-    public class DavNoSubs<TEntry> : DavBoolean<TEntry> where TEntry : IStoreCollectionEntry
+    public class DavNoSubs<TEntry> : DavBoolean<TEntry> where TEntry : IStoreItem
     {
         public override XName Name => WebDavNamespaces.DavNs + "nosubs";
     }
 
-    public class DavObjectCount<TEntry> : DavInt32<TEntry> where TEntry : IStoreCollectionEntry
+    public class DavObjectCount<TEntry> : DavInt32<TEntry> where TEntry : IStoreItem
     {
         public override XName Name => WebDavNamespaces.DavNs + "objectcount";
     }
 
-    public class DavVisibleCount<TEntry> : DavInt32<TEntry> where TEntry : IStoreCollectionEntry
+    public class DavVisibleCount<TEntry> : DavInt32<TEntry> where TEntry : IStoreItem
     {
         public override XName Name => WebDavNamespaces.DavNs + "visiblecount";
     }

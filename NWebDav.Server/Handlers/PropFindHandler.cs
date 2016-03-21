@@ -18,9 +18,9 @@ namespace NWebDav.Server.Handlers
         private struct PropertyEntry
         {
             public Uri Uri { get; }
-            public IStoreCollectionEntry Entry { get; }
+            public IStoreItem Entry { get; }
 
-            public PropertyEntry(Uri uri, IStoreCollectionEntry entry)
+            public PropertyEntry(Uri uri, IStoreItem entry)
             {
                 Uri = uri;
                 Entry = entry;
@@ -50,35 +50,35 @@ namespace NWebDav.Server.Handlers
             // Generate the list of items from which we need to obtain the properties
             var entries = new List<PropertyEntry>();
 
-            // Obtain collection
-            var collection = await storeResolver.GetCollectionAsync(request.Url, principal).ConfigureAwait(false);
-            if (collection != null)
+            // Obtain entry
+            var topEntry = await storeResolver.GetItemAsync(request.Url, principal).ConfigureAwait(false);
+            if (topEntry == null)
+            {
+                response.SendResponse(DavStatusCode.NotFound);
+                return true;
+            }
+
+            // Check if the entry is a collection
+            var topCollection = topEntry as IStoreCollection;
+            if (topCollection != null)
             {
                 // Determine depth
                 var depth = request.GetDepth();
 
                 // Check if the collection supports Infinite depth for properties
-                if (depth > 1 && !collection.AllowInfiniteDepthProperties)
+                if (depth > 1 && !topCollection.AllowInfiniteDepthProperties)
                 {
                     response.SendResponse(DavStatusCode.Forbidden, "Not allowed to obtain properties with infinite depth.");
                     return true;
                 }
 
                 // Add all the entries
-                await AddEntriesAsync(collection, depth, principal, request.Url, entries).ConfigureAwait(false);
+                await AddEntriesAsync(topCollection, depth, principal, request.Url, entries).ConfigureAwait(false);
             }
             else
             {
-                // Find the item
-                var item = await storeResolver.GetItemAsync(request.Url, principal).ConfigureAwait(false);
-                if (item == null)
-                {
-                    response.SendResponse(DavStatusCode.NotFound);
-                    return true;
-                }
-
-                // Add the item to the list
-                entries.Add(new PropertyEntry(request.Url, item));
+                // It should be an item, so just use this item
+                entries.Add(new PropertyEntry(request.Url, topEntry));
             }
 
             // Obtain the status document
@@ -146,14 +146,14 @@ namespace NWebDav.Server.Handlers
             return true;
         }
 
-        private void AddProperty(XElement xPropStatValues, XElement xPropStatErrors, IPropertyManager propertyManager, IStoreCollectionEntry entry, XName propertyName, IList<XName> addedProperties)
+        private void AddProperty(XElement xPropStatValues, XElement xPropStatErrors, IPropertyManager propertyManager, IStoreItem item, XName propertyName, IList<XName> addedProperties)
         {
             if (!addedProperties.Contains(propertyName))
             {
                 try
                 {
                     addedProperties.Add(propertyName);
-                    var value = propertyManager.GetProperty(entry, propertyName);
+                    var value = propertyManager.GetProperty(item, propertyName);
                     xPropStatValues.Add(new XElement(propertyName, value));
                 }
                 catch (Exception)
@@ -226,7 +226,7 @@ namespace NWebDav.Server.Handlers
             if (depth > 0)
             {
                 // Add all child collections
-                foreach (var childEntry in await collection.GetEntriesAsync(principal).ConfigureAwait(false))
+                foreach (var childEntry in await collection.GetItemsAsync(principal).ConfigureAwait(false))
                 {
                     var subUri = new Uri(uri, childEntry.Name);
                     var subCollection = childEntry as IStoreCollection;

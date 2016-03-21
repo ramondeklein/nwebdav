@@ -45,37 +45,27 @@ namespace NWebDav.Server.Handlers
             if (destinationCollection == null)
             {
                 // Source not found
-                response.SendResponse(DavStatusCode.Conflict, "Destination cannot be found.");
+                response.SendResponse(DavStatusCode.Conflict, "Destination cannot be found or is not a collection.");
                 return true;
             }
+
+            // Obtain the source item
+            var entry = await storeResolver.GetItemAsync(request.Url, principal).ConfigureAwait(false);
+            if (entry == null)
+            {
+                // Source not found
+                response.SendResponse(DavStatusCode.NotFound, "Source cannot be found.");
+                return true;
+            }
+
+            // Determine depth
+            var depth = request.GetDepth();
 
             // Keep track of all errors
             var errors = new UriResultCollection();
 
-            // Obtain the source item
-            var item = await storeResolver.GetItemAsync(request.Url, principal).ConfigureAwait(false);
-            if (item == null)
-            {
-                // Obtain collection
-                var collection = await storeResolver.GetCollectionAsync(request.Url, principal).ConfigureAwait(false);
-                if (collection == null)
-                {
-                    // Source not found
-                    response.SendResponse(DavStatusCode.NotFound, "Source cannot be found.");
-                    return true;
-                }
-
-                // Determine depth
-                var depth = request.GetDepth();
-
-                // Copy collection
-                await CopyCollectionAsync(collection, destinationCollection, destination.Name, overwrite, depth, principal, destination.CollectionUri, errors).ConfigureAwait(false);
-            }
-            else
-            {
-                // Copy item
-                await CopyItemAsync(item, destinationCollection, destination.Name, overwrite, principal, destination.CollectionUri, errors).ConfigureAwait(false);
-            }
+            // Copy collection
+            await CopyAsync(entry, destinationCollection, destination.Name, overwrite, depth, principal, destination.CollectionUri, errors).ConfigureAwait(false);
 
             // Check if there are any errors
             if (errors.HasItems)
@@ -95,45 +85,29 @@ namespace NWebDav.Server.Handlers
             return true;
         }
 
-        private async Task CopyItemAsync(IStoreItem sourceItem, IStoreCollection destinationCollection, string name, bool overwrite, IPrincipal principal, Uri baseUri, UriResultCollection errors)
-        {
-            // Copy the item
-            var storeResult = await sourceItem.CopyToAsync(destinationCollection, name, overwrite, principal).ConfigureAwait(false);
-
-            // Make sure the item can be copied
-            if (storeResult != DavStatusCode.Created && storeResult != DavStatusCode.NoContent)
-                errors.AddResult(new Uri(baseUri, name), storeResult);
-        }
-
-        private async Task CopyCollectionAsync(IStoreCollection sourceCollection, IStoreCollection destinationCollection, string name, bool overwrite, int depth, IPrincipal principal, Uri baseUri, UriResultCollection errors)
+        private async Task CopyAsync(IStoreItem source, IStoreCollection destinationCollection, string name, bool overwrite, int depth, IPrincipal principal, Uri baseUri, UriResultCollection errors)
         {
             // Determine the new base Uri
             var newBaseUri = new Uri(baseUri, name);
 
             // Copy the collection itself
-            var newCollectionResult = await sourceCollection.CopyToAsync(destinationCollection, name, overwrite, principal).ConfigureAwait(false);
+            var newCollectionResult = await source.CopyToAsync(destinationCollection, name, overwrite, principal).ConfigureAwait(false);
             if (newCollectionResult.Result != DavStatusCode.Created && newCollectionResult.Result != DavStatusCode.NoContent)
             {
                 errors.AddResult(newBaseUri, newCollectionResult.Result);
+                return;
             }
-            else if (depth > 0)
+
+            // Check if the source is a collection and we are requested to copy recursively
+            var sourceCollection = source as IStoreCollection;
+            if (sourceCollection != null && depth > 0)
             {
-                // If the depth is set, then the content needs to be copied too
-                foreach (var entry in await sourceCollection.GetEntriesAsync(principal).ConfigureAwait(false))
-                {
-                    var collection = entry as IStoreCollection;
-                    if (collection != null)
-                    {
-                        // Copy collection
-                        await CopyCollectionAsync(collection, newCollectionResult.Collection, collection.Name, overwrite, depth-1, principal, newBaseUri, errors).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        // Copy item
-                        var item = (IStoreItem)entry;
-                        await CopyItemAsync(item, newCollectionResult.Collection, item.Name, overwrite, principal, newBaseUri, errors).ConfigureAwait(false);
-                    }
-                }
+                // The result should also contain a collection
+                var newCollection = (IStoreCollection)newCollectionResult.Item;
+
+                // Copy all childs of the source collection
+                foreach (var entry in await sourceCollection.GetItemsAsync(principal).ConfigureAwait(false))
+                    await CopyAsync(entry, newCollection, entry.Name, overwrite, depth - 1, principal, newBaseUri, errors).ConfigureAwait(false);
             }
         }
     }

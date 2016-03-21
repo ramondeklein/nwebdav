@@ -4,7 +4,7 @@ using System.Xml.Linq;
 
 namespace NWebDav.Server.Props
 {
-    public abstract class DavTypedProperty<TEntry, TType> : DavProperty<TEntry> where TEntry : IStoreCollectionEntry
+    public abstract class DavTypedProperty<TEntry, TType> : DavProperty<TEntry> where TEntry : IStoreItem
     {
         private Func<TEntry, TType> _getter;
         private Func<TEntry, TType, bool> _setter;
@@ -40,7 +40,7 @@ namespace NWebDav.Server.Props
         public abstract IConverter<TType> Converter { get; }
     }
 
-    public abstract class DavRfc1123Date<TEntry> : DavTypedProperty<TEntry, DateTime> where TEntry : IStoreCollectionEntry
+    public abstract class DavRfc1123Date<TEntry> : DavTypedProperty<TEntry, DateTime> where TEntry : IStoreItem
     {
         private class Rfc1123DateValidator : IValidator
         {
@@ -68,7 +68,7 @@ namespace NWebDav.Server.Props
         public override IConverter<DateTime> Converter => TypeConverter;
     }
 
-    public abstract class DavBoolean<TEntry> : DavTypedProperty<TEntry, Boolean> where TEntry : IStoreCollectionEntry
+    public abstract class DavBoolean<TEntry> : DavTypedProperty<TEntry, Boolean> where TEntry : IStoreItem
     {
         private class BooleanValidator : IValidator
         {
@@ -96,7 +96,7 @@ namespace NWebDav.Server.Props
         public override IConverter<Boolean> Converter => TypeConverter;
     }
 
-    public abstract class DavString<TEntry> : DavTypedProperty<TEntry, string> where TEntry : IStoreCollectionEntry
+    public abstract class DavString<TEntry> : DavTypedProperty<TEntry, string> where TEntry : IStoreItem
     {
         private class StringConverter : IConverter<string>
         {
@@ -109,7 +109,7 @@ namespace NWebDav.Server.Props
         public override IConverter<string> Converter => TypeConverter;
     }
 
-    public abstract class DavInt32<TEntry> : DavTypedProperty<TEntry, Int32> where TEntry : IStoreCollectionEntry
+    public abstract class DavInt32<TEntry> : DavTypedProperty<TEntry, Int32> where TEntry : IStoreItem
     {
         private class Int32Validator : IValidator
         {
@@ -138,7 +138,7 @@ namespace NWebDav.Server.Props
         public override IConverter<Int32> Converter => TypeConverter;
     }
 
-    public abstract class DavInt64<TEntry> : DavTypedProperty<TEntry, Int64> where TEntry : IStoreCollectionEntry
+    public abstract class DavInt64<TEntry> : DavTypedProperty<TEntry, Int64> where TEntry : IStoreItem
     {
         private class Int64Validator : IValidator
         {
@@ -167,7 +167,7 @@ namespace NWebDav.Server.Props
         public override IConverter<Int64> Converter => TypeConverter;
     }
 
-    public abstract class DavXElement<TEntry> : DavTypedProperty<TEntry, XElement> where TEntry : IStoreCollectionEntry
+    public abstract class DavXElement<TEntry> : DavTypedProperty<TEntry, XElement> where TEntry : IStoreItem
     {
         private class XElementValidator : IValidator
         {

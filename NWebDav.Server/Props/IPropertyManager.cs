@@ -7,7 +7,7 @@ namespace NWebDav.Server.Props
     public interface IPropertyManager
     {
         IEnumerable<PropertyInfo> Properties { get; }
-        object GetProperty(IStoreCollectionEntry entry, XName name, bool skipExpensive = false);
-        bool SetProperty(IStoreCollectionEntry entry, XName name, object value);
+        object GetProperty(IStoreItem entry, XName name, bool skipExpensive = false);
+        bool SetProperty(IStoreItem entry, XName name, object value);
     }
 }

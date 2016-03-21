@@ -13,18 +13,6 @@ using NWebDav.Server.Props;
 
 namespace NWebDav.Server
 {
-    public struct StoreCollectionResult
-    {
-        public DavStatusCode Result { get; }
-        public IStoreCollection Collection { get; }
-
-        public StoreCollectionResult(DavStatusCode result, IStoreCollection collection = null)
-        {
-            Result = result;
-            Collection = collection;
-        }
-    }
-
     public struct StoreItemResult
     {
         public DavStatusCode Result { get; }
@@ -43,31 +31,30 @@ namespace NWebDav.Server
         Task<IStoreCollection> GetCollectionAsync(Uri uri, IPrincipal principal);
     }
 
-    public interface IStoreCollectionEntry
+    public interface IStoreItem
     {
         // Item properties
         string Name { get; }
+
+        // Read/Write access to the data
+        Stream GetReadableStream(IPrincipal principal);
+        Stream GetWritableStream(IPrincipal principal);
+
+        // Copy support
+        Task<StoreItemResult> CopyToAsync(IStoreCollection destination, string name, bool overwrite, IPrincipal principal);
 
         // Property support
         IPropertyManager PropertyManager { get; }
     }
 
-    public interface IStoreCollection : IStoreCollectionEntry
+    public interface IStoreCollection : IStoreItem
     {
-        Task<IList<IStoreCollectionEntry>> GetEntriesAsync(IPrincipal principal);
+        Task<IList<IStoreItem>> GetItemsAsync(IPrincipal principal);
         Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, IPrincipal principal);
-        Task<StoreCollectionResult> CreateCollectionAsync(string name, bool overwrite, IPrincipal principal);
-        Task<StoreCollectionResult> CopyToAsync(IStoreCollection destinationCollection, string name, bool overwrite, IPrincipal principal);
+        Task<StoreItemResult> CreateCollectionAsync(string name, bool overwrite, IPrincipal principal);
         Task<DavStatusCode> DeleteItemAsync(string name, IPrincipal principal);
-        Task<DavStatusCode> DeleteAsync(IPrincipal principal);
+        Task<DavStatusCode> DeleteCollectionAsync(IPrincipal principal);
 
         bool AllowInfiniteDepthProperties { get; }
-    }
-
-    public interface IStoreItem : IStoreCollectionEntry
-    {
-        Stream GetReadableStream(IPrincipal principal);
-        Stream GetWritableStream(IPrincipal principal);
-        Task<DavStatusCode> CopyToAsync(IStoreCollection destination, string name, bool overwrite, IPrincipal principal);
     }
 }

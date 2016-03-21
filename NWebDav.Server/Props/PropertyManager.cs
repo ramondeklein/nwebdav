@@ -5,7 +5,7 @@ using System.Xml.Linq;
 
 namespace NWebDav.Server.Props
 {
-    public class PropertyManager<TEntry> : IPropertyManager where TEntry : IStoreCollectionEntry
+    public class PropertyManager<TEntry> : IPropertyManager where TEntry : IStoreItem
     {
         private readonly IDictionary<XName, DavProperty<TEntry>> _properties;
 
@@ -21,7 +21,7 @@ namespace NWebDav.Server.Props
 
         public IEnumerable<PropertyInfo> Properties => _properties.Select(p => new PropertyInfo(p.Value.Name, p.Value.IsExpensive));
 
-        public object GetProperty(IStoreCollectionEntry entry, XName name, bool skipExpensive = false)
+        public object GetProperty(IStoreItem entry, XName name, bool skipExpensive = false)
         {
             // Find the property
             DavProperty<TEntry> property;
@@ -44,7 +44,7 @@ namespace NWebDav.Server.Props
             return value;
         }
 
-        public bool SetProperty(IStoreCollectionEntry entry, XName name, object value)
+        public bool SetProperty(IStoreItem entry, XName name, object value)
         {
             // Find the property
             DavProperty<TEntry> property;
@@ -65,7 +65,7 @@ namespace NWebDav.Server.Props
             return true;
         }
 
-        public T GetTypedProperty<T>(IStoreCollectionEntry entry, XName name)
+        public T GetTypedProperty<T>(IStoreItem entry, XName name)
         {
             // Find the property
             DavProperty<TEntry> property;

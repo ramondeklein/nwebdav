@@ -103,7 +103,7 @@ namespace NWebDav.Server.Stores
             public Stream GetWritableStream(IPrincipal principal) => _fileInfo.OpenWrite();
             public IPropertyManager PropertyManager => ItemPropertyManager;
 
-            public async Task<DavStatusCode> CopyToAsync(IStoreCollection destination, string name, bool overwrite, IPrincipal principal)
+            public async Task<StoreItemResult> CopyToAsync(IStoreCollection destination, string name, bool overwrite, IPrincipal principal)
             {
                 try
                 {
@@ -117,13 +117,13 @@ namespace NWebDav.Server.Stores
                         // Check if the file already exists
                         var fileExists = File.Exists(destinationPath);
                         if (fileExists && !overwrite)
-                            return DavStatusCode.PreconditionFailed;
+                            return new StoreItemResult(DavStatusCode.PreconditionFailed);
 
                         // Copy the file
                         File.Copy(_fileInfo.FullName, destinationPath, true);
 
                         // Return the appropriate status
-                        return fileExists ? DavStatusCode.NoContent : DavStatusCode.Created;
+                        return new StoreItemResult(fileExists ? DavStatusCode.NoContent : DavStatusCode.Created);
                     }
                     else
                     {
@@ -141,18 +141,18 @@ namespace NWebDav.Server.Stores
                         }
 
                         // Return result
-                        return result.Result;
+                        return new StoreItemResult(result.Result, result.Item);
                     }
                 }
                 catch (IOException ioException) when (ioException.IsDiskFull())
                 {
                     // TODO: Log exception
-                    return DavStatusCode.InsufficientStorage;
+                    return new StoreItemResult(DavStatusCode.InsufficientStorage);
                 }
                 catch (Exception exc)
                 {
                     // TODO: Log exception
-                    return DavStatusCode.InternalServerError;
+                    return new StoreItemResult(DavStatusCode.InternalServerError);
                 }
             }
 
@@ -253,41 +253,36 @@ namespace NWebDav.Server.Stores
                 }
             });
 
-            private readonly DiskStore _diskStore;
             private readonly DirectoryInfo _directoryInfo;
-            private IList<IStoreCollectionEntry> _entries;
 
-            public StoreCollection(DiskStore diskStore, DirectoryInfo directoryInfo)
+            public StoreCollection(DirectoryInfo directoryInfo)
             {
-                _diskStore = diskStore;
                 _directoryInfo = directoryInfo;
             }
 
             public string Name => _directoryInfo.Name;
             public string FullPath => _directoryInfo.FullName;
+
+            // Disk collections (a.k.a. directories don't have their own data)
+            public Stream GetReadableStream(IPrincipal principal) => null;
+            public Stream GetWritableStream(IPrincipal principal) => null;
+
             public IPropertyManager PropertyManager => CollectionPropertyManager;
 
-            public Task<IList<IStoreCollectionEntry>> GetEntriesAsync(IPrincipal principal)
+            public Task<IList<IStoreItem>> GetItemsAsync(IPrincipal principal)
             {
-                // Check if we have already fetched the items
-                if (_entries == null)
-                {
-                    var entries = new List<IStoreCollectionEntry>();
+                var items = new List<IStoreItem>();
 
-                    // Add all directories
-                    foreach (var subDirectory in _directoryInfo.GetDirectories())
-                        entries.Add(new StoreCollection(_diskStore, subDirectory));
+                // Add all directories
+                foreach (var subDirectory in _directoryInfo.GetDirectories())
+                    items.Add(new StoreCollection(subDirectory));
 
-                    // Add all files
-                    foreach (var file in _directoryInfo.GetFiles())
-                        entries.Add(new StoreItem(file));
+                // Add all files
+                foreach (var file in _directoryInfo.GetFiles())
+                    items.Add(new StoreItem(file));
 
-                    // Save the entries
-                    _entries = new ReadOnlyCollection<IStoreCollectionEntry>(entries);
-                }
-
-                // Return the entries
-                return Task.FromResult(_entries);
+                // Return the items
+                return Task.FromResult<IList<IStoreItem>>(items);
             }
 
             public Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, IPrincipal principal)
@@ -326,7 +321,7 @@ namespace NWebDav.Server.Stores
                 return Task.FromResult(new StoreItemResult(result, new StoreItem(new FileInfo(destinationPath))));
             }
 
-            public Task<StoreCollectionResult> CreateCollectionAsync(string name, bool overwrite, IPrincipal principal)
+            public Task<StoreItemResult> CreateCollectionAsync(string name, bool overwrite, IPrincipal principal)
             {
                 // Determine the destination path
                 var destinationPath = Path.Combine(FullPath, name);
@@ -337,7 +332,7 @@ namespace NWebDav.Server.Stores
                 {
                     // Check if overwrite is allowed
                     if (!overwrite)
-                        return Task.FromResult(new StoreCollectionResult(DavStatusCode.PreconditionFailed));
+                        return Task.FromResult(new StoreItemResult(DavStatusCode.PreconditionFailed));
 
                     // Overwrite existing
                     result = DavStatusCode.NoContent;
@@ -360,16 +355,16 @@ namespace NWebDav.Server.Stores
                 }
 
                 // Return the collection
-                return Task.FromResult(new StoreCollectionResult(result, new StoreCollection(_diskStore, new DirectoryInfo(destinationPath))));
+                return Task.FromResult(new StoreItemResult(result, new StoreCollection(new DirectoryInfo(destinationPath))));
             }
 
-            public Task<StoreCollectionResult> CopyToAsync(IStoreCollection destinationCollection, string name, bool overwrite, IPrincipal principal)
+            public Task<StoreItemResult> CopyToAsync(IStoreCollection destinationCollection, string name, bool overwrite, IPrincipal principal)
             {
                 // Just create the folder itself
                 return destinationCollection.CreateCollectionAsync(name, overwrite, principal);
             }
 
-            public Task<DavStatusCode> DeleteAsync(IPrincipal principal)
+            public Task<DavStatusCode> DeleteCollectionAsync(IPrincipal principal)
             {
                 // Delete the directory
                 try
@@ -409,11 +404,17 @@ namespace NWebDav.Server.Stores
         {
             // Determine the path from the uri
             var path = GetPathFromUri(uri);
-            if (!File.Exists(path))
-                return Task.FromResult<IStoreItem>(null);
 
-            // Return the item
-            return Task.FromResult<IStoreItem>(new StoreItem(new FileInfo(path)));
+            // Check if it's a directory
+            if (Directory.Exists(path))
+                return Task.FromResult<IStoreItem>(new StoreCollection(new DirectoryInfo(path)));
+
+            // Check if it's a file
+            if (File.Exists(path))
+                return Task.FromResult<IStoreItem>(new StoreItem(new FileInfo(path)));
+
+            // The item doesn't exist
+            return Task.FromResult<IStoreItem>(null);
         }
 
         public Task<IStoreCollection> GetCollectionAsync(Uri uri, IPrincipal principal)
@@ -424,7 +425,7 @@ namespace NWebDav.Server.Stores
                 return Task.FromResult<IStoreCollection>(null);
 
             // Return the item
-            return Task.FromResult<IStoreCollection>(new StoreCollection(this, new DirectoryInfo(path)));
+            return Task.FromResult<IStoreCollection>(new StoreCollection(new DirectoryInfo(path)));
         }
 
         private string GetPathFromUri(Uri uri)
