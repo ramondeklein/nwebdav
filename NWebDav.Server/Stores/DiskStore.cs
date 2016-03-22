@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security;
@@ -103,7 +104,7 @@ namespace NWebDav.Server.Stores
             public Stream GetWritableStream(IPrincipal principal) => _fileInfo.OpenWrite();
             public IPropertyManager PropertyManager => ItemPropertyManager;
 
-            public async Task<StoreItemResult> CopyToAsync(IStoreCollection destination, string name, bool overwrite, IPrincipal principal)
+            public async Task<StoreItemResult> CopyAsync(IStoreCollection destination, string name, bool overwrite, IPrincipal principal)
             {
                 try
                 {
@@ -269,6 +270,23 @@ namespace NWebDav.Server.Stores
 
             public IPropertyManager PropertyManager => CollectionPropertyManager;
 
+            public Task<IStoreItem> GetItemAsync(string name, IPrincipal principal)
+            {
+                // Determine the full path
+                var fullPath = Path.Combine(_directoryInfo.FullName, name);
+
+                // Check if the item is a file
+                if (File.Exists(fullPath))
+                    return Task.FromResult<IStoreItem>(new StoreItem(new FileInfo(fullPath)));
+
+                // Check if the item is a directory
+                if (Directory.Exists(fullPath))
+                    return Task.FromResult<IStoreItem>(new StoreCollection(new DirectoryInfo(fullPath)));
+
+                // Item not found
+                return Task.FromResult<IStoreItem>(null);
+            }
+
             public Task<IList<IStoreItem>> GetItemsAsync(IPrincipal principal)
             {
                 var items = new List<IStoreItem>();
@@ -321,7 +339,7 @@ namespace NWebDav.Server.Stores
                 return Task.FromResult(new StoreItemResult(result, new StoreItem(new FileInfo(destinationPath))));
             }
 
-            public Task<StoreItemResult> CreateCollectionAsync(string name, bool overwrite, IPrincipal principal)
+            public Task<StoreCollectionResult> CreateCollectionAsync(string name, bool overwrite, IPrincipal principal)
             {
                 // Determine the destination path
                 var destinationPath = Path.Combine(FullPath, name);
@@ -332,7 +350,7 @@ namespace NWebDav.Server.Stores
                 {
                     // Check if overwrite is allowed
                     if (!overwrite)
-                        return Task.FromResult(new StoreItemResult(DavStatusCode.PreconditionFailed));
+                        return Task.FromResult(new StoreCollectionResult(DavStatusCode.PreconditionFailed));
 
                     // Overwrite existing
                     result = DavStatusCode.NoContent;
@@ -355,40 +373,103 @@ namespace NWebDav.Server.Stores
                 }
 
                 // Return the collection
-                return Task.FromResult(new StoreItemResult(result, new StoreCollection(new DirectoryInfo(destinationPath))));
+                return Task.FromResult(new StoreCollectionResult(result, new StoreCollection(new DirectoryInfo(destinationPath))));
             }
 
-            public Task<StoreItemResult> CopyToAsync(IStoreCollection destinationCollection, string name, bool overwrite, IPrincipal principal)
+            public async Task<StoreItemResult> CopyAsync(IStoreCollection destinationCollection, string name, bool overwrite, IPrincipal principal)
             {
                 // Just create the folder itself
-                return destinationCollection.CreateCollectionAsync(name, overwrite, principal);
+                var result = await destinationCollection.CreateCollectionAsync(name, overwrite, principal);
+                return new StoreItemResult(result.Result, result.Collection);
             }
 
-            public Task<DavStatusCode> DeleteCollectionAsync(IPrincipal principal)
+            public async Task<StoreItemResult> MoveItemAsync(string sourceName, IStoreCollection destinationCollection, string destinationName, bool overwrite, IPrincipal principal)
             {
-                // Delete the directory
-                try
+                // Determine the object that is being moved
+                var item = await GetItemAsync(sourceName, principal);
+                if (item == null)
+                    return new StoreItemResult(DavStatusCode.NotFound);
+
+                // Check if the item is actually a file
+                var diskStoreItem = item as StoreItem;
+                if (diskStoreItem != null)
                 {
-                    Directory.Delete(_directoryInfo.FullName, false);
-                    return Task.FromResult(DavStatusCode.OK);
+                    // If the destination collection is a directory too, then we can simply move the file
+                    var destinationDiskStoreCollection = destinationCollection as StoreCollection;
+                    if (destinationDiskStoreCollection != null)
+                    {
+                        // Determine source and destination paths
+                        var sourcePath = Path.Combine(_directoryInfo.FullName, sourceName);
+                        var destinationPath = Path.Combine(destinationDiskStoreCollection._directoryInfo.FullName, destinationName);
+
+                        // Check if the file already exists
+                        DavStatusCode result;
+                        if (File.Exists(destinationPath))
+                        {
+                            // Remove the file if it already exists (if allowed)
+                            if (!overwrite)
+                                return new StoreItemResult(DavStatusCode.Forbidden);
+
+                            // The file will be overwritten
+                            File.Delete(destinationPath);
+                            result = DavStatusCode.NoContent;
+                        }
+                        else
+                        {
+                            // The file will be "created"
+                            result = DavStatusCode.Created;
+                        }
+
+                        // Move the file
+                        File.Move(sourcePath, destinationPath);
+                        return new StoreItemResult(result, new StoreItem(new FileInfo(destinationPath)));
+                    }
+                    else
+                    {
+                        // Attempt to copy the item to the destination collection
+                        var result = await item.CopyAsync(destinationCollection, destinationName, overwrite, principal);
+                        if (result.Result == DavStatusCode.Created || result.Result == DavStatusCode.NoContent)
+                            await DeleteItemAsync(sourceName, principal);
+
+                        // Return the result
+                        return result;
+                    }
                 }
-                catch (Exception exc)
+                else
                 {
-                    // TODO: Log exception
-                    return Task.FromResult(DavStatusCode.InternalServerError);
+                    // If it's not a plain item, then it's a collection
+                    Debug.Assert(item is StoreCollection);
+
+                    // Collections will never be moved, but always be created
+                    // (we always move the individual items to make sure locking is checked properly)
+                    throw new InvalidOperationException("Collections should never be moved directly.");
                 }
             }
 
             public Task<DavStatusCode> DeleteItemAsync(string name, IPrincipal principal)
             {
+                // Determine the full path
+                var fullPath = Path.Combine(_directoryInfo.FullName, name);
                 try
                 {
                     // Check if the file exists
-                    if (!File.Exists(name))
-                        return Task.FromResult(DavStatusCode.NotFound);
+                    if (File.Exists(fullPath))
+                    {
+                        // Delete the file
+                        File.Delete(fullPath);
+                        return Task.FromResult(DavStatusCode.OK);
+                    }
 
-                    File.Delete(Path.Combine(_directoryInfo.FullName, name));
-                    return Task.FromResult(DavStatusCode.OK);
+                    // Check if the directory exists
+                    if (Directory.Exists(fullPath))
+                    {
+                        // Delete the directory
+                        Directory.Delete(fullPath);
+                        return Task.FromResult(DavStatusCode.OK);
+                    }
+
+                    // Item not found
+                    return Task.FromResult(DavStatusCode.NotFound);
                 }
                 catch (Exception exc)
                 {

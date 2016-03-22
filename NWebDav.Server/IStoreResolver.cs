@@ -25,6 +25,18 @@ namespace NWebDav.Server
         }
     }
 
+    public struct StoreCollectionResult
+    {
+        public DavStatusCode Result { get; }
+        public IStoreCollection Collection { get; }
+
+        public StoreCollectionResult(DavStatusCode result, IStoreCollection collection = null)
+        {
+            Result = result;
+            Collection = collection;
+        }
+    }
+
     public interface IStoreResolver
     {
         Task<IStoreItem> GetItemAsync(Uri uri, IPrincipal principal);
@@ -41,7 +53,7 @@ namespace NWebDav.Server
         Stream GetWritableStream(IPrincipal principal);
 
         // Copy support
-        Task<StoreItemResult> CopyToAsync(IStoreCollection destination, string name, bool overwrite, IPrincipal principal);
+        Task<StoreItemResult> CopyAsync(IStoreCollection destination, string name, bool overwrite, IPrincipal principal);
 
         // Property support
         IPropertyManager PropertyManager { get; }
@@ -49,11 +61,19 @@ namespace NWebDav.Server
 
     public interface IStoreCollection : IStoreItem
     {
+        // Get specific item (or all items)
+        Task<IStoreItem> GetItemAsync(string name, IPrincipal principal);
         Task<IList<IStoreItem>> GetItemsAsync(IPrincipal principal);
+
+        // Create items and collections and add to the collection
         Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, IPrincipal principal);
-        Task<StoreItemResult> CreateCollectionAsync(string name, bool overwrite, IPrincipal principal);
+        Task<StoreCollectionResult> CreateCollectionAsync(string name, bool overwrite, IPrincipal principal);
+
+        // Move items between collections
+        Task<StoreItemResult> MoveItemAsync(string sourceName, IStoreCollection destination, string destinationName, bool overwrite, IPrincipal principal);
+
+        // Delete items from collection
         Task<DavStatusCode> DeleteItemAsync(string name, IPrincipal principal);
-        Task<DavStatusCode> DeleteCollectionAsync(IPrincipal principal);
 
         bool AllowInfiniteDepthProperties { get; }
     }

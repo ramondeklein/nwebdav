@@ -1,118 +1,129 @@
-﻿//using System;
-//using System.Net;
-//using System.Security.Principal;
-//using System.Threading.Tasks;
-//using System.Xml.Linq;
-//using NWebDav.Server.Helpers;
+﻿using System;
+using System.Net;
+using System.Security.Principal;
+using System.Threading.Tasks;
+using System.Xml.Linq;
+using NWebDav.Server.Helpers;
 
-//namespace NWebDav.Server.Handlers
-//{
-//    [Verb("MOVE")]
-//    public class MoveHandler : IRequestHandler
-//    {
-//        public async Task<bool> HandleRequestAsync(HttpListenerContext httpListenerContext, IStoreResolver storeResolver)
-//        {
-//            // Obtain request and response
-//            var request = httpListenerContext.Request;
-//            var response = httpListenerContext.Response;
-//            var principal = httpListenerContext.User;
+namespace NWebDav.Server.Handlers
+{
+    [Verb("MOVE")]
+    public class MoveHandler : IRequestHandler
+    {
+        public async Task<bool> HandleRequestAsync(HttpListenerContext httpListenerContext, IStoreResolver storeResolver)
+        {
+            // Obtain request and response
+            var request = httpListenerContext.Request;
+            var response = httpListenerContext.Response;
+            var principal = httpListenerContext.User;
 
-//            // Obtain the destination
-//            var destinationUri = request.GetDestinationUri();
-//            if (destinationUri == null)
-//            {
-//                // Bad request
-//                response.SendResponse(DavStatusCode.BadRequest, "Destination header is missing.");
-//                return true;
-//            }
+            // We should always move the item from a parent container
+            var splitSourceUri = RequestHelper.SplitUri(request.Url);
 
-//            // Make sure the source and destination are different
-//            if (request.Url.AbsoluteUri.Equals(destinationUri.AbsoluteUri, StringComparison.InvariantCultureIgnoreCase))
-//            {
-//                // Forbidden
-//                response.SendResponse(DavStatusCode.Forbidden, "Source and destination cannot be the same.");
-//                return true;
-//            }
+            // Obtain source collection
+            var sourceCollection = await storeResolver.GetCollectionAsync(splitSourceUri.CollectionUri, principal).ConfigureAwait(false);
+            if (sourceCollection == null)
+            {
+                // Source not found
+                response.SendResponse(DavStatusCode.NotFound);
+                return true;
+            }
 
-//            // Check if the Overwrite header is set
-//            var overwrite = request.GetOverwrite();
+            // Obtain the destination
+            var destinationUri = request.GetDestinationUri();
+            if (destinationUri == null)
+            {
+                // Bad request
+                response.SendResponse(DavStatusCode.BadRequest, "Destination header is missing.");
+                return true;
+            }
 
-//            // Split the destination Uri
-//            var destination = RequestHelper.SplitUri(destinationUri);
+            // Make sure the source and destination are different
+            if (request.Url.AbsoluteUri.Equals(destinationUri.AbsoluteUri, StringComparison.InvariantCultureIgnoreCase))
+            {
+                // Forbidden
+                response.SendResponse(DavStatusCode.Forbidden, "Source and destination cannot be the same.");
+                return true;
+            }
 
-//            // Obtain the destination collection
-//            var destinationCollection = await storeResolver.GetCollectionAsync(destination.CollectionUri, principal).ConfigureAwait(false);
-//            if (destinationCollection == null)
-//            {
-//                // Source not found
-//                response.SendResponse(DavStatusCode.Conflict, "Destination cannot be found.");
-//                return true;
-//            }
+            // We should always move the item to a parent
+            var splitDestinationUri = RequestHelper.SplitUri(destinationUri);
 
-//            // Keep track of all errors
-//            var errors = new UriResultCollection();
+            // Obtain destination collection
+            var destinationCollection = await storeResolver.GetCollectionAsync(splitDestinationUri.CollectionUri, principal).ConfigureAwait(false);
+            if (destinationCollection == null)
+            {
+                // Source not found
+                response.SendResponse(DavStatusCode.NotFound);
+                return true;
+            }
 
-//            // Obtain the entry as a collection
-//            var collection = await storeResolver.GetCollectionAsync(request.Url, principal).ConfigureAwait(false);
-//            if (collection == null)
-//            {
-//                // Fetch the item
-//                var item = await storeResolver.GetItemAsync(request.Url, principal).ConfigureAwait(false);
-//                if (item == null)
-//                {
-//                    // Source not found
-//                    response.SendResponse(DavStatusCode.NotFound, "Source cannot be found.");
-//                    return true;
-//                }
+            // Check if the Overwrite header is set
+            var overwrite = request.GetOverwrite();
 
-//                // Move item
-//                await MoveItemAsync(item, destinationCollection, destination.Name, overwrite, principal, request.Url, errors).ConfigureAwait(false);
-//            }
-//            else
-//            {
-//                // Move collection
-//                await MoveCollectionAsync(collection, destinationCollection, destination.Name, overwrite, principal, request.Url, errors).ConfigureAwait(false);
-//            }
+            // Keep track of all errors
+            var errors = new UriResultCollection();
 
-//            // Check if there are any errors
-//            if (errors.HasItems)
-//            {
-//                // Obtain the status document
-//                var xDocument = new XDocument(errors.GetXmlMultiStatus());
+            // Move collection
+            await MoveAsync(sourceCollection, splitSourceUri.Name, destinationCollection, splitDestinationUri.Name, overwrite, principal, splitDestinationUri.CollectionUri, errors).ConfigureAwait(false);
 
-//                // Stream the document
-//                await response.SendResponseAsync(DavStatusCode.MultiStatus, xDocument).ConfigureAwait(false);
-//            }
-//            else
-//            {
-//                // Set the response
-//                response.SendResponse(DavStatusCode.OK);
-//            }
+            // Check if there are any errors
+            if (errors.HasItems)
+            {
+                // Obtain the status document
+                var xDocument = new XDocument(errors.GetXmlMultiStatus());
 
-//            return true;
-//        }
+                // Stream the document
+                await response.SendResponseAsync(DavStatusCode.MultiStatus, xDocument).ConfigureAwait(false);
+            }
+            else
+            {
+                // Set the response
+                response.SendResponse(DavStatusCode.OK);
+            }
 
-//        private async Task MoveItemAsync(IStoreItem sourceItem, IStoreCollection destinationCollection, string name, bool overwrite, IPrincipal principal, Uri baseUri, UriResultCollection errors)
-//        {
-//            //// Copy the item
-//            //var storeResult = await sourceItem.MoveToAsync(destinationCollection, name, overwrite, principal).ConfigureAwait(false);
+            return true;
+        }
 
-//            //// Make sure the item can be copied
-//            //if (storeResult != DavStatusCode.Created && storeResult != DavStatusCode.NoContent)
-//            //    errors.AddResult(new Uri(baseUri, name), storeResult);
-//        }
+        private async Task MoveAsync(IStoreCollection sourceCollection, string sourceName, IStoreCollection destinationCollection, string destinationName, bool overwrite, IPrincipal principal, Uri baseUri, UriResultCollection errors)
+        {
+            // Determine the new base URI
+            var subBaseUri = new Uri(baseUri, destinationName);
 
-//        private async Task MoveCollectionAsync(IStoreCollection sourceCollection, IStoreCollection destinationCollection, string name, bool overwrite, IPrincipal principal, Uri baseUri, UriResultCollection errors)
-//        {
-//            //// Determine the new base Uri
-//            //var newBaseUri = new Uri(baseUri, name);
+            // Obtain the actual item
+            var moveCollection = await sourceCollection.GetItemAsync(sourceName, principal).ConfigureAwait(false) as IStoreCollection;
+            if (moveCollection != null)
+            {
+                // Create a new collection
+                var newCollectionResult = await destinationCollection.CreateCollectionAsync(destinationName, overwrite, principal);
+                if (newCollectionResult.Result != DavStatusCode.Created && newCollectionResult.Result != DavStatusCode.NoContent)
+                {
+                    errors.AddResult(subBaseUri, newCollectionResult.Result);
+                    return;
+                }
 
-//            //// Copy the collection itself
-//            //var newCollectionResult = await sourceCollection.MoveToAsync(destinationCollection, name, overwrite, principal).ConfigureAwait(false);
-//            //if (newCollectionResult.Result != DavStatusCode.Created && newCollectionResult.Result != DavStatusCode.NoContent)
-//            //{
-//            //    errors.AddResult(newBaseUri, newCollectionResult.Result);
-//            //}
-//        }
-//    }
-//}
+                // Move all subitems
+                foreach (var entry in await moveCollection.GetItemsAsync(principal).ConfigureAwait(false))
+                    await MoveAsync(moveCollection, entry.Name, newCollectionResult.Collection, entry.Name, overwrite, principal, subBaseUri, errors);
+
+                // Delete the source collection
+                var deleteResult = await sourceCollection.DeleteItemAsync(sourceName, principal);
+                if (deleteResult != DavStatusCode.OK)
+                {
+                    errors.AddResult(subBaseUri, newCollectionResult.Result);
+                    return;
+                }
+            }
+            else
+            {
+                // Items should be moved directly
+                var result = await sourceCollection.MoveItemAsync(sourceName, destinationCollection, destinationName, overwrite, principal);
+                if (result.Result != DavStatusCode.Created && result.Result != DavStatusCode.NoContent)
+                {
+                    errors.AddResult(subBaseUri, result.Result);
+                    return;
+                }
+            }
+        }
+    }
+}

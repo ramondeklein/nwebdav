@@ -50,8 +50,8 @@ namespace NWebDav.Server.Handlers
             }
 
             // Obtain the source item
-            var entry = await storeResolver.GetItemAsync(request.Url, principal).ConfigureAwait(false);
-            if (entry == null)
+            var sourceItem = await storeResolver.GetItemAsync(request.Url, principal).ConfigureAwait(false);
+            if (sourceItem == null)
             {
                 // Source not found
                 response.SendResponse(DavStatusCode.NotFound, "Source cannot be found.");
@@ -65,7 +65,7 @@ namespace NWebDav.Server.Handlers
             var errors = new UriResultCollection();
 
             // Copy collection
-            await CopyAsync(entry, destinationCollection, destination.Name, overwrite, depth, principal, destination.CollectionUri, errors).ConfigureAwait(false);
+            await CopyAsync(sourceItem, destinationCollection, destination.Name, overwrite, depth, principal, destination.CollectionUri, errors).ConfigureAwait(false);
 
             // Check if there are any errors
             if (errors.HasItems)
@@ -90,11 +90,11 @@ namespace NWebDav.Server.Handlers
             // Determine the new base Uri
             var newBaseUri = new Uri(baseUri, name);
 
-            // Copy the collection itself
-            var newCollectionResult = await source.CopyToAsync(destinationCollection, name, overwrite, principal).ConfigureAwait(false);
-            if (newCollectionResult.Result != DavStatusCode.Created && newCollectionResult.Result != DavStatusCode.NoContent)
+            // Copy the item
+            var copyResult = await source.CopyAsync(destinationCollection, name, overwrite, principal).ConfigureAwait(false);
+            if (copyResult.Result != DavStatusCode.Created && copyResult.Result != DavStatusCode.NoContent)
             {
-                errors.AddResult(newBaseUri, newCollectionResult.Result);
+                errors.AddResult(newBaseUri, copyResult.Result);
                 return;
             }
 
@@ -103,7 +103,7 @@ namespace NWebDav.Server.Handlers
             if (sourceCollection != null && depth > 0)
             {
                 // The result should also contain a collection
-                var newCollection = (IStoreCollection)newCollectionResult.Item;
+                var newCollection = (IStoreCollection)copyResult.Item;
 
                 // Copy all childs of the source collection
                 foreach (var entry in await sourceCollection.GetItemsAsync(principal).ConfigureAwait(false))

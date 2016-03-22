@@ -16,7 +16,6 @@ __Requirements__
 This module is currently work-in-progress and shouldn't be used for production use yet. If you want to help, then let me know...
 The following features are currently missing:
 
-* Moving files (coming soon)
 * Patching properties (coming soon)
 * Need some work returning the proper error codes (coming soon)
 * Locking. I am still thinking about a flexible and scalable solution. I think I will use an in-memory locking database for single

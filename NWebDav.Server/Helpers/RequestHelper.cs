@@ -26,7 +26,7 @@ namespace NWebDav.Server.Helpers
             return new SplitUri
             {
                 CollectionUri = new Uri(uri.Substring(0, slashOffset)),
-                Name = uri.Substring(slashOffset + 1)
+                Name = Uri.UnescapeDataString(uri.Substring(slashOffset + 1))
             };
         }
 

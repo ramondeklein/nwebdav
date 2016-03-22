@@ -20,30 +20,20 @@ namespace NWebDav.Server.Handlers
             // Keep track of all errors
             var errors = new UriResultCollection();
 
-            // Obtain the entry as a collection
-            var collection = await storeResolver.GetCollectionAsync(request.Url, principal).ConfigureAwait(false);
-            if (collection == null)
-            {
-                // It's not a collection, so we'll try again by fetching the item in the parent collection
-                var splitUri = RequestHelper.SplitUri(request.Url);
+            // We should always remove the item from a parent container
+            var splitUri = RequestHelper.SplitUri(request.Url);
 
-                // Obtain collection
-                collection = await storeResolver.GetCollectionAsync(splitUri.CollectionUri, principal).ConfigureAwait(false);
-                if (collection == null)
-                {
-                    // Source not found
-                    response.SendResponse(DavStatusCode.NotFound);
-                    return true;
-                }
-
-                // Delete item
-                await DeleteItemAsync(collection, splitUri.Name, principal, splitUri.CollectionUri, errors).ConfigureAwait(false);
-            }
-            else
+            // Obtain parent collection
+            var parentCollection = await storeResolver.GetCollectionAsync(splitUri.CollectionUri, principal).ConfigureAwait(false);
+            if (parentCollection == null)
             {
-                // Delete collection
-                await DeleteCollectionAsync(collection, principal, request.Url, errors).ConfigureAwait(false);
+                // Source not found
+                response.SendResponse(DavStatusCode.NotFound);
+                return true;
             }
+
+            // Delete item
+            await DeleteItemAsync(parentCollection, splitUri.Name, principal, splitUri.CollectionUri, errors).ConfigureAwait(false);
 
             // Check if there are any errors
             if (errors.HasItems)
@@ -64,34 +54,22 @@ namespace NWebDav.Server.Handlers
 
         private async Task DeleteItemAsync(IStoreCollection collection, string name, IPrincipal principal, Uri baseUri, UriResultCollection errors)
         {
+            // Obtain the actual item
+            var deleteCollection = await collection.GetItemAsync(name, principal).ConfigureAwait(false) as IStoreCollection;
+            if (deleteCollection != null)
+            {
+                // Determine the new base URI
+                var subBaseUri = new Uri(baseUri, name);
+
+                // Delete all entries first
+                foreach (var entry in await deleteCollection.GetItemsAsync(principal).ConfigureAwait(false))
+                    await DeleteItemAsync(deleteCollection, entry.Name, principal, subBaseUri, errors);
+            }
+
             // Attempt to delete the item
             var storeResult = await collection.DeleteItemAsync(name, principal).ConfigureAwait(false);
             if (storeResult != DavStatusCode.OK)
                 errors.AddResult(new Uri(baseUri, name), storeResult);
-        }
-
-        private async Task DeleteCollectionAsync(IStoreCollection collection, IPrincipal principal, Uri baseUri, UriResultCollection errors)
-        {
-            // Delete all entries first
-            foreach (var entry in await collection.GetItemsAsync(principal).ConfigureAwait(false))
-            {
-                var subCollection = entry as IStoreCollection;
-                if (subCollection != null)
-                {
-                    // Delete sub-collection
-                    await DeleteCollectionAsync(subCollection, principal, new Uri(baseUri, entry.Name), errors).ConfigureAwait(false);
-                }
-                else
-                {
-                    var item = (IStoreItem)entry;
-                    await DeleteItemAsync(collection, item.Name, principal, baseUri, errors).ConfigureAwait(false);
-                }
-            }
-
-            // Delete the collection itself
-            var storeResult = await collection.DeleteCollectionAsync(principal).ConfigureAwait(false);
-            if (storeResult != DavStatusCode.OK)
-                errors.AddResult(baseUri, storeResult);
         }
     }
 }
