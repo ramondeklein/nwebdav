@@ -56,6 +56,7 @@
     <Compile Include="Handlers\MoveHandler.cs" />
     <Compile Include="Handlers\OptionsHandler.cs" />
     <Compile Include="Handlers\PropFindHandler.cs" />
+    <Compile Include="Handlers\PropPatchHandler.cs" />
     <Compile Include="Handlers\PutHandler.cs" />
     <Compile Include="Handlers\UriResultCollection.cs" />
     <Compile Include="Helpers\IOExceptionHelper.cs" />

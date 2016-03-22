@@ -21,7 +21,7 @@ namespace NWebDav.Server.Props
 
         public IEnumerable<PropertyInfo> Properties => _properties.Select(p => new PropertyInfo(p.Value.Name, p.Value.IsExpensive));
 
-        public object GetProperty(IStoreItem entry, XName name, bool skipExpensive = false)
+        public object GetProperty(IStoreItem item, XName name, bool skipExpensive = false)
         {
             // Find the property
             DavProperty<TEntry> property;
@@ -37,32 +37,30 @@ namespace NWebDav.Server.Props
                 return null;
 
             // Obtain the value
-            var value = property.Getter((TEntry)entry);
+            var value = property.Getter((TEntry)item);
 
             // Validate the value
             property.Validator.Validate(value);
             return value;
         }
 
-        public bool SetProperty(IStoreItem entry, XName name, object value)
+        public DavStatusCode SetProperty(IStoreItem item, XName name, object value)
         {
             // Find the property
             DavProperty<TEntry> property;
             if (!_properties.TryGetValue(name, out property))
-                return false;
+                return DavStatusCode.NotFound;
 
             // Check if the property has a setter
             if (property.Setter == null)
-                return false;
+                return DavStatusCode.Conflict;
 
-            // Validate the value
-            if (!property.Validator.Validate(value))
-                return false;
+            // Validate the value (if not null)
+            if (value != null && !property.Validator.Validate(value))
+                return DavStatusCode.Conflict;
 
             // Set the value
-            if (!property.Setter((TEntry)entry, value))
-                return false;
-            return true;
+            return property.Setter((TEntry)item, value);
         }
 
         public T GetTypedProperty<T>(IStoreItem entry, XName name)

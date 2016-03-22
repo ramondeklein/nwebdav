@@ -7,17 +7,17 @@ namespace NWebDav.Server.Props
 {
     public class Win32CreationTime<TEntry> : DavRfc1123Date<TEntry> where TEntry : IStoreItem
     {
-        public override XName Name => WebDavNamespaces.DavNs + "Win32CreationTime";
+        public override XName Name => WebDavNamespaces.Win32Ns + "Win32CreationTime";
     }
 
     public class Win32LastAccessTime<TEntry> : DavRfc1123Date<TEntry> where TEntry : IStoreItem
     {
-        public override XName Name => WebDavNamespaces.DavNs + "Win32LastAccessTime";
+        public override XName Name => WebDavNamespaces.Win32Ns + "Win32LastAccessTime";
     }
 
     public class Win32LastModifiedTime<TEntry> : DavRfc1123Date<TEntry> where TEntry : IStoreItem
     {
-        public override XName Name => WebDavNamespaces.DavNs + "Win32LastModifiedTime";
+        public override XName Name => WebDavNamespaces.Win32Ns + "Win32LastModifiedTime";
     }
 
     public class Win32FileAttributes<TEntry> : DavTypedProperty<TEntry, FileAttributes> where TEntry : IStoreItem
@@ -45,7 +45,7 @@ namespace NWebDav.Server.Props
         private static IValidator TypeValidator { get; } = new FileAttributesValidator();
         private static IConverter<FileAttributes> TypeConverter { get; } = new FileAttributesConverter();
 
-        public override XName Name => WebDavNamespaces.DavNs + "Win32FileAttributes";
+        public override XName Name => WebDavNamespaces.Win32Ns + "Win32FileAttributes";
         public override IValidator Validator => TypeValidator;
         public override IConverter<FileAttributes> Converter => TypeConverter;
     }

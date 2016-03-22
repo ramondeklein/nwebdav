@@ -7,7 +7,7 @@ namespace NWebDav.Server.Props
     public abstract class DavTypedProperty<TEntry, TType> : DavProperty<TEntry> where TEntry : IStoreItem
     {
         private Func<TEntry, TType> _getter;
-        private Func<TEntry, TType, bool> _setter;
+        private Func<TEntry, TType, DavStatusCode> _setter;
 
         public new Func<TEntry, TType> Getter
         {
@@ -23,7 +23,7 @@ namespace NWebDav.Server.Props
             }
         }
 
-        public new Func<TEntry, TType, bool> Setter
+        public new Func<TEntry, TType, DavStatusCode> Setter
         {
             get { return _setter; }
             set

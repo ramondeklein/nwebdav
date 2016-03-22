@@ -10,7 +10,7 @@ namespace NWebDav.Server.Handlers
     [Verb("OPTIONS")]
     public class OptionsHandler : IRequestHandler
     {
-        private static readonly string[] Verbs = { "COPY", "DELETE", "GET", "HEAD", "MKCOL", "MOVE", "OPTIONS", "PROPFIND", "PUT" };
+        private static readonly string[] Verbs = { "COPY", "DELETE", "GET", "HEAD", "MKCOL", "MOVE", "OPTIONS", "PROPFIND", "PROPPATCH", "PUT" };
 
         public Task<bool> HandleRequestAsync(HttpListenerContext httpListenerContext, IStoreResolver storeResolver)
         {

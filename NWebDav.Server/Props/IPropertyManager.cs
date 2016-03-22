@@ -7,7 +7,7 @@ namespace NWebDav.Server.Props
     public interface IPropertyManager
     {
         IEnumerable<PropertyInfo> Properties { get; }
-        object GetProperty(IStoreItem entry, XName name, bool skipExpensive = false);
-        bool SetProperty(IStoreItem entry, XName name, object value);
+        object GetProperty(IStoreItem item, XName name, bool skipExpensive = false);
+        DavStatusCode SetProperty(IStoreItem item, XName name, object value);
     }
 }
