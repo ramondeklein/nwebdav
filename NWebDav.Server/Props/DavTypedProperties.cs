@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Xml.Linq;
+using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Props
 {
@@ -165,6 +167,31 @@ namespace NWebDav.Server.Props
 
         public override IValidator Validator => TypeValidator;
         public override IConverter<Int64> Converter => TypeConverter;
+    }
+
+    public abstract class DavXElementArray<TEntry> : DavTypedProperty<TEntry, IEnumerable<XElement>> where TEntry : IStoreItem
+    {
+        private class XElementArrayValidator : IValidator
+        {
+            public bool Validate(object value)
+            {
+                return value == null || value is IEnumerable<XElement>;
+
+                // TODO: Extend this with (optional) schema validation
+            }
+        }
+
+        private class XElementArrayConverter : IConverter<IEnumerable<XElement>>
+        {
+            public object ToXml(IEnumerable<XElement> value) => value;
+            public IEnumerable<XElement> FromXml(object value) => (IEnumerable<XElement>)value;
+        }
+
+        private static IValidator TypeValidator { get; } = new XElementArrayValidator();
+        private static IConverter<IEnumerable<XElement>> TypeConverter { get; } = new XElementArrayConverter();
+
+        public override IValidator Validator => TypeValidator;
+        public override IConverter<IEnumerable<XElement>> Converter => TypeConverter;
     }
 
     public abstract class DavXElement<TEntry> : DavTypedProperty<TEntry, XElement> where TEntry : IStoreItem

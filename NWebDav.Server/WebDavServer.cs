@@ -7,6 +7,7 @@ using System.Reflection;
 using log4net;
 using NWebDav.Server.Handlers;
 using NWebDav.Server.Helpers;
+using NWebDav.Server.Stores;
 
 namespace NWebDav.Server
 {
@@ -16,7 +17,7 @@ namespace NWebDav.Server
         private static string ServerName;
 
         private readonly HttpListener _httpListener;
-        private readonly IStoreResolver _storeResolver;
+        private readonly IStore _store;
         private readonly IRequestHandlerFactory _requestHandlerFactory;
         private bool _isDisposed;
 
@@ -26,11 +27,11 @@ namespace NWebDav.Server
             ServerName = $"NWebDav/{assemblyVersion}";
         }
 
-        public WebDavServer(IStoreResolver storeResolver, HttpListener httpListener, IRequestHandlerFactory requestHandlerFactory = null)
+        public WebDavServer(IStore store, HttpListener httpListener, IRequestHandlerFactory requestHandlerFactory = null)
         {
             // Make sure a store resolver is specified
-            if (storeResolver == null)
-                throw new ArgumentNullException(nameof(storeResolver));
+            if (store == null)
+                throw new ArgumentNullException(nameof(store));
 
             // Make sure a HTTP listener is specified
             if (httpListener == null)
@@ -54,15 +55,15 @@ namespace NWebDav.Server
             }
 
             // Save store resolver and request handler factory
-            _storeResolver = storeResolver;
+            _store = store;
             _requestHandlerFactory = requestHandlerFactory;
 
             // Save the HTTP listener
             _httpListener = httpListener;
         }
 
-        public WebDavServer(IStoreResolver storeResolver, AuthenticationSchemes authenticationSchemes = AuthenticationSchemes.Anonymous, IRequestHandlerFactory requestHandlerFactory = null)
-            : this(storeResolver, CreateHttpListener(authenticationSchemes), requestHandlerFactory)
+        public WebDavServer(IStore store, AuthenticationSchemes authenticationSchemes = AuthenticationSchemes.Anonymous, IRequestHandlerFactory requestHandlerFactory = null)
+            : this(store, CreateHttpListener(authenticationSchemes), requestHandlerFactory)
         {
         }
 
@@ -183,7 +184,7 @@ namespace NWebDav.Server
             try
             {
                 // Handle the request
-                if (await requestHandler.HandleRequestAsync(httpListenerContext, _storeResolver).ConfigureAwait(false))
+                if (await requestHandler.HandleRequestAsync(httpListenerContext, _store).ConfigureAwait(false))
                 {
                     // Always make sure that the response is sent
                     httpListenerContext.Response.Close();

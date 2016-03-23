@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Xml.Linq;
+using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Props
 {

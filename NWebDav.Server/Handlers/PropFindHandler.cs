@@ -9,6 +9,7 @@ using System.Xml.Linq;
 using NWebDav.Server.Handlers;
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Props;
+using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Handlers
 {
@@ -36,7 +37,7 @@ namespace NWebDav.Server.Handlers
             SelectedProperties = 4
         }
 
-        public async Task<bool> HandleRequestAsync(HttpListenerContext httpListenerContext, IStoreResolver storeResolver)
+        public async Task<bool> HandleRequestAsync(HttpListenerContext httpListenerContext, IStore store)
         {
             // Obtain request and response
             var request = httpListenerContext.Request;
@@ -51,7 +52,7 @@ namespace NWebDav.Server.Handlers
             var entries = new List<PropertyEntry>();
 
             // Obtain entry
-            var topEntry = await storeResolver.GetItemAsync(request.Url, principal).ConfigureAwait(false);
+            var topEntry = await store.GetItemAsync(request.Url, principal).ConfigureAwait(false);
             if (topEntry == null)
             {
                 response.SendResponse(DavStatusCode.NotFound);
@@ -154,7 +155,18 @@ namespace NWebDav.Server.Handlers
                 {
                     addedProperties.Add(propertyName);
                     var value = propertyManager.GetProperty(item, propertyName);
-                    xPropStatValues.Add(new XElement(propertyName, value));
+                    if (value is XElement)
+                    {
+                        xPropStatValues.Add(new XElement(propertyName, (XElement)value));
+                    }
+                    else if (value is IEnumerable<XElement>)
+                    {
+                        xPropStatValues.Add(new XElement(propertyName, ((IEnumerable<XElement>)value).Cast<object>().ToArray()));
+                    }
+                    else
+                    {
+                        xPropStatValues.Add(new XElement(propertyName, value));
+                    }
                 }
                 catch (Exception)
                 {

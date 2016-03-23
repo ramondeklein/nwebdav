@@ -22,7 +22,7 @@ namespace NWebDav.Server.Handlers
             public XElement GetXmlResponse()
             {
                 var href = Uri.AbsoluteUri;
-                var statusText = $"HTTP/1.1 {(int)Result} {ResponseHelper.GetStatusDescription(Result)}";
+                var statusText = $"HTTP/1.1 {(int)Result} {EnumHelper.GetEnumValue(Result)}";
                 return new XElement(WebDavNamespaces.DavNs + "response",
                     new XElement(WebDavNamespaces.DavNs + "href", href),
                     new XElement(WebDavNamespaces.DavNs + "status", statusText));

@@ -52,6 +52,7 @@
     <Compile Include="Handlers\CopyHandler.cs" />
     <Compile Include="Handlers\DeleteHandler.cs" />
     <Compile Include="Handlers\GetAndHeadHandler.cs" />
+    <Compile Include="Handlers\LockHandler.cs" />
     <Compile Include="Handlers\MkcolHandler.cs" />
     <Compile Include="Handlers\MoveHandler.cs" />
     <Compile Include="Handlers\OptionsHandler.cs" />
@@ -59,12 +60,17 @@
     <Compile Include="Handlers\PropPatchHandler.cs" />
     <Compile Include="Handlers\PutHandler.cs" />
     <Compile Include="Handlers\UriResultCollection.cs" />
+    <Compile Include="Helpers\EnumHelper.cs" />
     <Compile Include="Helpers\IOExceptionHelper.cs" />
     <Compile Include="Helpers\RequestHelper.cs" />
     <Compile Include="Helpers\ResponseHelpers.cs" />
     <Compile Include="IRequestHandlerFactory.cs" />
     <Compile Include="IRequestHandler.cs" />
-    <Compile Include="IStoreResolver.cs" />
+    <Compile Include="Locking\InMemoryLockingManager.cs" />
+    <Compile Include="Stores\IStore.cs" />
+    <Compile Include="Locking\ILockingManager.cs" />
+    <Compile Include="Locking\LockScope.cs" />
+    <Compile Include="Locking\LockType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Handlers\RequestHandlerFactory.cs" />
     <Compile Include="Props\IPropertyManager.cs" />

@@ -10,19 +10,14 @@ using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using NWebDav.Server.Helpers;
+using NWebDav.Server.Locking;
 using NWebDav.Server.Props;
 
 namespace NWebDav.Server.Stores
 {
-    public class DiskStore : IStoreResolver
+    public class DiskStore : IStore
     {
-        private readonly string _directory;
-
-        public DiskStore(string directory)
-        {
-            _directory = directory;
-        }
-
+        [DebuggerDisplay("{_fileInfo.FullPath}")]
         private class StoreItem : IStoreItem
         {
             private static readonly PropertyManager<StoreItem> ItemPropertyManager = new PropertyManager<StoreItem>(new DavProperty<StoreItem>[]
@@ -49,7 +44,7 @@ namespace NWebDav.Server.Stores
                 {
                     // Calculating the Etag is an expensive operation,
                     // because we need to scan the entire file.
-                    IsExpensive = true,             
+                    IsExpensive = true,
                     Getter = item => item.CalculateEtag()
                 },
                 new DavGetLastModified<StoreItem>
@@ -59,8 +54,12 @@ namespace NWebDav.Server.Stores
                 },
                 new DavGetResourceType<StoreItem>
                 {
-                    Getter= item => null
+                    Getter = item => null
                 },
+
+                // Default locking property handling via the LockingManager
+                new DavLockDiscoveryDefault<StoreItem>(),
+                new DavSupportedLockDefault<StoreItem>(),
 
                 // Hopmann/Lippert collection properties
                 // (although not a collection, the IsHidden property might be valuable)
@@ -92,10 +91,12 @@ namespace NWebDav.Server.Stores
                 }
             });
 
+            private readonly DiskStore _diskStore;
             private readonly FileInfo _fileInfo;
 
-            public StoreItem(FileInfo fileInfo)
+            public StoreItem(DiskStore diskStore, FileInfo fileInfo)
             {
+                _diskStore = diskStore;
                 _fileInfo = fileInfo;
             }
 
@@ -103,6 +104,7 @@ namespace NWebDav.Server.Stores
             public Stream GetReadableStream(IPrincipal principal) => _fileInfo.OpenRead();
             public Stream GetWritableStream(IPrincipal principal) => _fileInfo.OpenWrite();
             public IPropertyManager PropertyManager => ItemPropertyManager;
+            public ILockingManager LockingManager => _diskStore.LockingManager;
 
             public async Task<StoreItemResult> CopyAsync(IStoreCollection destination, string name, bool overwrite, IPrincipal principal)
             {
@@ -173,6 +175,7 @@ namespace NWebDav.Server.Stores
             }
         }
 
+        [DebuggerDisplay("{_directoryInfo.FullPath}\\")]
         private class StoreCollection : IStoreCollection
         {
             private static readonly PropertyManager<StoreCollection> CollectionPropertyManager = new PropertyManager<StoreCollection>(new DavProperty<StoreCollection>[]
@@ -196,6 +199,10 @@ namespace NWebDav.Server.Stores
                 {
                     Getter = collection => new XElement(WebDavNamespaces.DavNs + "collection")
                 },
+
+                // Default locking property handling via the LockingManager
+                new DavLockDiscoveryDefault<StoreCollection>(),
+                new DavSupportedLockDefault<StoreCollection>(),
 
                 // Hopmann/Lippert collection properties
                 new DavChildCount<StoreCollection>
@@ -254,10 +261,12 @@ namespace NWebDav.Server.Stores
                 }
             });
 
+            private readonly DiskStore _diskStore;
             private readonly DirectoryInfo _directoryInfo;
 
-            public StoreCollection(DirectoryInfo directoryInfo)
+            public StoreCollection(DiskStore diskStore, DirectoryInfo directoryInfo)
             {
+                _diskStore = diskStore;
                 _directoryInfo = directoryInfo;
             }
 
@@ -269,6 +278,7 @@ namespace NWebDav.Server.Stores
             public Stream GetWritableStream(IPrincipal principal) => null;
 
             public IPropertyManager PropertyManager => CollectionPropertyManager;
+            public ILockingManager LockingManager => _diskStore.LockingManager;
 
             public Task<IStoreItem> GetItemAsync(string name, IPrincipal principal)
             {
@@ -277,11 +287,11 @@ namespace NWebDav.Server.Stores
 
                 // Check if the item is a file
                 if (File.Exists(fullPath))
-                    return Task.FromResult<IStoreItem>(new StoreItem(new FileInfo(fullPath)));
+                    return Task.FromResult<IStoreItem>(new StoreItem(_diskStore, new FileInfo(fullPath)));
 
                 // Check if the item is a directory
                 if (Directory.Exists(fullPath))
-                    return Task.FromResult<IStoreItem>(new StoreCollection(new DirectoryInfo(fullPath)));
+                    return Task.FromResult<IStoreItem>(new StoreCollection(_diskStore, new DirectoryInfo(fullPath)));
 
                 // Item not found
                 return Task.FromResult<IStoreItem>(null);
@@ -293,11 +303,11 @@ namespace NWebDav.Server.Stores
 
                 // Add all directories
                 foreach (var subDirectory in _directoryInfo.GetDirectories())
-                    items.Add(new StoreCollection(subDirectory));
+                    items.Add(new StoreCollection(_diskStore, subDirectory));
 
                 // Add all files
                 foreach (var file in _directoryInfo.GetFiles())
-                    items.Add(new StoreItem(file));
+                    items.Add(new StoreItem(_diskStore, file));
 
                 // Return the items
                 return Task.FromResult<IList<IStoreItem>>(items);
@@ -327,7 +337,7 @@ namespace NWebDav.Server.Stores
                 try
                 {
                     // Create a new file
-                    File.Create(destinationPath).Dispose();                    
+                    File.Create(destinationPath).Dispose();
                 }
                 catch (Exception exc)
                 {
@@ -336,7 +346,7 @@ namespace NWebDav.Server.Stores
                 }
 
                 // Return result
-                return Task.FromResult(new StoreItemResult(result, new StoreItem(new FileInfo(destinationPath))));
+                return Task.FromResult(new StoreItemResult(result, new StoreItem(_diskStore, new FileInfo(destinationPath))));
             }
 
             public Task<StoreCollectionResult> CreateCollectionAsync(string name, bool overwrite, IPrincipal principal)
@@ -373,7 +383,7 @@ namespace NWebDav.Server.Stores
                 }
 
                 // Return the collection
-                return Task.FromResult(new StoreCollectionResult(result, new StoreCollection(new DirectoryInfo(destinationPath))));
+                return Task.FromResult(new StoreCollectionResult(result, new StoreCollection(_diskStore, new DirectoryInfo(destinationPath))));
             }
 
             public async Task<StoreItemResult> CopyAsync(IStoreCollection destinationCollection, string name, bool overwrite, IPrincipal principal)
@@ -422,7 +432,7 @@ namespace NWebDav.Server.Stores
 
                         // Move the file
                         File.Move(sourcePath, destinationPath);
-                        return new StoreItemResult(result, new StoreItem(new FileInfo(destinationPath)));
+                        return new StoreItemResult(result, new StoreItem(_diskStore, new FileInfo(destinationPath)));
                     }
                     else
                     {
@@ -481,6 +491,15 @@ namespace NWebDav.Server.Stores
             public bool AllowInfiniteDepthProperties => false;
         }
 
+        public DiskStore(string directory, ILockingManager lockingManager = null)
+        {
+            BaseDirectory = directory;
+            LockingManager = lockingManager ?? new InMemoryLockingManager();
+        }
+
+        private string BaseDirectory { get; }
+        private ILockingManager LockingManager { get; }
+
         public Task<IStoreItem> GetItemAsync(Uri uri, IPrincipal principal)
         {
             // Determine the path from the uri
@@ -488,11 +507,11 @@ namespace NWebDav.Server.Stores
 
             // Check if it's a directory
             if (Directory.Exists(path))
-                return Task.FromResult<IStoreItem>(new StoreCollection(new DirectoryInfo(path)));
+                return Task.FromResult<IStoreItem>(new StoreCollection(this, new DirectoryInfo(path)));
 
             // Check if it's a file
             if (File.Exists(path))
-                return Task.FromResult<IStoreItem>(new StoreItem(new FileInfo(path)));
+                return Task.FromResult<IStoreItem>(new StoreItem(this, new FileInfo(path)));
 
             // The item doesn't exist
             return Task.FromResult<IStoreItem>(null);
@@ -506,7 +525,7 @@ namespace NWebDav.Server.Stores
                 return Task.FromResult<IStoreCollection>(null);
 
             // Return the item
-            return Task.FromResult<IStoreCollection>(new StoreCollection(new DirectoryInfo(path)));
+            return Task.FromResult<IStoreCollection>(new StoreCollection(this, new DirectoryInfo(path)));
         }
 
         private string GetPathFromUri(Uri uri)
@@ -515,11 +534,11 @@ namespace NWebDav.Server.Stores
             var requestedPath = uri.AbsolutePath.Substring(1).Replace('/', '\\');
 
             // Determine the full path
-            var fullPath = Path.GetFullPath(Path.Combine(_directory, requestedPath));
+            var fullPath = Path.GetFullPath(Path.Combine(BaseDirectory, requestedPath));
 
             // Make sure we're still inside the specified directory
-            if (fullPath != _directory && !fullPath.StartsWith(_directory + "\\"))
-                throw new SecurityException($"Uri '{uri}' is outside the '{_directory}' directory.");
+            if (fullPath != BaseDirectory && !fullPath.StartsWith(BaseDirectory + "\\"))
+                throw new SecurityException($"Uri '{uri}' is outside the '{BaseDirectory}' directory.");
 
             // Return the combined path
             return fullPath;

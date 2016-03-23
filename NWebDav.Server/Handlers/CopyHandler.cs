@@ -4,13 +4,14 @@ using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using NWebDav.Server.Helpers;
+using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Handlers
 {
     [Verb("COPY")]
     public class CopyHandler : IRequestHandler
     {
-        public async Task<bool> HandleRequestAsync(HttpListenerContext httpListenerContext, IStoreResolver storeResolver)
+        public async Task<bool> HandleRequestAsync(HttpListenerContext httpListenerContext, IStore store)
         {
             // Obtain request and response
             var request = httpListenerContext.Request;
@@ -41,7 +42,7 @@ namespace NWebDav.Server.Handlers
             var destination = RequestHelper.SplitUri(destinationUri);
 
             // Obtain the destination collection
-            var destinationCollection = await storeResolver.GetCollectionAsync(destination.CollectionUri, principal).ConfigureAwait(false);
+            var destinationCollection = await store.GetCollectionAsync(destination.CollectionUri, principal).ConfigureAwait(false);
             if (destinationCollection == null)
             {
                 // Source not found
@@ -50,7 +51,7 @@ namespace NWebDav.Server.Handlers
             }
 
             // Obtain the source item
-            var sourceItem = await storeResolver.GetItemAsync(request.Url, principal).ConfigureAwait(false);
+            var sourceItem = await store.GetItemAsync(request.Url, principal).ConfigureAwait(false);
             if (sourceItem == null)
             {
                 // Source not found

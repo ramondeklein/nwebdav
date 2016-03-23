@@ -5,13 +5,14 @@ using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using NWebDav.Server.Helpers;
+using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Handlers
 {
     [Verb("PUT")]
     public class PutHandler : IRequestHandler
     {
-        public async Task<bool> HandleRequestAsync(HttpListenerContext httpListenerContext, IStoreResolver storeResolver)
+        public async Task<bool> HandleRequestAsync(HttpListenerContext httpListenerContext, IStore store)
         {
             // Obtain request and response
             var request = httpListenerContext.Request;
@@ -22,7 +23,7 @@ namespace NWebDav.Server.Handlers
             var splitUri = RequestHelper.SplitUri(request.Url);
 
             // Obtain collection
-            var collection = await storeResolver.GetCollectionAsync(splitUri.CollectionUri, principal).ConfigureAwait(false);
+            var collection = await store.GetCollectionAsync(splitUri.CollectionUri, principal).ConfigureAwait(false);
             if (collection == null)
             {
                 // Source not found

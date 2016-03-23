@@ -20,7 +20,7 @@ namespace NWebDav.Server.Helpers
         public static void SendResponse(this HttpListenerResponse response, DavStatusCode statusCode, string statusDescription = null)
         {
             response.StatusCode = (int)statusCode;
-            response.StatusDescription = statusDescription ?? GetStatusDescription(statusCode);
+            response.StatusDescription = statusDescription ?? EnumHelper.GetEnumValue(statusCode, "Unknown");
             response.Close();
         }
 
@@ -28,7 +28,7 @@ namespace NWebDav.Server.Helpers
         {
             // Set the response
             response.StatusCode = (int)statusCode;
-            response.StatusDescription = GetStatusDescription(statusCode);
+            response.StatusDescription = EnumHelper.GetEnumValue(statusCode, "Unknown");
 
             // Obtain the result as an XML document
             using (var ms = new MemoryStream())
@@ -71,17 +71,6 @@ namespace NWebDav.Server.Helpers
                 ms.Seek(0, SeekOrigin.Begin);
                 await ms.CopyToAsync(response.OutputStream).ConfigureAwait(false);
             }
-        }
-
-        public static string GetStatusDescription(DavStatusCode davStatusCode)
-        {
-            // Obtain the member information
-            var memberInfo = typeof(DavStatusCode).GetMember(davStatusCode.ToString()).FirstOrDefault();
-            if (memberInfo == null)
-                return "Unknown";
-
-            var descriptionAttribute = memberInfo.GetCustomAttributes<DescriptionAttribute>().FirstOrDefault();
-            return descriptionAttribute?.Description;
         }
     }
 }

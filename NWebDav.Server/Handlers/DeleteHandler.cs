@@ -4,13 +4,14 @@ using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using NWebDav.Server.Helpers;
+using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Handlers
 {
     [Verb("DELETE")]
     public class DeleteHandler : IRequestHandler
     {
-        public async Task<bool> HandleRequestAsync(HttpListenerContext httpListenerContext, IStoreResolver storeResolver)
+        public async Task<bool> HandleRequestAsync(HttpListenerContext httpListenerContext, IStore store)
         {
             // Obtain request and response
             var request = httpListenerContext.Request;
@@ -24,7 +25,7 @@ namespace NWebDav.Server.Handlers
             var splitUri = RequestHelper.SplitUri(request.Url);
 
             // Obtain parent collection
-            var parentCollection = await storeResolver.GetCollectionAsync(splitUri.CollectionUri, principal).ConfigureAwait(false);
+            var parentCollection = await store.GetCollectionAsync(splitUri.CollectionUri, principal).ConfigureAwait(false);
             if (parentCollection == null)
             {
                 // Source not found

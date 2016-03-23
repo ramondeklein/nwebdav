@@ -5,17 +5,17 @@ using System.Threading.Tasks;
 
 namespace NWebDav.Server.Stores
 {
-    public class MultiStore : IStoreResolver
+    public class MultiStore : IStore
     {
-        private readonly IDictionary<string, IStoreResolver> _storeResolvers = new Dictionary<string, IStoreResolver>();
+        private readonly IDictionary<string, IStore> _storeResolvers = new Dictionary<string, IStore>();
 
-        public void AddStore(string prefix, IStoreResolver storeResolver)
+        public void AddStore(string prefix, IStore store)
         {
             // Convert the prefix to lower-case
             prefix = prefix.ToLowerInvariant();
 
             // Add the prefix to the store
-            _storeResolvers.Add(prefix, storeResolver);
+            _storeResolvers.Add(prefix, store);
         }
 
         public void RemoveStore(string prefix)
@@ -37,7 +37,7 @@ namespace NWebDav.Server.Stores
             return Resolve(uri, (storeResolver, subUri) => storeResolver.GetCollectionAsync(subUri, principal));
         }
 
-        private T Resolve<T>(Uri uri, Func<IStoreResolver, Uri, T> action)
+        private T Resolve<T>(Uri uri, Func<IStore, Uri, T> action)
         {
             // Determine the path
             var requestedPath = uri.AbsolutePath;
@@ -46,12 +46,12 @@ namespace NWebDav.Server.Stores
             var subUri = new Uri(uri, endOfPrefix >= 0 ? requestedPath.Substring(endOfPrefix+1) : string.Empty);
 
             // Try to find the store
-            IStoreResolver storeResolver;
-            if (!_storeResolvers.TryGetValue(prefix, out storeResolver))
+            IStore store;
+            if (!_storeResolvers.TryGetValue(prefix, out store))
                 return default(T);
 
             // Resolve via the action
-            return action(storeResolver, subUri);
+            return action(store, subUri);
         }
     }
 }

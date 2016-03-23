@@ -4,13 +4,14 @@ using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using NWebDav.Server.Helpers;
+using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Handlers
 {
     [Verb("MOVE")]
     public class MoveHandler : IRequestHandler
     {
-        public async Task<bool> HandleRequestAsync(HttpListenerContext httpListenerContext, IStoreResolver storeResolver)
+        public async Task<bool> HandleRequestAsync(HttpListenerContext httpListenerContext, IStore store)
         {
             // Obtain request and response
             var request = httpListenerContext.Request;
@@ -21,7 +22,7 @@ namespace NWebDav.Server.Handlers
             var splitSourceUri = RequestHelper.SplitUri(request.Url);
 
             // Obtain source collection
-            var sourceCollection = await storeResolver.GetCollectionAsync(splitSourceUri.CollectionUri, principal).ConfigureAwait(false);
+            var sourceCollection = await store.GetCollectionAsync(splitSourceUri.CollectionUri, principal).ConfigureAwait(false);
             if (sourceCollection == null)
             {
                 // Source not found
@@ -50,7 +51,7 @@ namespace NWebDav.Server.Handlers
             var splitDestinationUri = RequestHelper.SplitUri(destinationUri);
 
             // Obtain destination collection
-            var destinationCollection = await storeResolver.GetCollectionAsync(splitDestinationUri.CollectionUri, principal).ConfigureAwait(false);
+            var destinationCollection = await store.GetCollectionAsync(splitDestinationUri.CollectionUri, principal).ConfigureAwait(false);
             if (destinationCollection == null)
             {
                 // Source not found

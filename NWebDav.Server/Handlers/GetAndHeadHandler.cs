@@ -2,6 +2,7 @@
 using System.Net;
 using System.Threading.Tasks;
 using NWebDav.Server.Helpers;
+using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Handlers
 {
@@ -9,7 +10,7 @@ namespace NWebDav.Server.Handlers
     [Verb("HEAD")]
     public class GetAndHeadHandler : IRequestHandler
     {
-        public async Task<bool> HandleRequestAsync(HttpListenerContext httpListenerContext, IStoreResolver storeResolver)
+        public async Task<bool> HandleRequestAsync(HttpListenerContext httpListenerContext, IStore store)
         {
             // Obtain request and response
             var request = httpListenerContext.Request;
@@ -20,7 +21,7 @@ namespace NWebDav.Server.Handlers
             var head = request.HttpMethod == "HEAD";
 
             // Obtain the WebDAV collection
-            var entry = await storeResolver.GetItemAsync(request.Url, principal).ConfigureAwait(false);
+            var entry = await store.GetItemAsync(request.Url, principal).ConfigureAwait(false);
             if (entry == null)
             {
                 // Set status to not found

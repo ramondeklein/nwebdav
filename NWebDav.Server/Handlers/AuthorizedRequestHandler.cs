@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Handlers
 {
@@ -22,7 +23,7 @@ namespace NWebDav.Server.Handlers
                 _baseRequestHandler = baseRequestHandler;
             }
 
-            public Task<bool> HandleRequestAsync(HttpListenerContext httpListenerContext, IStoreResolver storeResolver)
+            public Task<bool> HandleRequestAsync(HttpListenerContext httpListenerContext, IStore store)
             {
                 // Invoke the OnBeginRequest method
                 if (!_factory.OnBeginRequest(httpListenerContext))
@@ -31,7 +32,7 @@ namespace NWebDav.Server.Handlers
                 try
                 {
                     // Invoke the actual request handler
-                    return _baseRequestHandler.HandleRequestAsync(httpListenerContext, storeResolver);
+                    return _baseRequestHandler.HandleRequestAsync(httpListenerContext, store);
                 }
                 finally
                 {

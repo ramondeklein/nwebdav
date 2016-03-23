@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
-using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Linq;
+using NWebDav.Server.Locking;
 using NWebDav.Server.Props;
 
-namespace NWebDav.Server
+namespace NWebDav.Server.Stores
 {
     public struct StoreItemResult
     {
@@ -37,7 +32,7 @@ namespace NWebDav.Server
         }
     }
 
-    public interface IStoreResolver
+    public interface IStore
     {
         Task<IStoreItem> GetItemAsync(Uri uri, IPrincipal principal);
         Task<IStoreCollection> GetCollectionAsync(Uri uri, IPrincipal principal);
@@ -57,6 +52,9 @@ namespace NWebDav.Server
 
         // Property support
         IPropertyManager PropertyManager { get; }
+
+        // Locking support
+        ILockingManager LockingManager { get; }
     }
 
     public interface IStoreCollection : IStoreItem

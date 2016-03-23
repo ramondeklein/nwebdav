@@ -4,15 +4,16 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using NWebDav.Server.Helpers;
+using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Handlers
 {
     [Verb("OPTIONS")]
     public class OptionsHandler : IRequestHandler
     {
-        private static readonly string[] Verbs = { "COPY", "DELETE", "GET", "HEAD", "MKCOL", "MOVE", "OPTIONS", "PROPFIND", "PROPPATCH", "PUT" };
+        private static readonly string[] Verbs = { "COPY", "DELETE", "GET", "HEAD", "LOCK", "MKCOL", "MOVE", "OPTIONS", "PROPFIND", "PROPPATCH", "PUT", "UNLOCK" };
 
-        public Task<bool> HandleRequestAsync(HttpListenerContext httpListenerContext, IStoreResolver storeResolver)
+        public Task<bool> HandleRequestAsync(HttpListenerContext httpListenerContext, IStore store)
         {
             // Obtain response
             var response = httpListenerContext.Response;

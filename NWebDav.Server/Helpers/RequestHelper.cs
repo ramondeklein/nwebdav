@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -64,8 +65,38 @@ namespace NWebDav.Server.Helpers
 
         public static bool GetOverwrite(this HttpListenerRequest request)
         {
+            // Get the Overwrite header
             var overwriteHeader = request.Headers["Overwrite"] ?? "T";
+
+            // It should be set to "T" (true) or "F" (false)
             return overwriteHeader.ToUpperInvariant() == "T";
         }
+
+
+        public static IList<int> GetTimeouts(this HttpListenerRequest request)
+        {
+            // Get the value of the timeout header as a string
+            var timeoutHeader = request.Headers["Timeout"];
+            if (string.IsNullOrEmpty(timeoutHeader))
+                return null;
+
+            // Return each item
+            Func<string, int> parseTimeout = t =>
+            {
+                // Check for 'infinite'
+                if (t.Equals("Infinite", StringComparison.InvariantCulture))
+                    return -1;
+
+                // Parse the number of seconds
+                int timeout;
+                if (!t.StartsWith("Second-", StringComparison.InvariantCulture) || !int.TryParse(t, out timeout))
+                    return 0;
+                return timeout;
+            };
+
+            // Return the timeout values
+            return timeoutHeader.Split(new [] {','}, StringSplitOptions.RemoveEmptyEntries).Select(parseTimeout).Where(t => t != 0).ToArray();
+        }
+
     }
 }

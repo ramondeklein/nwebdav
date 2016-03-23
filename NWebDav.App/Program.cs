@@ -34,7 +34,8 @@ namespace NWebDav.App
             {
                 webDavServer.Start("http://localhost:11111/");
 
-                Console.ReadLine();
+                while (true)
+                    Console.ReadLine();
             }
         }
     }
