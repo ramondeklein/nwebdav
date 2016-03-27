@@ -98,5 +98,19 @@ namespace NWebDav.Server.Helpers
             return timeoutHeader.Split(new [] {','}, StringSplitOptions.RemoveEmptyEntries).Select(parseTimeout).Where(t => t != 0).ToArray();
         }
 
+        public static Uri GetLockToken(this HttpListenerRequest request)
+        {
+            // Get the value of the lock-token header as a string
+            var lockTokenHeader = request.Headers["Lock-Token"];
+            if (string.IsNullOrEmpty(lockTokenHeader))
+                return null;
+
+            // Strip the brackets from the header
+            if (!lockTokenHeader.StartsWith("<") || !lockTokenHeader.EndsWith(">"))
+                return null;
+
+            // Create an Uri of the intermediate part
+            return new Uri(lockTokenHeader.Substring(1, lockTokenHeader.Length-2), UriKind.Absolute);
+        }
     }
 }

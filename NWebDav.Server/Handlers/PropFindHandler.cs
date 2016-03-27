@@ -193,13 +193,13 @@ namespace NWebDav.Server.Handlers
             var xPropFind = xDocument.Root;
 
             // If there is no child-node, then return all properties
-            var xProps = xPropFind.Descendants();
+            var xProps = xPropFind.Elements();
             if (!xProps.Any())
                 return PropertyMode.AllProperties;
 
             // Add all entries to the list
             var propertyMode = PropertyMode.None;
-            foreach (var xProp in xPropFind.Descendants())
+            foreach (var xProp in xPropFind.Elements())
             {
                 // Check if we should fetch all property names
                 if (xProp.Name == WebDavNamespaces.DavNs + "propname")
@@ -216,7 +216,7 @@ namespace NWebDav.Server.Handlers
                     propertyMode = PropertyMode.AllProperties | PropertyMode.SelectedProperties;
 
                     // Include all specified properties
-                    foreach (var xSubProp in xPropFind.Descendants())
+                    foreach (var xSubProp in xPropFind.Elements())
                         properties.Add(xSubProp.Name);
                 }
                 else

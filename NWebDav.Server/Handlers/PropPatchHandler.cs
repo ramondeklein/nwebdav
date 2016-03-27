@@ -49,7 +49,7 @@ namespace NWebDav.Server.Handlers
                     throw new Exception("Invalid root element (expected 'propertyupdate')");
                 
                 // Check all descendants
-                foreach (var xElement in xRoot.Descendants())
+                foreach (var xElement in xRoot.Elements())
                 {
                     // The descendant should be a 'set' or 'remove' entry
                     if (xElement.Name != WebDavNamespaces.DavNs + "set" && xElement.Name != WebDavNamespaces.DavNs + "remove")
@@ -59,7 +59,7 @@ namespace NWebDav.Server.Handlers
                     foreach (var xProperty in xElement.Descendants(WebDavNamespaces.DavNs + "prop"))
                     {
                         // Determine the actual property element
-                        var xActualProperty = xProperty.Descendants().FirstOrDefault();
+                        var xActualProperty = xProperty.Elements().FirstOrDefault();
                         if (xActualProperty != null)
                         {
                             // Determine the new property value
@@ -67,7 +67,7 @@ namespace NWebDav.Server.Handlers
                             if (xElement.Name == WebDavNamespaces.DavNs + "set")
                             {
                                 // If the descendant is XML, then use the XElement, otherwise use the string
-                                newValue = xActualProperty.HasElements ? (object)xActualProperty.Descendants().FirstOrDefault() : xActualProperty.Value;
+                                newValue = xActualProperty.HasElements ? (object)xActualProperty.Elements().FirstOrDefault() : xActualProperty.Value;
                             }
                             else
                             {

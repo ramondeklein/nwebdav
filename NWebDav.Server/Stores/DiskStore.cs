@@ -159,6 +159,19 @@ namespace NWebDav.Server.Stores
                 }
             }
 
+            public override int GetHashCode()
+            {
+                return _fileInfo.FullName.GetHashCode();
+            }
+
+            public override bool Equals(object obj)
+            {
+                var storeItem = obj as StoreItem;
+                if (storeItem == null)
+                    return false;
+                return storeItem._fileInfo.FullName.Equals(_fileInfo.FullName, StringComparison.InvariantCultureIgnoreCase);
+            }
+
             private string DetermineContentType()
             {
                 // TODO: Determine content type based on extension
@@ -489,6 +502,19 @@ namespace NWebDav.Server.Stores
             }
 
             public bool AllowInfiniteDepthProperties => false;
+
+            public override int GetHashCode()
+            {
+                return _directoryInfo.FullName.GetHashCode();
+            }
+
+            public override bool Equals(object obj)
+            {
+                var storeCollection = obj as StoreCollection;
+                if (storeCollection == null)
+                    return false;
+                return storeCollection._directoryInfo.FullName.Equals(_directoryInfo.FullName, StringComparison.InvariantCultureIgnoreCase);
+            }
         }
 
         public DiskStore(string directory, ILockingManager lockingManager = null)

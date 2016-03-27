@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
-using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -26,6 +25,8 @@ namespace NWebDav.Server.Handlers
             var depth = request.GetDepth();
             var timeouts = request.GetTimeouts();
 
+            // TODO: Refreshing locks is not supported yet
+
             // Determine lockscope and owner
             LockScope lockScope;
             LockType lockType;
@@ -38,31 +39,33 @@ namespace NWebDav.Server.Handlers
                 var xDoc = XDocument.Load(request.InputStream);
 
                 // The document should contain a 'propertyupdate' element
-                if (xDoc.Root?.Name != WebDavNamespaces.DavNs + "D:lockinfo")
+                if (xDoc.Root?.Name != WebDavNamespaces.DavNs + "lockinfo")
                     throw new Exception("Invalid root element (expected 'lockinfo')");
 
                 // Save the root document
                 var xRoot = xDoc.Root;
 
                 // Check all descendants
-                var xLockscope = xRoot.Descendants(WebDavNamespaces.DavNs + "lockscope").Single();
-                if (xLockscope.Name == WebDavNamespaces.DavNs + "exclusive")
+                var xLockScope = xRoot.Elements(WebDavNamespaces.DavNs + "lockscope").Single();
+                var xLockScopeValue = xLockScope.Elements().Single();
+                if (xLockScopeValue.Name == WebDavNamespaces.DavNs + "exclusive")
                     lockScope = LockScope.Exclusive;
-                else if (xLockscope.Name == WebDavNamespaces.DavNs + "shared")
+                else if (xLockScopeValue.Name == WebDavNamespaces.DavNs + "shared")
                     lockScope = LockScope.Shared;
                 else
                     throw new Exception("Invalid locksope (expected 'exclusive' or 'shared')");
 
                 // Determine the lock-type
-                var xLockType = xRoot.Descendants(WebDavNamespaces.DavNs + "locktype").Single();
-                if (xLockType.Name == WebDavNamespaces.DavNs + "write")
+                var xLockType = xRoot.Elements(WebDavNamespaces.DavNs + "locktype").Single();
+                var xLockTypeValue = xLockType.Elements().Single();
+                if (xLockTypeValue.Name == WebDavNamespaces.DavNs + "write")
                     lockType = LockType.Write;
                 else
                     throw new Exception("Invalid locktype (expected 'write')");
 
                 // Determine the owner
-                var xOwner = xRoot.Descendants(WebDavNamespaces.DavNs + "owner").Single();
-                owner = xOwner.Descendants().Single();
+                var xOwner = xRoot.Elements(WebDavNamespaces.DavNs + "owner").Single();
+                owner = xOwner.Elements().Single();
             }
             catch (Exception)
             {
@@ -75,41 +78,40 @@ namespace NWebDav.Server.Handlers
             if (item == null)
             {
                 // Set status to not found
-                response.SendResponse(DavStatusCode.NotFound);
+                response.SendResponse(DavStatusCode.PreconditionFailed);
                 return true;
-            }
-
-            // Lock all items
-            await LockAsync(item, depth, lockScope, lockType, owner, timeouts, principal);
-
-            // Set the response
-            response.SendResponse(DavStatusCode.OK);
-            return true;
-        }
-
-        private async Task LockAsync(IStoreItem item, int depth, LockScope lockScope, LockType lockType, XElement owner, IList<int> timeouts, IPrincipal principal)
-        {
-            // Lock recursively
-            var collection = item as IStoreCollection;
-            if (collection != null && depth > 0)
-            {
-                foreach (var subItem in await collection.GetItemsAsync(principal))
-                    await LockAsync(subItem, depth - 1, lockScope, lockType, owner, timeouts, principal);
             }
 
             // Check if we have a lock manager
             var lockingManager = item.LockingManager;
-            if (lockingManager != null)
+            if (lockingManager == null)
             {
-                var result = lockingManager.Lock(item, lockScope, lockType, owner, timeouts);
-                // TODO: Do something
-            }
-            else
-            {
-                // TODO: Do something
+                // Set status to not found
+                response.SendResponse(DavStatusCode.PreconditionFailed);
+                return true;
             }
 
-            // TODO: Add the result to the list
+            // Perform the lock
+            var result = lockingManager.Lock(item, lockType, lockScope, owner, depth > 0, timeouts);
+            if (result.Result != DavStatusCode.OK)
+            {
+                // Set status to not found
+                response.SendResponse(result.Result);
+                return true;
+            }
+
+            // We should have an active lock result at this point
+            Debug.Assert(result.LockInfo.HasValue, "Lock information should be supplied, when creating or refreshing a lock");
+
+            // Return the information about the lock
+            var xDocument = new XDocument(
+                new XElement(WebDavNamespaces.DavNs + "prop",
+                    new XElement(WebDavNamespaces.DavNs + "lockdiscovery",
+                        result.LockInfo.Value.ToXml())));
+
+            // Stream the document
+            await response.SendResponseAsync(DavStatusCode.OK, xDocument).ConfigureAwait(false);
+            return true;
         }
     }
 }

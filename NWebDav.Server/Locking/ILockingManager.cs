@@ -47,13 +47,13 @@ namespace NWebDav.Server.Locking
 
         public XElement ToXml()
         {
-            return new XElement(WebDavNamespaces.DavNs + "lockentry",
-                new XElement(WebDavNamespaces.DavNs + "locktype", EnumHelper.GetEnumValue(Type)),
-                new XElement(WebDavNamespaces.DavNs + "lockscope", EnumHelper.GetEnumValue(Scope)),
-                new XElement(WebDavNamespaces.DavNs + "depth", Depth == int.MaxValue ? "infinity" : Depth.ToString(CultureInfo.InvariantCulture),
+            return new XElement(WebDavNamespaces.DavNs + "activelock",
+                new XElement(WebDavNamespaces.DavNs + "locktype", new XElement(WebDavNamespaces.DavNs + EnumHelper.GetEnumValue(Type))),
+                new XElement(WebDavNamespaces.DavNs + "lockscope", new XElement(WebDavNamespaces.DavNs + EnumHelper.GetEnumValue(Scope))),
+                new XElement(WebDavNamespaces.DavNs + "depth", Depth == int.MaxValue ? "infinity" : Depth.ToString(CultureInfo.InvariantCulture)),
                 new XElement(WebDavNamespaces.DavNs + "owner", Owner),
-                new XElement(WebDavNamespaces.DavNs + "timeout", Timeout == 1 ? "Infinite" : $"Second-{Timeout}"),
-                new XElement(WebDavNamespaces.DavNs + "locktoken", new XElement(WebDavNamespaces.DavNs + "href", LockToken.AbsoluteUri))));
+                new XElement(WebDavNamespaces.DavNs + "timeout", Timeout == -1 ? "Infinite" : "Second-" + Timeout.ToString(CultureInfo.InvariantCulture)),
+                new XElement(WebDavNamespaces.DavNs + "locktoken", new XElement(WebDavNamespaces.DavNs + "href", LockToken.AbsoluteUri)));
         }
     }
 
@@ -69,14 +69,15 @@ namespace NWebDav.Server.Locking
         }
     }
 
+    // TODO: Call the locking methods from the handlers
     public interface ILockingManager
     {
-        LockResult Lock(IStoreItem item, LockScope lockScope, LockType lockType, XElement owner, IEnumerable<int> timeouts);
-        LockResult Unlock(IStoreItem item, string token);
+        LockResult Lock(IStoreItem item, LockType lockType, LockScope lockScope, XElement owner, bool recursiveLock, IEnumerable<int> timeouts, Guid? existingToken = null);
+        DavStatusCode Unlock(IStoreItem item, Uri token);
 
         IEnumerable<ActiveLockInfo> GetActiveLockInfo(IStoreItem item);
         IEnumerable<ScopeAndType> GetSupportedLocks(IStoreItem item);
 
-        bool IsLocked(IStoreItem item);
+        bool HasLock(IStoreItem item, LockType lockType, Uri lockToken);
     }
 }
