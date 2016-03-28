@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+using NWebDav.Server.Http;
 
 namespace NWebDav.Server.Helpers
 {
@@ -36,10 +33,10 @@ namespace NWebDav.Server.Helpers
             return SplitUri(uri.AbsoluteUri);
         }
 
-        public static Uri GetDestinationUri(this HttpListenerRequest request)
+        public static Uri GetDestinationUri(this IHttpRequest request)
         {
             // Obtain the destination
-            var destinationHeader = request.Headers["Destination"];
+            var destinationHeader = request.GetHeaderValue("Destination");
             if (destinationHeader == null)
                 return null;
 
@@ -47,10 +44,10 @@ namespace NWebDav.Server.Helpers
             return new Uri(destinationHeader);
         }
 
-        public static int GetDepth(this HttpListenerRequest request)
+        public static int GetDepth(this IHttpRequest request)
         {
             // Obtain the depth header (no header means infinity)
-            var depthHeader = request.Headers["Depth"];
+            var depthHeader = request.GetHeaderValue("Depth");
             if (depthHeader == null || depthHeader.Equals("infinity", StringComparison.InvariantCulture))
                 return int.MaxValue;
 
@@ -63,20 +60,20 @@ namespace NWebDav.Server.Helpers
             return depth;
         }
 
-        public static bool GetOverwrite(this HttpListenerRequest request)
+        public static bool GetOverwrite(this IHttpRequest request)
         {
             // Get the Overwrite header
-            var overwriteHeader = request.Headers["Overwrite"] ?? "T";
+            var overwriteHeader = request.GetHeaderValue("Overwrite") ?? "T";
 
             // It should be set to "T" (true) or "F" (false)
             return overwriteHeader.ToUpperInvariant() == "T";
         }
 
 
-        public static IList<int> GetTimeouts(this HttpListenerRequest request)
+        public static IList<int> GetTimeouts(this IHttpRequest request)
         {
             // Get the value of the timeout header as a string
-            var timeoutHeader = request.Headers["Timeout"];
+            var timeoutHeader = request.GetHeaderValue("Timeout");
             if (string.IsNullOrEmpty(timeoutHeader))
                 return null;
 
@@ -98,10 +95,10 @@ namespace NWebDav.Server.Helpers
             return timeoutHeader.Split(new [] {','}, StringSplitOptions.RemoveEmptyEntries).Select(parseTimeout).Where(t => t != 0).ToArray();
         }
 
-        public static Uri GetLockToken(this HttpListenerRequest request)
+        public static Uri GetLockToken(this IHttpRequest request)
         {
             // Get the value of the lock-token header as a string
-            var lockTokenHeader = request.Headers["Lock-Token"];
+            var lockTokenHeader = request.GetHeaderValue("Lock-Token");
             if (string.IsNullOrEmpty(lockTokenHeader))
                 return null;
 

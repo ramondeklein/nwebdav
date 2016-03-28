@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using NWebDav.Server.Helpers;
+using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Handlers
@@ -29,7 +30,7 @@ namespace NWebDav.Server.Handlers
 
                 public XElement GetXmlResponse()
                 {
-                    var statusText = $"HTTP/1.1 {(int)Result} {EnumHelper.GetEnumValue(Result)}";
+                    var statusText = $"HTTP/1.1 {(int)Result} {DavStatusCodeHelper.GetStatusDescription(Result)}";
                     return new XElement(WebDavNamespaces.DavNs + "propstat",
                         new XElement(WebDavNamespaces.DavNs + "prop", new XElement(Name)),
                         new XElement(WebDavNamespaces.DavNs + "status", statusText));
@@ -91,12 +92,12 @@ namespace NWebDav.Server.Handlers
             }
         }
 
-        public async Task<bool> HandleRequestAsync(HttpListenerContext httpListenerContext, IStore store)
+        public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)
         {
             // Obtain request and response
-            var request = httpListenerContext.Request;
-            var response = httpListenerContext.Response;
-            var principal = httpListenerContext.User;
+            var request = httpContext.Request;
+            var response = httpContext.Response;
+            var principal = httpContext.Session?.Principal;
 
             // Obtain item
             var item = await store.GetItemAsync(request.Url, principal).ConfigureAwait(false);
@@ -111,7 +112,7 @@ namespace NWebDav.Server.Handlers
             try
             {
                 // Create an XML document from the stream
-                propSetCollection = new PropSetCollection(request.InputStream);
+                propSetCollection = new PropSetCollection(request.Stream);
             }
             catch (Exception)
             {
@@ -145,6 +146,3 @@ namespace NWebDav.Server.Handlers
         }
     }
 }
-
-
-

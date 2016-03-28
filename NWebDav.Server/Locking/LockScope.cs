@@ -1,14 +1,14 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
+using System.Xml.Serialization;
 
 namespace NWebDav.Server.Locking
 {
     public enum LockScope
     {
-        [Display(Description = "exclusive")]
+        [XmlEnum("exclusive")]
         Exclusive,
 
-        [Display(Description = "shared")]
+        [XmlEnum("shared")]
         Shared
     }
 }

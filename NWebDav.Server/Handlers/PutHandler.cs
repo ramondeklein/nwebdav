@@ -5,6 +5,7 @@ using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using NWebDav.Server.Helpers;
+using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Handlers
@@ -12,12 +13,12 @@ namespace NWebDav.Server.Handlers
     [Verb("PUT")]
     public class PutHandler : IRequestHandler
     {
-        public async Task<bool> HandleRequestAsync(HttpListenerContext httpListenerContext, IStore store)
+        public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)
         {
             // Obtain request and response
-            var request = httpListenerContext.Request;
-            var response = httpListenerContext.Response;
-            var principal = httpListenerContext.User;
+            var request = httpContext.Request;
+            var response = httpContext.Response;
+            var principal = httpContext.Session?.Principal;
 
             // It's not a collection, so we'll try again by fetching the item in the parent collection
             var splitUri = RequestHelper.SplitUri(request.Url);
@@ -41,7 +42,7 @@ namespace NWebDav.Server.Handlers
                 {
                     using (var destinationStream = result.Item.GetWritableStream(principal))
                     {
-                        await request.InputStream.CopyToAsync(destinationStream).ConfigureAwait(false);
+                        await request.Stream.CopyToAsync(destinationStream).ConfigureAwait(false);
                     }
                 }
                 catch (IOException ioException) when (ioException.IsDiskFull())

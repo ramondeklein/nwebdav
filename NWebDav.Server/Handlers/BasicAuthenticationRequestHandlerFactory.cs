@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
+using NWebDav.Server.Helpers;
+using NWebDav.Server.Http;
 
 namespace NWebDav.Server.Handlers
 {
@@ -17,16 +14,14 @@ namespace NWebDav.Server.Handlers
             _basicAuthentication = basicAuthentication;
         }
 
-        protected override bool OnBeginRequest(HttpListenerContext httpListenerContext)
+        protected override bool OnBeginRequest(IHttpContext httpContext)
         {
             // Obtain the basic identity
-            var basicIdentity = httpListenerContext.User?.Identity as HttpListenerBasicIdentity;
+            var basicIdentity = httpContext.Session.Principal as HttpListenerBasicIdentity;
             if (basicIdentity == null || !_basicAuthentication.CheckCredentials(basicIdentity.Name, basicIdentity.Password))
             {
-                var response = httpListenerContext.Response;
-                response.StatusCode = (int)HttpStatusCode.BadRequest;
-                response.StatusDescription = "Invalid credentials specified";
-                response.Close();
+                var response = httpContext.Response;
+                response.SendResponse(DavStatusCode.BadRequest, "Invalid credentials specified");
                 return false;
             }
 
@@ -34,7 +29,7 @@ namespace NWebDav.Server.Handlers
             return true;
         }
 
-        protected override void OnEndRequest(HttpListenerContext httpListenerContext)
+        protected override void OnEndRequest(IHttpContext httpContext)
         {
             // NOP
         }

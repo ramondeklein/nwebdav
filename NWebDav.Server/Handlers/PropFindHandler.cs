@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using NWebDav.Server.Handlers;
+
 using NWebDav.Server.Helpers;
+using NWebDav.Server.Http;
 using NWebDav.Server.Props;
 using NWebDav.Server.Stores;
 
@@ -37,12 +37,12 @@ namespace NWebDav.Server.Handlers
             SelectedProperties = 4
         }
 
-        public async Task<bool> HandleRequestAsync(HttpListenerContext httpListenerContext, IStore store)
+        public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)
         {
             // Obtain request and response
-            var request = httpListenerContext.Request;
-            var response = httpListenerContext.Response;
-            var principal = httpListenerContext.User;
+            var request = httpContext.Request;
+            var response = httpContext.Response;
+            var principal = httpContext.Session?.Principal;
 
             // Determine the list of properties that need to be obtained
             var propertyList = new List<XName>();
@@ -175,14 +175,14 @@ namespace NWebDav.Server.Handlers
             }
         }
 
-        private PropertyMode GetRequestedProperties(HttpListenerRequest request, IList<XName> properties)
+        private PropertyMode GetRequestedProperties(IHttpRequest request, IList<XName> properties)
         {
             // If there is no input stream, then request all properties
-            if (request.InputStream == null || request.InputStream == Stream.Null)
+            if (request.Stream == null || request.Stream == Stream.Null)
                 return PropertyMode.AllProperties;
 
             // Create an XML document from the stream
-            var xDocument = XDocument.Load(request.InputStream);
+            var xDocument = XDocument.Load(request.Stream);
             if (xDocument.Root == null || xDocument.Root.Name != WebDavNamespaces.DavNs + "propfind")
             {
                 // TODO: Log

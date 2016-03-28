@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 
 using NWebDav.Server.Helpers;
+using NWebDav.Server.Http;
 using NWebDav.Server.Locking;
 using NWebDav.Server.Stores;
 
@@ -14,12 +15,12 @@ namespace NWebDav.Server.Handlers
     [Verb("LOCK")]
     public class LockHandler : IRequestHandler
     {
-        public async Task<bool> HandleRequestAsync(HttpListenerContext httpListenerContext, IStore store)
+        public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)
         {
             // Obtain request and response
-            var request = httpListenerContext.Request;
-            var response = httpListenerContext.Response;
-            var principal = httpListenerContext.User;
+            var request = httpContext.Request;
+            var response = httpContext.Response;
+            var principal = httpContext.Session?.Principal;
 
             // Determine the depth and requested timeout(s)
             var depth = request.GetDepth();
@@ -36,7 +37,7 @@ namespace NWebDav.Server.Handlers
             try
             {
                 // Create an XML document from the stream
-                var xDoc = XDocument.Load(request.InputStream);
+                var xDoc = XDocument.Load(request.Stream);
 
                 // The document should contain a 'propertyupdate' element
                 if (xDoc.Root?.Name != WebDavNamespaces.DavNs + "lockinfo")

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using NWebDav.Server.Http;
 
 namespace NWebDav.Server.Handlers
 {
@@ -20,11 +21,11 @@ namespace NWebDav.Server.Handlers
             }
         }
 
-        public IRequestHandler GetRequestHandler(HttpListenerContext httpListenerContext)
+        public IRequestHandler GetRequestHandler(IHttpContext httpContext)
         {
             // Obtain the dispatcher
             Type requestHandlerType;
-            if (!RequestHandlers.TryGetValue(httpListenerContext.Request.HttpMethod, out requestHandlerType))
+            if (!RequestHandlers.TryGetValue(httpContext.Request.HttpMethod, out requestHandlerType))
                 return null;
 
             // Create an instance of the request handler

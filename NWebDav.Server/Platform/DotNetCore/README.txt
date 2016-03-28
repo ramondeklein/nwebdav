@@ -1,0 +1,1 @@
+﻿For .NET core it's probably best to use the Microsoft.Net.Http.Server.WebListener class

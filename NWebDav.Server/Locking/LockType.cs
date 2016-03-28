@@ -1,11 +1,11 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
+using System.Xml.Serialization;
 
 namespace NWebDav.Server.Locking
 {
     public enum LockType
     {
-        [Display(Description = "write")]
+        [XmlEnum("write")]
         Write
     }
 }

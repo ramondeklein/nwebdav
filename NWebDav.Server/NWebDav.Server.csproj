@@ -35,10 +35,6 @@
     <DocumentationFile>bin\Release\NWebDav.Server.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="log4net, Version=1.2.15.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <HintPath>..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -61,13 +57,26 @@
     <Compile Include="Handlers\PutHandler.cs" />
     <Compile Include="Handlers\UnlockHandler.cs" />
     <Compile Include="Handlers\UriResultCollection.cs" />
-    <Compile Include="Helpers\EnumHelper.cs" />
+    <Compile Include="Helpers\DavStatusCodeHelper.cs" />
+    <Compile Include="Helpers\DavStatusCodeAttribute.cs" />
     <Compile Include="Helpers\IOExceptionHelper.cs" />
     <Compile Include="Helpers\RequestHelper.cs" />
     <Compile Include="Helpers\ResponseHelpers.cs" />
+    <Compile Include="Helpers\XmlHelper.cs" />
+    <Compile Include="Http\IHttpListener.cs" />
     <Compile Include="IRequestHandlerFactory.cs" />
     <Compile Include="IRequestHandler.cs" />
     <Compile Include="Locking\InMemoryLockingManager.cs" />
+    <Compile Include="Logging\ILoggerFactory.cs" />
+    <Compile Include="Logging\ILogger.cs" />
+    <Compile Include="Logging\LoggerFactory.cs" />
+    <Compile Include="Logging\LogLevel.cs" />
+    <Compile Include="Logging\NullLoggerFactory.cs" />
+    <Compile Include="Platform\DotNet45\HttpContext.cs" />
+    <Compile Include="Platform\DotNet45\HttpListenerAdapter.cs" />
+    <Compile Include="Platform\DotNet45\HttpRequest.cs" />
+    <Compile Include="Platform\DotNet45\HttpResponse.cs" />
+    <Compile Include="Platform\DotNet45\HttpSession.cs" />
     <Compile Include="Props\LockingProperties.cs" />
     <Compile Include="Stores\IStore.cs" />
     <Compile Include="Locking\ILockingManager.cs" />
@@ -91,6 +100,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Platform\DotNetCore\README.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

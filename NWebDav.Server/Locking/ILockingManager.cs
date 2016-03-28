@@ -21,8 +21,8 @@ namespace NWebDav.Server.Locking
         public XElement ToXml()
         {
             return new XElement(WebDavNamespaces.DavNs + "lockentry",
-                new XElement(WebDavNamespaces.DavNs + "lockscope", EnumHelper.GetEnumValue(Scope)),
-                new XElement(WebDavNamespaces.DavNs + "locktype", EnumHelper.GetEnumValue(Type)));
+                new XElement(WebDavNamespaces.DavNs + "lockscope", DavStatusCodeHelper.GetStatusDescription(Scope)),
+                new XElement(WebDavNamespaces.DavNs + "locktype", DavStatusCodeHelper.GetStatusDescription(Type)));
         }
     }
 
@@ -48,8 +48,8 @@ namespace NWebDav.Server.Locking
         public XElement ToXml()
         {
             return new XElement(WebDavNamespaces.DavNs + "activelock",
-                new XElement(WebDavNamespaces.DavNs + "locktype", new XElement(WebDavNamespaces.DavNs + EnumHelper.GetEnumValue(Type))),
-                new XElement(WebDavNamespaces.DavNs + "lockscope", new XElement(WebDavNamespaces.DavNs + EnumHelper.GetEnumValue(Scope))),
+                new XElement(WebDavNamespaces.DavNs + "locktype", new XElement(WebDavNamespaces.DavNs + XmlHelper.GetXmlValue(Type))),
+                new XElement(WebDavNamespaces.DavNs + "lockscope", new XElement(WebDavNamespaces.DavNs + XmlHelper.GetXmlValue(Scope))),
                 new XElement(WebDavNamespaces.DavNs + "depth", Depth == int.MaxValue ? "infinity" : Depth.ToString(CultureInfo.InvariantCulture)),
                 new XElement(WebDavNamespaces.DavNs + "owner", Owner),
                 new XElement(WebDavNamespaces.DavNs + "timeout", Timeout == -1 ? "Infinite" : "Second-" + Timeout.ToString(CultureInfo.InvariantCulture)),

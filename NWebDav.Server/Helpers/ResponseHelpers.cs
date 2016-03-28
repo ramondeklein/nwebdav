@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -9,26 +10,26 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
-using log4net;
+
+using NWebDav.Server.Http;
+using NWebDav.Server.Logging;
 
 namespace NWebDav.Server.Helpers
 {
     public static class ResponseHelper
     {
-        private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILogger Log = LoggerFactory.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public static void SendResponse(this HttpListenerResponse response, DavStatusCode statusCode, string statusDescription = null)
+        public static void SendResponse(this IHttpResponse response, DavStatusCode statusCode, string statusDescription = null)
         {
-            response.StatusCode = (int)statusCode;
-            response.StatusDescription = statusDescription ?? EnumHelper.GetEnumValue(statusCode, "Unknown");
-            response.Close();
+            response.Status = (int)statusCode;
+            response.StatusDescription = statusDescription ?? DavStatusCodeHelper.GetStatusDescription(statusCode, "Unknown");
         }
 
-        public static async Task SendResponseAsync(this HttpListenerResponse response, DavStatusCode statusCode, XDocument xDocument)
+        public static async Task SendResponseAsync(this IHttpResponse response, DavStatusCode statusCode, XDocument xDocument)
         {
             // Set the response
-            response.StatusCode = (int)statusCode;
-            response.StatusDescription = EnumHelper.GetEnumValue(statusCode, "Unknown");
+            response.SendResponse(statusCode);
 
             // Obtain the result as an XML document
             using (var ms = new MemoryStream())
@@ -56,20 +57,20 @@ namespace NWebDav.Server.Helpers
                 ms.Seek(0, SeekOrigin.Begin);
 
                 // Dump the XML document to the logging
-                if (Log.IsDebugEnabled)
+                if (Log.IsLogEnabled(LogLevel.Debug))
                 {
                     var reader = new StreamReader(ms);
-                    Log.Debug(reader.ReadToEnd());
+                    Log.Log(LogLevel.Debug, reader.ReadToEnd());
                 }
 #endif
 
                 // Set content type/length
-                response.ContentType = " text/xml; charset=\"utf-8\"";
-                response.ContentLength64 = ms.Position;
+                response.SetHeaderValue("Content-Type", "text/xml; charset=\"utf-8\"");
+                response.SetHeaderValue("Content-Length", ms.Position.ToString(CultureInfo.InvariantCulture));
 
                 // Reset stream and write the stream to the result
                 ms.Seek(0, SeekOrigin.Begin);
-                await ms.CopyToAsync(response.OutputStream).ConfigureAwait(false);
+                await ms.CopyToAsync(response.Stream).ConfigureAwait(false);
             }
         }
     }
