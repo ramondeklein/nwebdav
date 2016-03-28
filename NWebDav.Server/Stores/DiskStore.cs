@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Locking;
+using NWebDav.Server.Logging;
 using NWebDav.Server.Props;
 
 namespace NWebDav.Server.Stores
@@ -20,6 +21,7 @@ namespace NWebDav.Server.Stores
         [DebuggerDisplay("{_fileInfo.FullPath}")]
         private class StoreItem : IStoreItem
         {
+            private static readonly ILogger Log = LoggerFactory.CreateLogger(typeof(StoreItem));
             private static readonly PropertyManager<StoreItem> ItemPropertyManager = new PropertyManager<StoreItem>(new DavProperty<StoreItem>[]
             {
                 // RFC-2518 properties
@@ -149,12 +151,12 @@ namespace NWebDav.Server.Stores
                 }
                 catch (IOException ioException) when (ioException.IsDiskFull())
                 {
-                    // TODO: Log exception
+                    Log.Log(LogLevel.Error, "Out of disk space while copying data.", ioException);
                     return new StoreItemResult(DavStatusCode.InsufficientStorage);
                 }
                 catch (Exception exc)
                 {
-                    // TODO: Log exception
+                    Log.Log(LogLevel.Error, "Unexpected exception while copying data.", exc);
                     return new StoreItemResult(DavStatusCode.InternalServerError);
                 }
             }
@@ -169,7 +171,7 @@ namespace NWebDav.Server.Stores
                 var storeItem = obj as StoreItem;
                 if (storeItem == null)
                     return false;
-                return storeItem._fileInfo.FullName.Equals(_fileInfo.FullName, StringComparison.InvariantCultureIgnoreCase);
+                return storeItem._fileInfo.FullName.Equals(_fileInfo.FullName, StringComparison.CurrentCultureIgnoreCase);
             }
 
             private string DetermineContentType()
@@ -182,7 +184,7 @@ namespace NWebDav.Server.Stores
             {
                 using (var stream = File.OpenRead(_fileInfo.FullName))
                 {
-                    var hash = new SHA256Managed().ComputeHash(stream);
+                    var hash = SHA256.Create().ComputeHash(stream);
                     return BitConverter.ToString(hash).Replace("-", string.Empty);
                 }
             }
@@ -191,6 +193,7 @@ namespace NWebDav.Server.Stores
         [DebuggerDisplay("{_directoryInfo.FullPath}\\")]
         private class StoreCollection : IStoreCollection
         {
+            private static readonly ILogger Log = LoggerFactory.CreateLogger(typeof(StoreCollection));
             private static readonly PropertyManager<StoreCollection> CollectionPropertyManager = new PropertyManager<StoreCollection>(new DavProperty<StoreCollection>[]
             {
                 // RFC-2518 properties
@@ -354,8 +357,9 @@ namespace NWebDav.Server.Stores
                 }
                 catch (Exception exc)
                 {
-                    // TODO: Log exception
-                    return Task.FromResult(new StoreItemResult(result));
+                    // Log exception
+                    Log.Log(LogLevel.Error, $"Unable to create '{destinationPath}' file.", exc);
+                    return Task.FromResult(new StoreItemResult(DavStatusCode.InternalServerError));
                 }
 
                 // Return result
@@ -391,7 +395,8 @@ namespace NWebDav.Server.Stores
                 }
                 catch (Exception exc)
                 {
-                    // TODO: Log exception
+                    // Log exception
+                    Log.Log(LogLevel.Error, $"Unable to create '{destinationPath}' directory.", exc);
                     return null;
                 }
 
@@ -496,7 +501,8 @@ namespace NWebDav.Server.Stores
                 }
                 catch (Exception exc)
                 {
-                    // TODO: Log exception
+                    // Log exception
+                    Log.Log(LogLevel.Error, $"Unable to delete '{fullPath}' directory.", exc);
                     return Task.FromResult(DavStatusCode.InternalServerError);
                 }
             }
@@ -513,7 +519,7 @@ namespace NWebDav.Server.Stores
                 var storeCollection = obj as StoreCollection;
                 if (storeCollection == null)
                     return false;
-                return storeCollection._directoryInfo.FullName.Equals(_directoryInfo.FullName, StringComparison.InvariantCultureIgnoreCase);
+                return storeCollection._directoryInfo.FullName.Equals(_directoryInfo.FullName, StringComparison.CurrentCultureIgnoreCase);
             }
         }
 

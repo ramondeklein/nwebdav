@@ -1,19 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using log4net.Config;
 using NWebDav.App.Log4Net;
 using NWebDav.Server;
-using NWebDav.Server.Handlers;
 using NWebDav.Server.Logging;
 using NWebDav.Server.Platform.DotNet45;
 using NWebDav.Server.Stores;
 
 namespace NWebDav.App
 {
-    class Program
+    internal class Program
     {
         private class BasicAuthentication : IBasicAuthentication
         {
@@ -23,7 +18,7 @@ namespace NWebDav.App
             }
         }
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             // Use the Log4NET adapter for logging
             LoggerFactory.Factory = new Log4NetAdapter();

@@ -13,10 +13,10 @@ namespace NWebDav.Server.Handlers
 
         static RequestHandlerFactory()
         {
-            foreach (var requestHandlerType in Assembly.GetExecutingAssembly().GetTypes().Where(t => typeof(IRequestHandler).IsAssignableFrom(t)))
+            foreach (var requestHandlerType in typeof(RequestHandlerFactory).GetTypeInfo().Assembly.GetTypes().Where(t => typeof(IRequestHandler).IsAssignableFrom(t)))
             {
                 // Obtain the verbs of the request handler
-                foreach (var verbAttribute in requestHandlerType.GetCustomAttributes<VerbAttribute>())
+                foreach (var verbAttribute in requestHandlerType.GetTypeInfo().GetCustomAttributes<VerbAttribute>())
                     RequestHandlers.Add(verbAttribute.Verb, requestHandlerType);
             }
         }

@@ -37,14 +37,18 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Xml" />
+    <Reference Include="System.XML" />
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DavStatusCode.cs" />
     <Compile Include="Handlers\AuthorizedRequestHandler.cs" />
-    <Compile Include="Handlers\BasicAuthenticationRequestHandlerFactory.cs" />
+    <Compile Include="Http\IHttpContext.cs" />
+    <Compile Include="Http\IHttpRequest.cs" />
+    <Compile Include="Http\IHttpResponse.cs" />
+    <Compile Include="Http\IHttpSession.cs" />
+    <Compile Include="Platform\DotNet45\BasicAuthenticationRequestHandlerFactory.cs" />
     <Compile Include="Handlers\CopyHandler.cs" />
     <Compile Include="Handlers\DeleteHandler.cs" />
     <Compile Include="Handlers\GetAndHeadHandler.cs" />
@@ -99,9 +103,9 @@
     <Compile Include="WebDavServer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="NWebDav.Server.project.json" />
+    <None Include="project.json" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <Content Include="Platform\DotNetCore\README.txt" />
   </ItemGroup>

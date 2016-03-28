@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -18,7 +13,7 @@ namespace NWebDav.Server.Helpers
 {
     public static class ResponseHelper
     {
-        private static readonly ILogger Log = LoggerFactory.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILogger Log = LoggerFactory.CreateLogger(typeof(ResponseHelper));
 
         public static void SendResponse(this IHttpResponse response, DavStatusCode statusCode, string statusDescription = null)
         {

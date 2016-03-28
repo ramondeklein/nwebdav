@@ -41,7 +41,7 @@ namespace NWebDav.Server.Handlers
             }
 
             // Make sure the source and destination are different
-            if (request.Url.AbsoluteUri.Equals(destinationUri.AbsoluteUri, StringComparison.InvariantCultureIgnoreCase))
+            if (request.Url.AbsoluteUri.Equals(destinationUri.AbsoluteUri, StringComparison.CurrentCultureIgnoreCase))
             {
                 // Forbidden
                 response.SendResponse(DavStatusCode.Forbidden, "Source and destination cannot be the same.");

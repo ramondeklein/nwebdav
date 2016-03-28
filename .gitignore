@@ -3,5 +3,6 @@ packages/
 */obj/
 */bin/
 *.suo
-*/*.user
 *.nupkg
+**/project.lock.json
+**/*.user

@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Net;
 using System.Reflection;
 
 using NWebDav.Server.Handlers;
@@ -15,8 +12,8 @@ namespace NWebDav.Server
 {
     public class WebDavServer
     {
-        private static readonly ILogger Log = LoggerFactory.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private static string ServerName;
+        private static readonly ILogger Log = LoggerFactory.CreateLogger(typeof(WebDavServer));
+        private static readonly string ServerName;
 
         private readonly IHttpListener _httpListener;
         private readonly IStore _store;
@@ -24,7 +21,7 @@ namespace NWebDav.Server
         
         static WebDavServer()
         {
-            var assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version;
+            var assemblyVersion = typeof(WebDavServer).GetTypeInfo().Assembly.GetName().Version;
             ServerName = $"NWebDav/{assemblyVersion}";
         }
 

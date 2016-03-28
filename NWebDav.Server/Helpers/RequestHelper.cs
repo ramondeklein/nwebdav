@@ -48,7 +48,7 @@ namespace NWebDav.Server.Helpers
         {
             // Obtain the depth header (no header means infinity)
             var depthHeader = request.GetHeaderValue("Depth");
-            if (depthHeader == null || depthHeader.Equals("infinity", StringComparison.InvariantCulture))
+            if (depthHeader == null || depthHeader == "infinity")
                 return int.MaxValue;
 
             // Determined depth
@@ -81,12 +81,12 @@ namespace NWebDav.Server.Helpers
             Func<string, int> parseTimeout = t =>
             {
                 // Check for 'infinite'
-                if (t.Equals("Infinite", StringComparison.InvariantCulture))
+                if (t == "Infinite")
                     return -1;
 
                 // Parse the number of seconds
                 int timeout;
-                if (!t.StartsWith("Second-", StringComparison.InvariantCulture) || !int.TryParse(t, out timeout))
+                if (!t.StartsWith("Second-") || !int.TryParse(t, out timeout))
                     return 0;
                 return timeout;
             };
