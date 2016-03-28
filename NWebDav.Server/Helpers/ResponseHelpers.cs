@@ -13,7 +13,7 @@ namespace NWebDav.Server.Helpers
 {
     public static class ResponseHelper
     {
-        private static readonly ILogger Log = LoggerFactory.CreateLogger(typeof(ResponseHelper));
+        private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(ResponseHelper));
 
         public static void SendResponse(this IHttpResponse response, DavStatusCode statusCode, string statusDescription = null)
         {
@@ -52,10 +52,10 @@ namespace NWebDav.Server.Helpers
                 ms.Seek(0, SeekOrigin.Begin);
 
                 // Dump the XML document to the logging
-                if (Log.IsLogEnabled(LogLevel.Debug))
+                if (s_log.IsLogEnabled(LogLevel.Debug))
                 {
                     var reader = new StreamReader(ms);
-                    Log.Log(LogLevel.Debug, reader.ReadToEnd());
+                    s_log.Log(LogLevel.Debug, reader.ReadToEnd());
                 }
 #endif
 

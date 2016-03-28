@@ -12,8 +12,8 @@ namespace NWebDav.Server.Logging
             }
         }
 
-        private static readonly ILogger DefaultLogger = new Logger();
+        private static readonly ILogger s_defaultLogger = new Logger();
 
-        public ILogger CreateLogger(Type type) => DefaultLogger;
+        public ILogger CreateLogger(Type type) => s_defaultLogger;
     }
 }

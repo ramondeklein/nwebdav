@@ -9,7 +9,7 @@ namespace NWebDav.Server.Helpers
 
         public DavStatusCodeAttribute(string description)
         {
-            Description = description ;
+            Description = description;
         }
     }
 }

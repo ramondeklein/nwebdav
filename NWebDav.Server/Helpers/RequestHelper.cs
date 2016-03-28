@@ -92,7 +92,7 @@ namespace NWebDav.Server.Helpers
             };
 
             // Return the timeout values
-            return timeoutHeader.Split(new [] {','}, StringSplitOptions.RemoveEmptyEntries).Select(parseTimeout).Where(t => t != 0).ToArray();
+            return timeoutHeader.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(parseTimeout).Where(t => t != 0).ToArray();
         }
 
         public static Uri GetLockToken(this IHttpRequest request)
@@ -107,7 +107,7 @@ namespace NWebDav.Server.Helpers
                 return null;
 
             // Create an Uri of the intermediate part
-            return new Uri(lockTokenHeader.Substring(1, lockTokenHeader.Length-2), UriKind.Absolute);
+            return new Uri(lockTokenHeader.Substring(1, lockTokenHeader.Length - 2), UriKind.Absolute);
         }
     }
 }

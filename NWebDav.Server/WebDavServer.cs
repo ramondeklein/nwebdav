@@ -12,17 +12,17 @@ namespace NWebDav.Server
 {
     public class WebDavServer
     {
-        private static readonly ILogger Log = LoggerFactory.CreateLogger(typeof(WebDavServer));
-        private static readonly string ServerName;
+        private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(WebDavServer));
+        private static readonly string s_serverName;
 
         private readonly IHttpListener _httpListener;
         private readonly IStore _store;
         private readonly IRequestHandlerFactory _requestHandlerFactory;
-        
+
         static WebDavServer()
         {
             var assemblyVersion = typeof(WebDavServer).GetTypeInfo().Assembly.GetName().Version;
-            ServerName = $"NWebDav/{assemblyVersion}";
+            s_serverName = $"NWebDav/{assemblyVersion}";
         }
 
         public WebDavServer(IStore store, IHttpListener httpListener, IRequestHandlerFactory requestHandlerFactory = null)
@@ -61,12 +61,12 @@ namespace NWebDav.Server
             var logRequest = $"{request.HttpMethod}:{request.Url}:{request.RemoteEndPoint?.Address}";
 
             // Log the request
-            Log.Log(LogLevel.Info, $"{logRequest} - Start processing");
+            s_log.Log(LogLevel.Info, $"{logRequest} - Start processing");
 
             try
             {
                 // Set the Server header of the response
-                response.SetHeaderValue("Server", ServerName);
+                response.SetHeaderValue("Server", s_serverName);
 
                 // Start the stopwatch
                 var sw = Stopwatch.StartNew();
@@ -81,7 +81,7 @@ namespace NWebDav.Server
                     if (requestHandler == null)
                     {
                         // Log warning
-                        Log.Log(LogLevel.Warning, $"{logRequest} - Not supported.");
+                        s_log.Log(LogLevel.Warning, $"{logRequest} - Not supported.");
 
                         // Send BadRequest response
                         httpContext.Response.SendResponse(DavStatusCode.BadRequest, "Unsupported request");
@@ -91,7 +91,7 @@ namespace NWebDav.Server
                 catch (Exception exc)
                 {
                     // Log error
-                    Log.Log(LogLevel.Error, $"Unexpected exception while trying to obtain the request handler (method={request.HttpMethod}, url={request.Url}, source={request.RemoteEndPoint}", exc);
+                    s_log.Log(LogLevel.Error, $"Unexpected exception while trying to obtain the request handler (method={request.HttpMethod}, url={request.Url}, source={request.RemoteEndPoint}", exc);
 
                     // Abort
                     return;
@@ -103,7 +103,7 @@ namespace NWebDav.Server
                     if (await requestHandler.HandleRequestAsync(httpContext, _store).ConfigureAwait(false))
                     {
                         // Log processing duration
-                        Log.Log(LogLevel.Info, $"{logRequest} - Finished processing ({sw.ElapsedMilliseconds}ms, HTTP result: {httpContext.Response.Status})");
+                        s_log.Log(LogLevel.Info, $"{logRequest} - Finished processing ({sw.ElapsedMilliseconds}ms, HTTP result: {httpContext.Response.Status})");
                     }
                     else
                     {
@@ -111,7 +111,7 @@ namespace NWebDav.Server
                         httpContext.Response.SendResponse(DavStatusCode.BadRequest, "Request not processed");
 
                         // Log warning
-                        Log.Log(LogLevel.Warning, $"{logRequest} - Not processed.");
+                        s_log.Log(LogLevel.Warning, $"{logRequest} - Not processed.");
                     }
                 }
                 catch (Exception exc)
@@ -120,7 +120,7 @@ namespace NWebDav.Server
                     httpContext.Response.SendResponse(DavStatusCode.InternalServerError);
 
                     // Log what's going wrong
-                    Log.Log(LogLevel.Error, $"Unexpected exception while handling request (method={request.HttpMethod}, url={request.Url}, source={request.RemoteEndPoint}", exc);
+                    s_log.Log(LogLevel.Error, $"Unexpected exception while handling request (method={request.HttpMethod}, url={request.Url}, source={request.RemoteEndPoint}", exc);
                 }
                 finally
                 {

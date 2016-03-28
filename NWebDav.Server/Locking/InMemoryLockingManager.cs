@@ -44,7 +44,7 @@ namespace NWebDav.Server.Locking
         }
 
         private class ItemLockList : List<ItemLockInfo>
-        {            
+        {
         }
 
         private class ItemLockTypeDictionary : Dictionary<LockType, ItemLockList>
@@ -59,7 +59,7 @@ namespace NWebDav.Server.Locking
 
         private readonly IDictionary<IStoreItem, ItemLockTypeDictionary> _itemLocks = new Dictionary<IStoreItem, ItemLockTypeDictionary>();
 
-        private static readonly ScopeAndType[] SupportedLocks =
+        private static readonly ScopeAndType[] s_supportedLocks =
         {
             new ScopeAndType(LockScope.Exclusive, LockType.Write),
             new ScopeAndType(LockScope.Shared, LockType.Write)
@@ -112,7 +112,7 @@ namespace NWebDav.Server.Locking
                         existingLockInfo.RefreshExpiration();
 
                         // Our lock has been updated
-                        return new LockResult(DavStatusCode.OK, GetActiveLockInfo(existingLockInfo));                            
+                        return new LockResult(DavStatusCode.OK, GetActiveLockInfo(existingLockInfo));
                     }
                 }
 
@@ -184,7 +184,7 @@ namespace NWebDav.Server.Locking
                 ItemLockTypeDictionary itemLockTypeDictionary;
                 if (!_itemLocks.TryGetValue(item, out itemLockTypeDictionary))
                     return new ActiveLockInfo[0];
-                
+
                 // Determine current date
                 var utcNow = DateTime.UtcNow;
 
@@ -196,7 +196,7 @@ namespace NWebDav.Server.Locking
         public IEnumerable<ScopeAndType> GetSupportedLocks(IStoreItem item)
         {
             // We support both shared and exclusive locks for items and collections
-            return SupportedLocks;
+            return s_supportedLocks;
         }
 
         public bool HasLock(IStoreItem item, LockType lockType, Uri lockTokenUri)

@@ -43,7 +43,7 @@ namespace NWebDav.Server.Stores
             var requestedPath = uri.AbsolutePath;
             var endOfPrefix = requestedPath.IndexOf('/');
             var prefix = (endOfPrefix >= 0 ? requestedPath.Substring(0, endOfPrefix) : requestedPath).ToLowerInvariant();
-            var subUri = new Uri(uri, endOfPrefix >= 0 ? requestedPath.Substring(endOfPrefix+1) : string.Empty);
+            var subUri = new Uri(uri, endOfPrefix >= 0 ? requestedPath.Substring(endOfPrefix + 1) : string.Empty);
 
             // Try to find the store
             IStore store;

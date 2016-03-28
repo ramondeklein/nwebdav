@@ -12,7 +12,7 @@ namespace NWebDav.Server.Handlers
     [Verb("OPTIONS")]
     public class OptionsHandler : IRequestHandler
     {
-        private static readonly string[] Verbs = { "COPY", "DELETE", "GET", "HEAD", "LOCK", "MKCOL", "MOVE", "OPTIONS", "PROPFIND", "PROPPATCH", "PUT", "UNLOCK" };
+        private static readonly string[] s_verbs = { "COPY", "DELETE", "GET", "HEAD", "LOCK", "MKCOL", "MOVE", "OPTIONS", "PROPFIND", "PROPPATCH", "PUT", "UNLOCK" };
 
         public Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)
         {
@@ -23,8 +23,8 @@ namespace NWebDav.Server.Handlers
             response.SetHeaderValue("DAV", "1");
 
             // Set the Allow/Public headers
-            response.SetHeaderValue("Allow", string.Join(" ", Verbs));
-            response.SetHeaderValue("Public", string.Join(" ", Verbs));
+            response.SetHeaderValue("Allow", string.Join(" ", s_verbs));
+            response.SetHeaderValue("Public", string.Join(" ", s_verbs));
 
             // Finished
             response.SendResponse(DavStatusCode.OK);

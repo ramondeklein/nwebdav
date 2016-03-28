@@ -21,8 +21,8 @@ namespace NWebDav.Server.Stores
         [DebuggerDisplay("{_fileInfo.FullPath}")]
         private class StoreItem : IStoreItem
         {
-            private static readonly ILogger Log = LoggerFactory.CreateLogger(typeof(StoreItem));
-            private static readonly PropertyManager<StoreItem> ItemPropertyManager = new PropertyManager<StoreItem>(new DavProperty<StoreItem>[]
+            private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(StoreItem));
+            private static readonly PropertyManager<StoreItem> s_itemPropertyManager = new PropertyManager<StoreItem>(new DavProperty<StoreItem>[]
             {
                 // RFC-2518 properties
                 new DavCreationDate<StoreItem>
@@ -105,7 +105,7 @@ namespace NWebDav.Server.Stores
             public string Name => _fileInfo.Name;
             public Stream GetReadableStream(IPrincipal principal) => _fileInfo.OpenRead();
             public Stream GetWritableStream(IPrincipal principal) => _fileInfo.OpenWrite();
-            public IPropertyManager PropertyManager => ItemPropertyManager;
+            public IPropertyManager PropertyManager => s_itemPropertyManager;
             public ILockingManager LockingManager => _diskStore.LockingManager;
 
             public async Task<StoreItemResult> CopyAsync(IStoreCollection destination, string name, bool overwrite, IPrincipal principal)
@@ -151,12 +151,12 @@ namespace NWebDav.Server.Stores
                 }
                 catch (IOException ioException) when (ioException.IsDiskFull())
                 {
-                    Log.Log(LogLevel.Error, "Out of disk space while copying data.", ioException);
+                    s_log.Log(LogLevel.Error, "Out of disk space while copying data.", ioException);
                     return new StoreItemResult(DavStatusCode.InsufficientStorage);
                 }
                 catch (Exception exc)
                 {
-                    Log.Log(LogLevel.Error, "Unexpected exception while copying data.", exc);
+                    s_log.Log(LogLevel.Error, "Unexpected exception while copying data.", exc);
                     return new StoreItemResult(DavStatusCode.InternalServerError);
                 }
             }
@@ -193,8 +193,8 @@ namespace NWebDav.Server.Stores
         [DebuggerDisplay("{_directoryInfo.FullPath}\\")]
         private class StoreCollection : IStoreCollection
         {
-            private static readonly ILogger Log = LoggerFactory.CreateLogger(typeof(StoreCollection));
-            private static readonly PropertyManager<StoreCollection> CollectionPropertyManager = new PropertyManager<StoreCollection>(new DavProperty<StoreCollection>[]
+            private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(StoreCollection));
+            private static readonly PropertyManager<StoreCollection> s_collectionPropertyManager = new PropertyManager<StoreCollection>(new DavProperty<StoreCollection>[]
             {
                 // RFC-2518 properties
                 new DavCreationDate<StoreCollection>
@@ -293,7 +293,7 @@ namespace NWebDav.Server.Stores
             public Stream GetReadableStream(IPrincipal principal) => null;
             public Stream GetWritableStream(IPrincipal principal) => null;
 
-            public IPropertyManager PropertyManager => CollectionPropertyManager;
+            public IPropertyManager PropertyManager => s_collectionPropertyManager;
             public ILockingManager LockingManager => _diskStore.LockingManager;
 
             public Task<IStoreItem> GetItemAsync(string name, IPrincipal principal)
@@ -358,7 +358,7 @@ namespace NWebDav.Server.Stores
                 catch (Exception exc)
                 {
                     // Log exception
-                    Log.Log(LogLevel.Error, $"Unable to create '{destinationPath}' file.", exc);
+                    s_log.Log(LogLevel.Error, $"Unable to create '{destinationPath}' file.", exc);
                     return Task.FromResult(new StoreItemResult(DavStatusCode.InternalServerError));
                 }
 
@@ -396,7 +396,7 @@ namespace NWebDav.Server.Stores
                 catch (Exception exc)
                 {
                     // Log exception
-                    Log.Log(LogLevel.Error, $"Unable to create '{destinationPath}' directory.", exc);
+                    s_log.Log(LogLevel.Error, $"Unable to create '{destinationPath}' directory.", exc);
                     return null;
                 }
 
@@ -502,7 +502,7 @@ namespace NWebDav.Server.Stores
                 catch (Exception exc)
                 {
                     // Log exception
-                    Log.Log(LogLevel.Error, $"Unable to delete '{fullPath}' directory.", exc);
+                    s_log.Log(LogLevel.Error, $"Unable to delete '{fullPath}' directory.", exc);
                     return Task.FromResult(DavStatusCode.InternalServerError);
                 }
             }

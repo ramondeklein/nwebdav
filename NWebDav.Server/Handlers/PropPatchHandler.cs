@@ -48,7 +48,7 @@ namespace NWebDav.Server.Handlers
                 var xRoot = xDoc.Root;
                 if (xRoot?.Name != WebDavNamespaces.DavNs + "propertyupdate")
                     throw new Exception("Invalid root element (expected 'propertyupdate')");
-                
+
                 // Check all descendants
                 foreach (var xElement in xRoot.Elements())
                 {

@@ -9,7 +9,7 @@ namespace NWebDav.Server.Handlers
 {
     public class RequestHandlerFactory : IRequestHandlerFactory
     {
-        private static readonly IDictionary<string, Type> RequestHandlers = new Dictionary<string, Type>();
+        private static readonly IDictionary<string, Type> s_requestHandlers = new Dictionary<string, Type>();
 
         static RequestHandlerFactory()
         {
@@ -17,7 +17,7 @@ namespace NWebDav.Server.Handlers
             {
                 // Obtain the verbs of the request handler
                 foreach (var verbAttribute in requestHandlerType.GetTypeInfo().GetCustomAttributes<VerbAttribute>())
-                    RequestHandlers.Add(verbAttribute.Verb, requestHandlerType);
+                    s_requestHandlers.Add(verbAttribute.Verb, requestHandlerType);
             }
         }
 
@@ -25,7 +25,7 @@ namespace NWebDav.Server.Handlers
         {
             // Obtain the dispatcher
             Type requestHandlerType;
-            if (!RequestHandlers.TryGetValue(httpContext.Request.HttpMethod, out requestHandlerType))
+            if (!s_requestHandlers.TryGetValue(httpContext.Request.HttpMethod, out requestHandlerType))
                 return null;
 
             // Create an instance of the request handler
