@@ -1,5 +1,5 @@
 ﻿using System;
-using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 
@@ -14,8 +14,8 @@ namespace NWebDav.Server.Helpers
             if (memberInfo == null)
                 return defaultValue;
 
-            var descriptionAttribute = memberInfo.GetCustomAttributes<DescriptionAttribute>().FirstOrDefault();
-            return descriptionAttribute?.Description;
+            var displayAttribute = memberInfo.GetCustomAttributes<DisplayAttribute>().FirstOrDefault();
+            return displayAttribute?.Description;
         }
     }
 }

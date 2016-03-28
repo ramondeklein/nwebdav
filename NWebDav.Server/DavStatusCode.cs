@@ -1,57 +1,57 @@
 ﻿using System;
-using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 
 namespace NWebDav.Server
 {
     public enum DavStatusCode
     {
-        [Description("Processing")]
+        [Display(Description = "Processing")]
         Processing = 102,
 
-        [Description("OK")]
+        [Display(Description = "OK")]
         OK = (int)HttpStatusCode.OK,
 
-        [Description("Created")]
+        [Display(Description = "Created")]
         Created = (int)HttpStatusCode.Created,
 
-        [Description("No Content")]
+        [Display(Description = "No Content")]
         NoContent = (int)HttpStatusCode.NoContent,
 
-        [Description("Multi-Status")]
+        [Display(Description = "Multi-Status")]
         MultiStatus = 207,
 
-        [Description("Bad Request")]
+        [Display(Description = "Bad Request")]
         BadRequest = (int)HttpStatusCode.BadRequest,
 
-        [Description("Forbidden")]
+        [Display(Description = "Forbidden")]
         Forbidden = (int)HttpStatusCode.Forbidden,
 
-        [Description("Conflict")]
+        [Display(Description = "Conflict")]
         Conflict = (int)HttpStatusCode.Conflict,
 
-        [Description("Not Found")]
+        [Display(Description = "Not Found")]
         NotFound = (int)HttpStatusCode.NotFound,
 
-        [Description("Precondition Failed")]
+        [Display(Description = "Precondition Failed")]
         PreconditionFailed = (int)HttpStatusCode.PreconditionFailed,
 
-        [Description("Unprocessable Entity")]
+        [Display(Description = "Unprocessable Entity")]
         UnprocessableEntity = 422,
 
-        [Description("Locked")]
+        [Display(Description = "Locked")]
         Locked = 423,
 
-        [Description("Failed Dependency")]
+        [Display(Description = "Failed Dependency")]
         FailedDependency = 424,
 
-        [Description("Internal Server Error")]
+        [Display(Description = "Internal Server Error")]
         InternalServerError = (int)HttpStatusCode.InternalServerError,
 
-        [Description("Bad Gateway")]
+        [Display(Description = "Bad Gateway")]
         BadGateway = (int)HttpStatusCode.BadGateway,
 
-        [Description("Insufficient Storage")]
+        [Display(Description = "Insufficient Storage")]
         InsufficientStorage = 507,
     }
 }
