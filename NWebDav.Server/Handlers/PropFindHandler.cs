@@ -216,13 +216,16 @@ namespace NWebDav.Server.Handlers
                     propertyMode = PropertyMode.AllProperties | PropertyMode.SelectedProperties;
 
                     // Include all specified properties
-                    foreach (var xSubProp in xPropFind.Elements())
+                    foreach (var xSubProp in xProp.Elements())
                         properties.Add(xSubProp.Name);
                 }
                 else
                 {
                     propertyMode = PropertyMode.SelectedProperties;
-                    properties.Add(xProp.Name);
+
+                    // Include all specified properties
+                    foreach (var xSubProp in xProp.Elements())
+                        properties.Add(xSubProp.Name);
                 }
             }
 
