@@ -25,11 +25,6 @@ namespace NWebDav.Server.Platform.DotNet45
 
             public void Close()
             {
-                // Save status-code and description
-                _httpListenerContext.Response.StatusCode = Response.Status;
-                if (!string.IsNullOrEmpty(Response.StatusDescription))
-                    _httpListenerContext.Response.StatusDescription = Response.StatusDescription;
-
                 // Close the response
                 _httpListenerContext.Response.Close();
             }

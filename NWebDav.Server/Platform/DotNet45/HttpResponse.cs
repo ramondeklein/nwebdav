@@ -18,14 +18,19 @@ namespace NWebDav.Server.Platform.DotNet45
             internal HttpResponse(HttpListenerResponse response)
             {
                 _response = response;
-
-                // Set initial response
-                Status = _response.StatusCode;
-                StatusDescription = _response.StatusDescription;
             }
 
-            public int Status { get; set; }
-            public string StatusDescription { get; set; }
+            public int Status 
+            { 
+                get { return _response.StatusCode; }
+                set { _response.StatusCode = value; }
+            }
+
+            public string StatusDescription
+            { 
+                get { return _response.StatusDescription; }
+                set { _response.StatusDescription = value; }
+            }
 
             public void SetHeaderValue(string header, string value)
             {
