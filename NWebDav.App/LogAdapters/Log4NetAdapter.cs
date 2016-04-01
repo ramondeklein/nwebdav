@@ -1,7 +1,7 @@
 ﻿using System;
 using NWebDav.Server.Logging;
 
-namespace NWebDav.App.Log4Net
+namespace NWebDav.App.LogAdapters
 {
     public class Log4NetAdapter : ILoggerFactory
     {

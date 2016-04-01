@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Net;
-using NWebDav.App.Log4Net;
+using NWebDav.App.LogAdapters;
 using NWebDav.Server;
 using NWebDav.Server.Logging;
 using NWebDav.Server.Platform.DotNet45;
