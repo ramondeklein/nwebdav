@@ -64,6 +64,9 @@ namespace NWebDav.Server.Handlers
                 {
                     if (stream != null)
                     {
+                        // Set the response
+                        response.SendResponse(DavStatusCode.OK);
+
                         // Set the expected content length
                         try
                         {
@@ -77,9 +80,6 @@ namespace NWebDav.Server.Handlers
 
                         // Copy the entire item
                         await stream.CopyToAsync(response.Stream).ConfigureAwait(false);
-
-                        // Set the response
-                        response.SendResponse(DavStatusCode.OK);
                     }
                     else
                     {
