@@ -116,11 +116,19 @@ namespace NWebDav.Server
                 }
                 catch (Exception exc)
                 {
-                    // Set status code to bad request
-                    httpContext.Response.SendResponse(DavStatusCode.InternalServerError);
-
                     // Log what's going wrong
                     s_log.Log(LogLevel.Error, $"Unexpected exception while handling request (method={request.HttpMethod}, url={request.Url}, source={request.RemoteEndPoint}", exc);
+
+                    try
+                    {
+                        // Attempt to return 'InternalServerError' (if still possible)
+                        httpContext.Response.SendResponse(DavStatusCode.InternalServerError);
+                    }
+                    catch
+                    {
+                        // We might not be able to send the response, because a response
+                        // was already initiated by the the request handler.
+                    }
                 }
                 finally
                 {
