@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
+
 using NWebDav.Server.Http;
 
 namespace NWebDav.Server.Helpers
@@ -11,8 +13,17 @@ namespace NWebDav.Server.Helpers
         public string Name { get; set; }
     }
 
+    public class Range
+    {
+        public long? Start { get; set; }
+        public long? End { get; set; }
+        public DateTime If {get; set; }
+    }
+
     public static class RequestHelper
     {
+        private static readonly Regex s_rangeRegex = new Regex("bytes\\=(?<start>[0-9]*)-(?<end>[0-9]*)");
+
         public static SplitUri SplitUri(string uri)
         {
             // Determine the offset of the name
@@ -108,6 +119,46 @@ namespace NWebDav.Server.Helpers
 
             // Create an Uri of the intermediate part
             return new Uri(lockTokenHeader.Substring(1, lockTokenHeader.Length - 2), UriKind.Absolute);
+        }
+
+        public static Range GetRange(this IHttpRequest request)
+        {
+            // Get the value of the range header as a string
+            var rangeHeader = request.GetHeaderValue("Range");
+            if (string.IsNullOrEmpty(rangeHeader))
+                return null;
+
+            // We only support the bytes=<start>-<end> format
+            var match = s_rangeRegex.Match(rangeHeader);
+            if (!match.Success)
+                throw new FormatException($"Illegal format for range header: {rangeHeader}");
+
+            // Obtain the start and end
+            var startText = match.Groups["start"].Value;
+            var endText = match.Groups["end"].Value;
+            var range = new Range
+            {
+                Start = !string.IsNullOrEmpty(startText) ? (long?)long.Parse(startText) : null,
+                End = !string.IsNullOrEmpty(endText) ? (long?)long.Parse(endText ) : null
+            };
+
+            // Check if we also have an If-Range
+            var ifRangeHeader = request.GetHeaderValue("If-Range");
+            if (ifRangeHeader != null)
+            {
+                // Attempt to parse the date. If we don't understand the If-Range
+                // then we need to return the entire file, so we will act as if no
+                // range was specified at all.
+                DateTime dt;
+                if (!DateTime.TryParse(ifRangeHeader, out dt))
+                    return null;
+
+                // Use the date for the 'If'
+                range.If = dt;
+            }
+
+            // Return the range
+            return range;
         }
     }
 }

@@ -19,6 +19,9 @@ namespace NWebDav.Server
         [DavStatusCode("No Content")]
         NoContent = (int)HttpStatusCode.NoContent,
 
+        [DavStatusCode("Partial Content")]
+        PartialContent = (int)HttpStatusCode.PartialContent,
+
         [DavStatusCode("Multi-Status")]
         MultiStatus = 207,
 
