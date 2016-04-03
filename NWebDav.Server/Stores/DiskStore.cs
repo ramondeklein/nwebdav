@@ -176,8 +176,7 @@ namespace NWebDav.Server.Stores
 
             private string DetermineContentType()
             {
-                // TODO: Determine content type based on extension
-                return "application/octet-stream";
+                return MimeTypes.GetMimeType(_fileInfo.Name);
             }
 
             private string CalculateEtag()

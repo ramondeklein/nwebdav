@@ -105,6 +105,7 @@
   <ItemGroup>
     <None Include="NWebDav.Server.project.json" />
     <None Include="project.json" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Platform\DotNetCore\README.txt" />
