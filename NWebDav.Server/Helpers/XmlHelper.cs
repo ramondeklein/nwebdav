@@ -17,7 +17,7 @@ namespace NWebDav.Server.Helpers
             if (memberInfo == null)
                 return defaultValue;
 
-            var xmlEnumAttribute = memberInfo.GetCustomAttributes<XmlEnumAttribute>().FirstOrDefault();
+            var xmlEnumAttribute = memberInfo.CustomAttributes.OfType<XmlEnumAttribute>().FirstOrDefault();
             return xmlEnumAttribute?.Name;
         }
     }
