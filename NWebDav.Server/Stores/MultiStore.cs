@@ -40,7 +40,7 @@ namespace NWebDav.Server.Stores
         private T Resolve<T>(Uri uri, Func<IStore, Uri, T> action)
         {
             // Determine the path
-            var requestedPath = uri.AbsolutePath;
+            var requestedPath = uri.LocalPath;
             var endOfPrefix = requestedPath.IndexOf('/');
             var prefix = (endOfPrefix >= 0 ? requestedPath.Substring(0, endOfPrefix) : requestedPath).ToLowerInvariant();
             var subUri = new Uri(uri, endOfPrefix >= 0 ? requestedPath.Substring(endOfPrefix + 1) : string.Empty);
