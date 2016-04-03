@@ -38,8 +38,8 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.XML" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DavStatusCode.cs" />
@@ -67,7 +67,6 @@
     <Compile Include="Helpers\RequestHelper.cs" />
     <Compile Include="Helpers\ResponseHelpers.cs" />
     <Compile Include="Helpers\XmlHelper.cs" />
-    <Compile Include="Http\IHttpListener.cs" />
     <Compile Include="IRequestHandlerFactory.cs" />
     <Compile Include="IRequestHandler.cs" />
     <Compile Include="Locking\InMemoryLockingManager.cs" />
@@ -77,7 +76,6 @@
     <Compile Include="Logging\LogLevel.cs" />
     <Compile Include="Logging\NullLoggerFactory.cs" />
     <Compile Include="Platform\DotNet45\HttpContext.cs" />
-    <Compile Include="Platform\DotNet45\HttpListenerAdapter.cs" />
     <Compile Include="Platform\DotNet45\HttpRequest.cs" />
     <Compile Include="Platform\DotNet45\HttpResponse.cs" />
     <Compile Include="Platform\DotNet45\HttpSession.cs" />
@@ -100,7 +98,8 @@
     <Compile Include="Stores\MultiStore.cs" />
     <Compile Include="VerbAttribute.cs" />
     <Compile Include="WebDavNamespaces.cs" />
-    <Compile Include="WebDavServer.cs" />
+    <Compile Include="WebDavDispatcher.cs" />
+    <Compile Include="IWebDavDispatcher.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="NWebDav.Server.project.json" />

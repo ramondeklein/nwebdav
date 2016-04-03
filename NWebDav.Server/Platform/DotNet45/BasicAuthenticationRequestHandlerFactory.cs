@@ -18,7 +18,7 @@ namespace NWebDav.Server.Platform.DotNet45
         protected override bool OnBeginRequest(IHttpContext httpContext)
         {
             // Obtain the basic identity
-            var basicIdentity = httpContext.Session.Principal as HttpListenerBasicIdentity;
+            var basicIdentity = httpContext.Session.Principal.Identity as HttpListenerBasicIdentity;
             if (basicIdentity == null || !_basicAuthentication.CheckCredentials(basicIdentity.Name, basicIdentity.Password))
             {
                 var response = httpContext.Response;

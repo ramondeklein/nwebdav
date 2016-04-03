@@ -4,7 +4,7 @@ using NWebDav.Server.Http;
 
 namespace NWebDav.Server.Platform.DotNet45
 {
-    public partial class HttpListenerAdapter
+    public partial class HttpContext
     {
         private class HttpSession : IHttpSession
         {

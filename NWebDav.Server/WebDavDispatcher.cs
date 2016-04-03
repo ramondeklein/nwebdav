@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Reflection;
+using System.Threading.Tasks;
 
 using NWebDav.Server.Handlers;
 using NWebDav.Server.Helpers;
@@ -10,50 +11,32 @@ using NWebDav.Server.Stores;
 
 namespace NWebDav.Server
 {
-    public class WebDavServer
+    public class WebDavDispatcher : IWebDavDispatcher
     {
-        private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(WebDavServer));
+        private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(WebDavDispatcher));
         private static readonly string s_serverName;
 
-        private readonly IHttpListener _httpListener;
         private readonly IStore _store;
         private readonly IRequestHandlerFactory _requestHandlerFactory;
 
-        static WebDavServer()
+        static WebDavDispatcher()
         {
-            var assemblyVersion = typeof(WebDavServer).GetTypeInfo().Assembly.GetName().Version;
+            var assemblyVersion = typeof(WebDavDispatcher).GetTypeInfo().Assembly.GetName().Version;
             s_serverName = $"NWebDav/{assemblyVersion}";
         }
 
-        public WebDavServer(IStore store, IHttpListener httpListener, IRequestHandlerFactory requestHandlerFactory = null)
+        public WebDavDispatcher(IStore store, IRequestHandlerFactory requestHandlerFactory = null)
         {
             // Make sure a store resolver is specified
             if (store == null)
                 throw new ArgumentNullException(nameof(store));
 
-            // Make sure a HTTP listener is specified
-            if (httpListener == null)
-                throw new ArgumentNullException(nameof(httpListener));
-
             // Save store resolver and request handler factory
             _store = store;
             _requestHandlerFactory = requestHandlerFactory ?? new RequestHandlerFactory();
-
-            // Save the HTTP listener
-            _httpListener = httpListener;
         }
 
-        public async void Start()
-        {
-            IHttpContext httpContext;
-            while ((httpContext = await _httpListener.GetContextAsync().ConfigureAwait(false)) != null)
-            {
-                // Dispatch
-                DispatchRequest(httpContext);
-            }
-        }
-
-        private async void DispatchRequest(IHttpContext httpContext)
+        public async Task DispatchRequestAsync(IHttpContext httpContext)
         {
             // Determine the request log-string
             var request = httpContext.Request;
@@ -144,3 +127,4 @@ namespace NWebDav.Server
         }
     }
 }
+
