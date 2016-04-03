@@ -6,3 +6,4 @@ packages/
 *.nupkg
 **/project.lock.json
 **/*.user
+**/*.userprefs
