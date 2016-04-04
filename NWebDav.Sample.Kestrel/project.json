@@ -1,0 +1,26 @@
+{
+  "version": "0.1.4-*",
+
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
+
+  "frameworks": {
+    "dnxcore50": {
+      "dependencies": {
+        "NWebDav.Server": "0.0.0.0",
+        "NWebDav.Server.AspNetCore": "0.0.0.0",
+        "Microsoft.NETCore.Platforms": "1.0.1-beta-23516",
+        "System.Linq": "4.0.1-beta-23516",
+        "System.Net.Primitives": "4.0.11-beta-23516",
+        "System.Security.Principal": "4.0.1-beta-23516",
+        "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
+        "Microsoft.Extensions.Logging.Console": "1.0.0-*"
+      }
+    }
+  },
+  
+  "commands": {
+      "web": "Microsoft.AspNet.Server.Kestrel"
+  }
+}
