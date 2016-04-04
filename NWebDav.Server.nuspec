@@ -17,6 +17,6 @@
     <language>en-US</language>
   </metadata>
   <files>
-    <file src="NWebDav.Server\bin\Release\NWebDav.Server.*" target="lib\net45" />
+    <file src="NWebDav.Server\bin\Release\NWebDav.Server.*" target="lib\net451" />
   </files>
 </package>
