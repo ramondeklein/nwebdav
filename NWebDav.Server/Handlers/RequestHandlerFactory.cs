@@ -17,7 +17,7 @@ namespace NWebDav.Server.Handlers
             foreach (var requestHandlerType in assemblyTypes.Where(t => typeof(IRequestHandler).GetTypeInfo().IsAssignableFrom(t)))
             {
                 // Obtain the verbs of the request handler
-                foreach (var verbAttribute in requestHandlerType.CustomAttributes.OfType<VerbAttribute>())
+                foreach (var verbAttribute in requestHandlerType.GetCustomAttributes<VerbAttribute>())
                     s_requestHandlers.Add(verbAttribute.Verb, requestHandlerType.AsType());
             }
         }

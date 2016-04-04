@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NWebDav.Server", "NWebDav.Server\NWebDav.Server.csproj", "{6F982556-E0C2-46E9-A90C-7477B3ED19CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NWebDav.App", "NWebDav.App\NWebDav.App.csproj", "{F7271AB3-E0B3-415A-934D-5CD24585AEE2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NWebDav.Server.HttpListener", "NWebDav.Server.HttpListener\NWebDav.Server.HttpListener.csproj", "{4D1752DA-C75B-4B24-8D8C-87DB713DBB2E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NWebDav.Sample.HttpListener", "NWebDav.Sample.HttpListener\NWebDav.Sample.HttpListener.csproj", "{F7271AB3-E0B3-415A-934D-5CD24585AEE2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Files", "Files", "{942BBBEF-03F3-4CDC-80B5-09F975CDC9DC}"
 	ProjectSection(SolutionItems) = preProject
@@ -27,6 +29,10 @@ Global
 		{F7271AB3-E0B3-415A-934D-5CD24585AEE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7271AB3-E0B3-415A-934D-5CD24585AEE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F7271AB3-E0B3-415A-934D-5CD24585AEE2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D1752DA-C75B-4B24-8D8C-87DB713DBB2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D1752DA-C75B-4B24-8D8C-87DB713DBB2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D1752DA-C75B-4B24-8D8C-87DB713DBB2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D1752DA-C75B-4B24-8D8C-87DB713DBB2E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

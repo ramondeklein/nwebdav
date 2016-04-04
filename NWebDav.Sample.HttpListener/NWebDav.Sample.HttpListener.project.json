@@ -7,6 +7,6 @@
     "net46": {}
   },
   "dependencies": {
-    "mimetypes": "1.0.5"
+    "log4net": "2.0.5"
   }
 }

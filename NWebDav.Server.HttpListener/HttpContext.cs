@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Net;
+
 using NWebDav.Server.Http;
 
-namespace NWebDav.Server.Platform.DotNet45
+namespace NWebDav.Server.HttpListener
 {
     public partial class HttpContext : IHttpContext
     {

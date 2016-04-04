@@ -1,12 +1,10 @@
-﻿{
+{
   "runtimes": {
-    "win": {}
+    "win": {} 
   },
+
   "frameworks": {
     "net451": {},
     "net46": {}
-  },
-  "dependencies": {
-    "mimetypes": "1.0.5"
   }
 }

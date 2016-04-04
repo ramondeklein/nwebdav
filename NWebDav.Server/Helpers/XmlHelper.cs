@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 
 namespace NWebDav.Server.Helpers
@@ -17,7 +14,7 @@ namespace NWebDav.Server.Helpers
             if (memberInfo == null)
                 return defaultValue;
 
-            var xmlEnumAttribute = memberInfo.CustomAttributes.OfType<XmlEnumAttribute>().FirstOrDefault();
+            var xmlEnumAttribute = memberInfo.GetCustomAttribute<XmlEnumAttribute>();
             return xmlEnumAttribute?.Name;
         }
     }

@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Net;
 using System.Threading;
-using System.Threading.Tasks;
 
-using NWebDav.App.LogAdapters;
 using NWebDav.Server;
+using NWebDav.Server.Handlers;
+using NWebDav.Server.HttpListener;
 using NWebDav.Server.Logging;
-using NWebDav.Server.Platform.DotNet45;
 using NWebDav.Server.Stores;
 
-namespace NWebDav.App
+using NWebDav.Sample.HttpListener.LogAdapters;
+
+namespace NWebDav.Sample.HttpListener
 {
     internal class Program
     {
@@ -21,13 +22,14 @@ namespace NWebDav.App
             }
         }
 
-        private static async void DispatchHttpRequestsAsync(HttpListener httpListener, CancellationToken cancellationToken )
+        private static async void DispatchHttpRequestsAsync(System.Net.HttpListener httpListener, CancellationToken cancellationToken )
         {
             // Create a basic authenticator
-            var basicAuthentication = new BasicAuthentication();
+            //var basicAuthentication = new BasicAuthentication();
 
             // Create a request handler factory that uses basic authentication
-            var requestHandlerFactory = new BasicAuthenticationRequestHandlerFactory(basicAuthentication);
+            //var requestHandlerFactory = new BasicAuthenticationRequestHandlerFactory(basicAuthentication);
+            var requestHandlerFactory = new RequestHandlerFactory();
 
             // Create WebDAV dispatcher
             var homeFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
@@ -54,10 +56,10 @@ namespace NWebDav.App
             adapter.LogLevels.Add(LogLevel.Info);
             LoggerFactory.Factory = adapter;
 
-            using (var httpListener = new HttpListener())
+            using (var httpListener = new System.Net.HttpListener())
             {
-                httpListener.AuthenticationSchemes = AuthenticationSchemes.Basic;
-                httpListener.Realm = "WebDAV server";
+                //httpListener.AuthenticationSchemes = AuthenticationSchemes.Basic;
+                //httpListener.Realm = "WebDAV server";
                 httpListener.Prefixes.Add("http://localhost:11111/");
 
                 // Start the HTTP listener

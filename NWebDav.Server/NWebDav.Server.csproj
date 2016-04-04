@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NWebDav.Server</RootNamespace>
     <AssemblyName>NWebDav.Server</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -48,7 +48,6 @@
     <Compile Include="Http\IHttpRequest.cs" />
     <Compile Include="Http\IHttpResponse.cs" />
     <Compile Include="Http\IHttpSession.cs" />
-    <Compile Include="Platform\DotNet45\BasicAuthenticationRequestHandlerFactory.cs" />
     <Compile Include="Handlers\CopyHandler.cs" />
     <Compile Include="Handlers\DeleteHandler.cs" />
     <Compile Include="Handlers\GetAndHeadHandler.cs" />
@@ -75,10 +74,6 @@
     <Compile Include="Logging\LoggerFactory.cs" />
     <Compile Include="Logging\LogLevel.cs" />
     <Compile Include="Logging\NullLoggerFactory.cs" />
-    <Compile Include="Platform\DotNet45\HttpContext.cs" />
-    <Compile Include="Platform\DotNet45\HttpRequest.cs" />
-    <Compile Include="Platform\DotNet45\HttpResponse.cs" />
-    <Compile Include="Platform\DotNet45\HttpSession.cs" />
     <Compile Include="Props\LockingProperties.cs" />
     <Compile Include="Stores\IStore.cs" />
     <Compile Include="Locking\ILockingManager.cs" />
@@ -105,10 +100,6 @@
   <ItemGroup>
     <None Include="NWebDav.Server.project.json" />
     <None Include="project.json" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Platform\DotNetCore\README.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -1,0 +1,34 @@
+{
+  "version": "0.1.3-*",
+
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
+
+  "frameworks": {
+    "net451": {
+      "dependencies": {
+        "NWebDav.Server.HttpListener": "0.0.0.0",
+        "NWebDav.Server": "0.0.0.0",
+        "log4net": "1.2.10"
+      },
+      "frameworkAssemblies": {
+        "System.Xml": "4.0.0.0",
+        "System.Xml.Linq": "4.0.0.0",
+        "System.Xml.XDocument": "4.0.0.0"
+      }
+    },
+    "net46": {
+      "dependencies": {
+        "NWebDav.Server.HttpListener": "0.0.0.0",
+        "NWebDav.Server": "0.0.0.0",
+        "log4net": "1.2.10"
+      },
+      "frameworkAssemblies": {
+        "System.Xml": "4.0.0.0",
+        "System.Xml.Linq": "4.0.0.0",
+        "System.Xml.XDocument": "4.0.10.0"
+      }
+    }
+  }
+}

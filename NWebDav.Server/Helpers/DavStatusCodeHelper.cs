@@ -13,7 +13,7 @@ namespace NWebDav.Server.Helpers
             if (memberInfo == null)
                 return defaultValue;
 
-            var davStatusCodeAttribute = memberInfo.CustomAttributes.OfType<DavStatusCodeAttribute>().FirstOrDefault();
+            var davStatusCodeAttribute = memberInfo.GetCustomAttribute<DavStatusCodeAttribute>();
             return davStatusCodeAttribute?.Description;
         }
     }

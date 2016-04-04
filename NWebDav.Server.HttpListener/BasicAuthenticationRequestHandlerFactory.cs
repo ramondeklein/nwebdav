@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Net;
+
 using NWebDav.Server.Handlers;
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 
-namespace NWebDav.Server.Platform.DotNet45
+namespace NWebDav.Server.HttpListener
 {
     public class BasicAuthenticationRequestHandlerFactory : AuthenticatedRequestHandlerFactory
     {

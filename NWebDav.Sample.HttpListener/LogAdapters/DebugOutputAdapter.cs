@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 using NWebDav.Server.Logging;
 
-namespace NWebDav.App.LogAdapters
+namespace NWebDav.Sample.HttpListener.LogAdapters
 {
     public class DebugOutputAdapter : ILoggerFactory
     {

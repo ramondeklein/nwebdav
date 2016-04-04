@@ -4,6 +4,6 @@ packages/
 */bin/
 *.suo
 *.nupkg
-**/project.lock.json
+**/*.lock.json
 **/*.user
 **/*.userprefs

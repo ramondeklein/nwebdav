@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+
 using NWebDav.Server.Http;
 
-namespace NWebDav.Server.Platform.DotNet45
+namespace NWebDav.Server.HttpListener
 {
     public partial class HttpContext
     {
