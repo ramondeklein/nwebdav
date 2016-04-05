@@ -7,9 +7,13 @@
 
   "frameworks": {
     "net451": {
-      "dependencies": {
-        "MimeTypes": "1.0.5"
-      },
+      "frameworkAssemblies": {
+        "System.Xml": "4.0.0.0",
+        "System.Xml.Linq": "4.0.0.0",
+        "System.Xml.XDocument": "4.0.0.0"
+      }
+    },
+    "net452": {
       "frameworkAssemblies": {
         "System.Xml": "4.0.0.0",
         "System.Xml.Linq": "4.0.0.0",
@@ -17,9 +21,6 @@
       }
     },
     "net46": {
-      "dependencies": {
-        "MimeTypes": "1.0.5"
-      },
       "frameworkAssemblies": {
         "System.Xml": "4.0.0.0",
         "System.Xml.Linq": "4.0.0.0",
@@ -28,17 +29,20 @@
     },
     "dnxcore50": {
       "dependencies": {
-        "MimeTypes": "1.0.5",
         "Microsoft.NETCore.Platforms": "1.0.1-beta-23516",
         "System.Linq": "4.0.1-beta-23516",
         "System.Net.Primitives": "4.0.11-beta-23516",
         "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-23225",
         "System.Security.Principal": "4.0.1-beta-23516",
-		"System.Reflection.TypeExtensions": "4.1.0-beta-23516",
+        "System.Reflection.TypeExtensions": "4.1.0-beta-23516",
         "System.Reflection.Extensions": "4.0.1-beta-23516",
         "System.Xml.XDocument": "4.0.11-beta-23516",
         "System.Xml.XmlSerializer": "4.0.11-beta-23516"
       }
     }
+  },
+
+  "dependencies": {
+    "MimeTypes": "1.0.5"
   }
 }

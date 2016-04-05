@@ -7,9 +7,13 @@
 
   "frameworks": {
     "net451": {
-      "dependencies": {
-        "NWebDav.Server": "0.0.0.0"
-      },
+      "frameworkAssemblies": {
+        "System.Xml": "4.0.0.0",
+        "System.Xml.Linq": "4.0.0.0",
+        "System.Xml.XDocument": "4.0.0.0"
+      }
+    },
+    "net452": {
       "frameworkAssemblies": {
         "System.Xml": "4.0.0.0",
         "System.Xml.Linq": "4.0.0.0",
@@ -17,14 +21,14 @@
       }
     },
     "net46": {
-      "dependencies": {
-        "NWebDav.Server": "0.0.0.0"
-      },
       "frameworkAssemblies": {
         "System.Xml": "4.0.0.0",
         "System.Xml.Linq": "4.0.0.0",
         "System.Xml.XDocument": "4.0.10.0"
       }
     }
+  },
+  "dependencies": {
+    "NWebDav.Server": "0.0.0.0"
   }
 }

@@ -1,20 +1,27 @@
-{
+﻿{
   "version": "0.1.4-*",
-
   "compilationOptions": {
     "emitEntryPoint": false
   },
-
   "frameworks": {
+    "dnx451": {
+      "frameworkAssemblies": {
+        "System.Xml": "4.0.0.0",
+        "System.Xml.Linq": "4.0.0.0",
+        "System.Xml.XDocument": "4.0.0.0"
+      }
+    },
     "dnxcore50": {
       "dependencies": {
-        "NWebDav.Server": "0.0.0.0",
         "Microsoft.NETCore.Platforms": "1.0.1-beta-23516",
         "System.Linq": "4.0.1-beta-23516",
         "System.Net.Primitives": "4.0.11-beta-23516",
-        "System.Security.Claims": "4.0.1-beta-23516",
-        "Microsoft.AspNet.Hosting": "1.0.0-*"
+        "System.Security.Claims": "4.0.1-beta-23516"
       }
     }
+  },
+  "dependencies": {
+    "NWebDav.Server": "0.0.0.0",
+    "Microsoft.AspNet.Hosting": "1.0.0-*"
   }
 }

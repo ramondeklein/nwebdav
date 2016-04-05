@@ -1,0 +1,16 @@
+﻿{
+  "runtimes": {
+    "win": {}
+  },
+  "frameworks": {
+    "net451": {},
+    "net452": {},
+    "net46": {}
+  },
+  "dependencies": {
+    "Microsoft.AspNet.Server.Kestrel": "1.0.0-rc1-final",
+    "Microsoft.Extensions.Logging.Console": "1.0.0-rc1-final",
+    "NWebDav.Server": "0.0.0.0",
+    "NWebDav.Server.AspNetCore": "0.0.0.0"
+  }
+}

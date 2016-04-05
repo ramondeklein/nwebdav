@@ -7,3 +7,4 @@ packages/
 **/*.lock.json
 **/*.user
 **/*.userprefs
+.vscode

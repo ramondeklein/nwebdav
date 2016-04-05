@@ -8,6 +8,6 @@
     "net46": { }
   },
   "dependencies": {
-    "mimetypes": "1.0.5"
+    "Microsoft.AspNet.Hosting": "1.0.0-rc1-final"
   }
 }
