@@ -58,12 +58,6 @@ namespace NWebDav.Sample.HttpListener.LogAdapters
             }
         }
 
-        static Log4NetAdapter()
-        {
-            // Configure LOG4NET
-            log4net.Config.XmlConfigurator.Configure();
-        }
-
         public ILogger CreateLogger(Type type)
         {
             return new Log4NetLoggerAdapter(type);

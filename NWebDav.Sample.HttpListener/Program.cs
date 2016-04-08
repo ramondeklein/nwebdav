@@ -49,6 +49,9 @@ namespace NWebDav.Sample.HttpListener
 
         private static void Main(string[] args)
         {
+            // Configure LOG4NET
+            //log4net.Config.XmlConfigurator.Configure();
+
             // Use the Log4NET adapter for logging
             //var adapter = new Log4NetAdapter();
             var adapter = new DebugOutputAdapter();
