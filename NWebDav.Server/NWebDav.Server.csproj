@@ -75,6 +75,7 @@
     <Compile Include="Logging\LogLevel.cs" />
     <Compile Include="Logging\NullLoggerFactory.cs" />
     <Compile Include="Props\LockingProperties.cs" />
+    <Compile Include="Props\OverridePropertyManager.cs" />
     <Compile Include="Stores\DiskStoreCollection.cs" />
     <Compile Include="Stores\DiskStoreItem.cs" />
     <Compile Include="Stores\IStore.cs" />
