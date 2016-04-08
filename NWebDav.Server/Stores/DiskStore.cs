@@ -93,12 +93,11 @@ namespace NWebDav.Server.Stores
                 }
             });
 
-            private readonly DiskStore _diskStore;
             private readonly FileInfo _fileInfo;
 
-            public StoreItem(DiskStore diskStore, FileInfo fileInfo)
+            public StoreItem(ILockingManager lockingManager, FileInfo fileInfo)
             {
-                _diskStore = diskStore;
+                LockingManager = lockingManager;
                 _fileInfo = fileInfo;
             }
 
@@ -106,7 +105,7 @@ namespace NWebDav.Server.Stores
             public Stream GetReadableStream(IPrincipal principal) => _fileInfo.OpenRead();
             public Stream GetWritableStream(IPrincipal principal) => _fileInfo.OpenWrite();
             public IPropertyManager PropertyManager => s_itemPropertyManager;
-            public ILockingManager LockingManager => _diskStore.LockingManager;
+            public ILockingManager LockingManager { get; }
 
             public async Task<StoreItemResult> CopyAsync(IStoreCollection destination, string name, bool overwrite, IPrincipal principal)
             {
@@ -276,12 +275,11 @@ namespace NWebDav.Server.Stores
                 }
             });
 
-            private readonly DiskStore _diskStore;
             private readonly DirectoryInfo _directoryInfo;
 
-            public StoreCollection(DiskStore diskStore, DirectoryInfo directoryInfo)
+            public StoreCollection(ILockingManager lockingManager, DirectoryInfo directoryInfo)
             {
-                _diskStore = diskStore;
+                LockingManager = lockingManager;
                 _directoryInfo = directoryInfo;
             }
 
@@ -293,7 +291,7 @@ namespace NWebDav.Server.Stores
             public Stream GetWritableStream(IPrincipal principal) => null;
 
             public IPropertyManager PropertyManager => s_collectionPropertyManager;
-            public ILockingManager LockingManager => _diskStore.LockingManager;
+            public ILockingManager LockingManager { get; }
 
             public Task<IStoreItem> GetItemAsync(string name, IPrincipal principal)
             {
@@ -302,11 +300,11 @@ namespace NWebDav.Server.Stores
 
                 // Check if the item is a file
                 if (File.Exists(fullPath))
-                    return Task.FromResult<IStoreItem>(new StoreItem(_diskStore, new FileInfo(fullPath)));
+                    return Task.FromResult<IStoreItem>(new StoreItem(LockingManager, new FileInfo(fullPath)));
 
                 // Check if the item is a directory
                 if (Directory.Exists(fullPath))
-                    return Task.FromResult<IStoreItem>(new StoreCollection(_diskStore, new DirectoryInfo(fullPath)));
+                    return Task.FromResult<IStoreItem>(new StoreCollection(LockingManager, new DirectoryInfo(fullPath)));
 
                 // Item not found
                 return Task.FromResult<IStoreItem>(null);
@@ -318,11 +316,11 @@ namespace NWebDav.Server.Stores
 
                 // Add all directories
                 foreach (var subDirectory in _directoryInfo.GetDirectories())
-                    items.Add(new StoreCollection(_diskStore, subDirectory));
+                    items.Add(new StoreCollection(LockingManager, subDirectory));
 
                 // Add all files
                 foreach (var file in _directoryInfo.GetFiles())
-                    items.Add(new StoreItem(_diskStore, file));
+                    items.Add(new StoreItem(LockingManager, file));
 
                 // Return the items
                 return Task.FromResult<IList<IStoreItem>>(items);
@@ -362,7 +360,7 @@ namespace NWebDav.Server.Stores
                 }
 
                 // Return result
-                return Task.FromResult(new StoreItemResult(result, new StoreItem(_diskStore, new FileInfo(destinationPath))));
+                return Task.FromResult(new StoreItemResult(result, new StoreItem(LockingManager, new FileInfo(destinationPath))));
             }
 
             public Task<StoreCollectionResult> CreateCollectionAsync(string name, bool overwrite, IPrincipal principal)
@@ -400,7 +398,7 @@ namespace NWebDav.Server.Stores
                 }
 
                 // Return the collection
-                return Task.FromResult(new StoreCollectionResult(result, new StoreCollection(_diskStore, new DirectoryInfo(destinationPath))));
+                return Task.FromResult(new StoreCollectionResult(result, new StoreCollection(LockingManager, new DirectoryInfo(destinationPath))));
             }
 
             public async Task<StoreItemResult> CopyAsync(IStoreCollection destinationCollection, string name, bool overwrite, IPrincipal principal)
@@ -449,7 +447,7 @@ namespace NWebDav.Server.Stores
 
                         // Move the file
                         File.Move(sourcePath, destinationPath);
-                        return new StoreItemResult(result, new StoreItem(_diskStore, new FileInfo(destinationPath)));
+                        return new StoreItemResult(result, new StoreItem(LockingManager, new FileInfo(destinationPath)));
                     }
                     else
                     {
@@ -529,7 +527,7 @@ namespace NWebDav.Server.Stores
         }
 
         private string BaseDirectory { get; }
-        private ILockingManager LockingManager { get; }
+        public ILockingManager LockingManager { get; }
 
         public Task<IStoreItem> GetItemAsync(Uri uri, IPrincipal principal)
         {
@@ -538,11 +536,11 @@ namespace NWebDav.Server.Stores
 
             // Check if it's a directory
             if (Directory.Exists(path))
-                return Task.FromResult<IStoreItem>(new StoreCollection(this, new DirectoryInfo(path)));
+                return Task.FromResult<IStoreItem>(new StoreCollection(LockingManager, new DirectoryInfo(path)));
 
             // Check if it's a file
             if (File.Exists(path))
-                return Task.FromResult<IStoreItem>(new StoreItem(this, new FileInfo(path)));
+                return Task.FromResult<IStoreItem>(new StoreItem(LockingManager, new FileInfo(path)));
 
             // The item doesn't exist
             return Task.FromResult<IStoreItem>(null);
@@ -556,7 +554,7 @@ namespace NWebDav.Server.Stores
                 return Task.FromResult<IStoreCollection>(null);
 
             // Return the item
-            return Task.FromResult<IStoreCollection>(new StoreCollection(this, new DirectoryInfo(path)));
+            return Task.FromResult<IStoreCollection>(new StoreCollection(LockingManager, new DirectoryInfo(path)));
         }
 
         private string GetPathFromUri(Uri uri)
