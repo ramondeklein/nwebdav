@@ -16,7 +16,7 @@ namespace NWebDav.Server.Stores
             LockingManager = lockingManager ?? new InMemoryLockingManager();
         }
 
-        private string BaseDirectory { get; }
+        public string BaseDirectory { get; }
         public ILockingManager LockingManager { get; }
 
         public Task<IStoreItem> GetItemAsync(Uri uri, IPrincipal principal)
