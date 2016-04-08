@@ -41,7 +41,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BasicAuthenticationRequestHandlerFactory.cs" />
+    <Compile Include="BasicHttpContext.cs" />
+    <Compile Include="HttpBaseContext.cs" />
     <Compile Include="HttpContext.cs" />
     <Compile Include="HttpRequest.cs" />
     <Compile Include="HttpResponse.cs" />

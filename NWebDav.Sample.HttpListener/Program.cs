@@ -14,21 +14,14 @@ namespace NWebDav.Sample.HttpListener
 {
     internal class Program
     {
-        private class BasicAuthentication : IBasicAuthentication
-        {
-            public bool CheckCredentials(string name, string password)
-            {
-                return password == "test";
-            }
-        }
+        //private static bool CheckCredentials(HttpListenerBasicIdentity httpListenerBasicIdentity)
+        //{
+        //    return httpListenerBasicIdentity.Password == "test";
+        //}
 
         private static async void DispatchHttpRequestsAsync(System.Net.HttpListener httpListener, CancellationToken cancellationToken )
         {
-            // Create a basic authenticator
-            //var basicAuthentication = new BasicAuthentication();
-
             // Create a request handler factory that uses basic authentication
-            //var requestHandlerFactory = new BasicAuthenticationRequestHandlerFactory(basicAuthentication);
             var requestHandlerFactory = new RequestHandlerFactory();
 
             // Create WebDAV dispatcher
@@ -38,6 +31,7 @@ namespace NWebDav.Sample.HttpListener
             HttpListenerContext httpListenerContext;
             while (!cancellationToken.IsCancellationRequested && (httpListenerContext = await httpListener.GetContextAsync().ConfigureAwait(false)) != null)
             {
+                //var httpContext = new HttpBasicContext(httpListenerContext, checkIdentity: CheckCredentials);
                 var httpContext = new HttpContext(httpListenerContext);
 
                 // The returned task is not awaited by design to make multiple
@@ -50,7 +44,7 @@ namespace NWebDav.Sample.HttpListener
         private static void Main(string[] args)
         {
             // Configure LOG4NET
-            //log4net.Config.XmlConfigurator.Configure();
+            log4net.Config.XmlConfigurator.Configure();
 
             // Use the Log4NET adapter for logging
             //var adapter = new Log4NetAdapter();

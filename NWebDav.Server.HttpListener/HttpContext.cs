@@ -1,31 +1,17 @@
 ﻿using System;
 using System.Net;
-
 using NWebDav.Server.Http;
 
 namespace NWebDav.Server.HttpListener
 {
-    public partial class HttpContext : IHttpContext
+    public class HttpContext : HttpBaseContext
     {
-        private readonly HttpListenerContext _httpListenerContext;
+        private static readonly IHttpSession s_nullSession = new HttpSession(null);
 
-        public HttpContext(HttpListenerContext httpListenerContext)
+        public HttpContext(HttpListenerContext httpListenerContext) : base(httpListenerContext.Request, httpListenerContext.Response)
         {
-            _httpListenerContext = httpListenerContext;
-
-            Request = new HttpRequest(_httpListenerContext.Request);
-            Response = new HttpResponse(_httpListenerContext.Response);
-            Session = new HttpSession(_httpListenerContext.User);
         }
 
-        public IHttpRequest Request { get; }
-        public IHttpResponse Response { get; }
-        public IHttpSession Session { get; }
-
-        public void Close()
-        {
-            // Close the response
-            _httpListenerContext.Response.Close();
-        }
+        public override IHttpSession Session => s_nullSession;
     }
 }
