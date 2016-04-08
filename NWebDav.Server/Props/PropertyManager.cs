@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Principal;
 using System.Xml.Linq;
 using NWebDav.Server.Stores;
 
@@ -22,7 +23,7 @@ namespace NWebDav.Server.Props
 
         public IEnumerable<PropertyInfo> Properties => _properties.Select(p => new PropertyInfo(p.Value.Name, p.Value.IsExpensive));
 
-        public object GetProperty(IStoreItem item, XName name, bool skipExpensive = false)
+        public object GetProperty(IPrincipal principal, IStoreItem item, XName name, bool skipExpensive = false)
         {
             // Find the property
             DavProperty<TEntry> property;
@@ -38,14 +39,14 @@ namespace NWebDav.Server.Props
                 return null;
 
             // Obtain the value
-            var value = property.Getter((TEntry)item);
+            var value = property.Getter(principal, (TEntry)item);
 
             // Validate the value
             property.Validator.Validate(value);
             return value;
         }
 
-        public DavStatusCode SetProperty(IStoreItem item, XName name, object value)
+        public DavStatusCode SetProperty(IPrincipal principal, IStoreItem item, XName name, object value)
         {
             // Find the property
             DavProperty<TEntry> property;
@@ -61,22 +62,7 @@ namespace NWebDav.Server.Props
                 return DavStatusCode.Conflict;
 
             // Set the value
-            return property.Setter((TEntry)item, value);
-        }
-
-        public T GetTypedProperty<T>(IStoreItem entry, XName name)
-        {
-            // Find the property
-            DavProperty<TEntry> property;
-            if (!_properties.TryGetValue(name, out property))
-                return default(T);
-
-            // Check if the property has a getter
-            if (property.Getter == null)
-                return default(T);
-
-            // Obtain the value
-            return (T)property.Getter((TEntry)entry);
+            return property.Setter(principal, (TEntry)item, value);
         }
     }
 }

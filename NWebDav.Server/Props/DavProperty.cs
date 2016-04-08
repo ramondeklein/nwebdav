@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Security.Principal;
 using System.Xml.Linq;
 using NWebDav.Server.Stores;
 
@@ -28,8 +29,8 @@ namespace NWebDav.Server.Props
 
         public abstract XName Name { get; }
         public bool IsExpensive { get; set; }
-        public Func<TEntry, object> Getter { get; set; }
-        public Func<TEntry, object, DavStatusCode> Setter { get; set; }
+        public Func<IPrincipal, TEntry, object> Getter { get; set; }
+        public Func<IPrincipal, TEntry, object, DavStatusCode> Setter { get; set; }
         public virtual IValidator Validator => DefaultValidator;
     }
 }

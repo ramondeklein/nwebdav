@@ -27,36 +27,36 @@ namespace NWebDav.Server.Stores
                 // RFC-2518 properties
                 new DavCreationDate<StoreItem>
                 {
-                    Getter = item => item._fileInfo.CreationTimeUtc,
-                    Setter = (item, value) => { item._fileInfo.CreationTimeUtc = value; return DavStatusCode.OK; }
+                    Getter = (principal, item) => item._fileInfo.CreationTimeUtc,
+                    Setter = (principal, item, value) => { item._fileInfo.CreationTimeUtc = value; return DavStatusCode.OK; }
                 },
                 new DavDisplayName<StoreItem>
                 {
-                    Getter = item => item._fileInfo.Name
+                    Getter = (principal, item) => item._fileInfo.Name
                 },
                 new DavGetContentLength<StoreItem>
                 {
-                    Getter = item => item._fileInfo.Length
+                    Getter = (principal, item) => item._fileInfo.Length
                 },
                 new DavGetContentType<StoreItem>
                 {
-                    Getter = item => item.DetermineContentType()
+                    Getter = (principal, item) => item.DetermineContentType()
                 },
                 new DavGetEtag<StoreItem>
                 {
                     // Calculating the Etag is an expensive operation,
                     // because we need to scan the entire file.
                     IsExpensive = true,
-                    Getter = item => item.CalculateEtag()
+                    Getter = (principal, item) => item.CalculateEtag()
                 },
                 new DavGetLastModified<StoreItem>
                 {
-                    Getter = item => item._fileInfo.LastWriteTimeUtc,
-                    Setter = (item, value) => { item._fileInfo.LastWriteTimeUtc = value; return DavStatusCode.OK; }
+                    Getter = (principal, item) => item._fileInfo.LastWriteTimeUtc,
+                    Setter = (principal, item, value) => { item._fileInfo.LastWriteTimeUtc = value; return DavStatusCode.OK; }
                 },
                 new DavGetResourceType<StoreItem>
                 {
-                    Getter = item => null
+                    Getter = (principal, item) => null
                 },
 
                 // Default locking property handling via the LockingManager
@@ -67,29 +67,29 @@ namespace NWebDav.Server.Stores
                 // (although not a collection, the IsHidden property might be valuable)
                 new DavIsHidden<StoreItem>
                 {
-                    Getter = item => (item._fileInfo.Attributes & FileAttributes.Hidden) != 0
+                    Getter = (principal, item) => (item._fileInfo.Attributes & FileAttributes.Hidden) != 0
                 },
 
                 // Win32 extensions
                 new Win32CreationTime<StoreItem>
                 {
-                    Getter = item => item._fileInfo.CreationTimeUtc,
-                    Setter = (item, value) => { item._fileInfo.CreationTimeUtc = value; return DavStatusCode.OK; }
+                    Getter = (principal, item) => item._fileInfo.CreationTimeUtc,
+                    Setter = (principal, item, value) => { item._fileInfo.CreationTimeUtc = value; return DavStatusCode.OK; }
                 },
                 new Win32LastAccessTime<StoreItem>
                 {
-                    Getter = item => item._fileInfo.LastAccessTimeUtc,
-                    Setter = (item, value) => { item._fileInfo.LastAccessTimeUtc = value; return DavStatusCode.OK; }
+                    Getter = (principal, item) => item._fileInfo.LastAccessTimeUtc,
+                    Setter = (principal, item, value) => { item._fileInfo.LastAccessTimeUtc = value; return DavStatusCode.OK; }
                 },
                 new Win32LastModifiedTime<StoreItem>
                 {
-                    Getter = item => item._fileInfo.LastWriteTimeUtc,
-                    Setter = (item, value) => { item._fileInfo.LastWriteTimeUtc = value; return DavStatusCode.OK; }
+                    Getter = (principal, item) => item._fileInfo.LastWriteTimeUtc,
+                    Setter = (principal, item, value) => { item._fileInfo.LastWriteTimeUtc = value; return DavStatusCode.OK; }
                 },
                 new Win32FileAttributes<StoreItem>
                 {
-                    Getter = item => item._fileInfo.Attributes,
-                    Setter = (item, value) => { item._fileInfo.Attributes = value; return DavStatusCode.OK; }
+                    Getter = (principal, item) => item._fileInfo.Attributes,
+                    Setter = (principal, item, value) => { item._fileInfo.Attributes = value; return DavStatusCode.OK; }
                 }
             });
 
@@ -197,21 +197,21 @@ namespace NWebDav.Server.Stores
                 // RFC-2518 properties
                 new DavCreationDate<StoreCollection>
                 {
-                    Getter = collection => collection._directoryInfo.CreationTimeUtc,
-                    Setter = (collection, value) => { collection._directoryInfo.CreationTimeUtc = value; return DavStatusCode.OK; }
+                    Getter = (principal, collection) => collection._directoryInfo.CreationTimeUtc,
+                    Setter = (principal, collection, value) => { collection._directoryInfo.CreationTimeUtc = value; return DavStatusCode.OK; }
                 },
                 new DavDisplayName<StoreCollection>
                 {
-                    Getter = collection => collection._directoryInfo.Name
+                    Getter = (principal, collection) => collection._directoryInfo.Name
                 },
                 new DavGetLastModified<StoreCollection>
                 {
-                    Getter = collection => collection._directoryInfo.LastWriteTimeUtc,
-                    Setter = (collection, value) => { collection._directoryInfo.LastWriteTimeUtc = value; return DavStatusCode.OK; }
+                    Getter = (principal, collection) => collection._directoryInfo.LastWriteTimeUtc,
+                    Setter = (principal, collection, value) => { collection._directoryInfo.LastWriteTimeUtc = value; return DavStatusCode.OK; }
                 },
                 new DavGetResourceType<StoreCollection>
                 {
-                    Getter = collection => new XElement(WebDavNamespaces.DavNs + "collection")
+                    Getter = (principal, collection) => new XElement(WebDavNamespaces.DavNs + "collection")
                 },
 
                 // Default locking property handling via the LockingManager
@@ -221,57 +221,57 @@ namespace NWebDav.Server.Stores
                 // Hopmann/Lippert collection properties
                 new DavChildCount<StoreCollection>
                 {
-                    Getter = collection => collection._directoryInfo.EnumerateFiles().Count() + collection._directoryInfo.EnumerateDirectories().Count()
+                    Getter = (principal, collection) => collection._directoryInfo.EnumerateFiles().Count() + collection._directoryInfo.EnumerateDirectories().Count()
                 },
                 new DavIsCollection<StoreCollection>
                 {
-                    Getter = collection => true
+                    Getter = (principal, collection) => true
                 },
                 new DavIsFolder<StoreCollection>
                 {
-                    Getter = collection => true
+                    Getter = (principal, collection) => true
                 },
                 new DavIsHidden<StoreCollection>
                 {
-                    Getter = collection => (collection._directoryInfo.Attributes & FileAttributes.Hidden) != 0
+                    Getter = (principal, collection) => (collection._directoryInfo.Attributes & FileAttributes.Hidden) != 0
                 },
                 new DavHasSubs<StoreCollection>
                 {
-                    Getter = collection => collection._directoryInfo.EnumerateDirectories().Any()
+                    Getter = (principal, collection) => collection._directoryInfo.EnumerateDirectories().Any()
                 },
                 new DavNoSubs<StoreCollection>
                 {
-                    Getter = collection => false
+                    Getter = (principal, collection) => false
                 },
                 new DavObjectCount<StoreCollection>
                 {
-                    Getter = collection => collection._directoryInfo.EnumerateFiles().Count()
+                    Getter = (principal, collection) => collection._directoryInfo.EnumerateFiles().Count()
                 },
                 new DavVisibleCount<StoreCollection>
                 {
-                    Getter = collection => collection._directoryInfo.EnumerateFiles().Count(fi => (fi.Attributes & FileAttributes.Hidden) == 0)
+                    Getter = (principal, collection) => collection._directoryInfo.EnumerateFiles().Count(fi => (fi.Attributes & FileAttributes.Hidden) == 0)
                 },
                 
                 // Win32 extensions
                 new Win32CreationTime<StoreCollection>
                 {
-                    Getter = collection => collection._directoryInfo.CreationTimeUtc,
-                    Setter = (collection, value) => { collection._directoryInfo.CreationTimeUtc = value; return DavStatusCode.OK; }
+                    Getter = (principal, collection) => collection._directoryInfo.CreationTimeUtc,
+                    Setter = (principal, collection, value) => { collection._directoryInfo.CreationTimeUtc = value; return DavStatusCode.OK; }
                 },
                 new Win32LastAccessTime<StoreCollection>
                 {
-                    Getter = collection => collection._directoryInfo.LastAccessTimeUtc,
-                    Setter = (collection, value) => { collection._directoryInfo.LastAccessTimeUtc = value; return DavStatusCode.OK; }
+                    Getter = (principal, collection) => collection._directoryInfo.LastAccessTimeUtc,
+                    Setter = (principal, collection, value) => { collection._directoryInfo.LastAccessTimeUtc = value; return DavStatusCode.OK; }
                 },
                 new Win32LastModifiedTime<StoreCollection>
                 {
-                    Getter = collection => collection._directoryInfo.LastWriteTimeUtc,
-                    Setter = (collection, value) => { collection._directoryInfo.LastWriteTimeUtc = value; return DavStatusCode.OK; }
+                    Getter = (principal, collection) => collection._directoryInfo.LastWriteTimeUtc,
+                    Setter = (principal, collection, value) => { collection._directoryInfo.LastWriteTimeUtc = value; return DavStatusCode.OK; }
                 },
                 new Win32FileAttributes<StoreCollection>
                 {
-                    Getter = collection => collection._directoryInfo.Attributes,
-                    Setter = (collection, value) => { collection._directoryInfo.Attributes = value; return DavStatusCode.OK; }
+                    Getter = (principal, collection) => collection._directoryInfo.Attributes,
+                    Setter = (principal, collection, value) => { collection._directoryInfo.Attributes = value; return DavStatusCode.OK; }
                 }
             });
 

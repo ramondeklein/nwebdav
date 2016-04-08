@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Security.Principal;
 using System.Xml.Linq;
 using NWebDav.Server.Stores;
 
@@ -8,33 +9,33 @@ namespace NWebDav.Server.Props
 {
     public abstract class DavTypedProperty<TEntry, TType> : DavProperty<TEntry> where TEntry : IStoreItem
     {
-        private Func<TEntry, TType> _getter;
-        private Func<TEntry, TType, DavStatusCode> _setter;
+        private Func<IPrincipal, TEntry, TType> _getter;
+        private Func<IPrincipal, TEntry, TType, DavStatusCode> _setter;
 
-        public new Func<TEntry, TType> Getter
+        public new Func<IPrincipal, TEntry, TType> Getter
         {
             get { return _getter; }
             set
             {
                 _getter = value;
-                base.Getter = s =>
+                base.Getter = (p,s) =>
                 {
-                    var v = _getter(s);
+                    var v = _getter(p, s);
                     return Converter != null ? Converter.ToXml(v) : v;
                 };
             }
         }
 
-        public new Func<TEntry, TType, DavStatusCode> Setter
+        public new Func<IPrincipal, TEntry, TType, DavStatusCode> Setter
         {
             get { return _setter; }
             set
             {
                 _setter = value;
-                base.Setter = (s, v) =>
+                base.Setter = (p, s, v) =>
                 {
                     var tv = Converter != null ? Converter.FromXml(v) : (TType)v;
-                    return _setter(s, tv);
+                    return _setter(p, s, tv);
                 };
             }
         }

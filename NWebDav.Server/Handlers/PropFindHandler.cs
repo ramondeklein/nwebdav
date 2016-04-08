@@ -117,13 +117,13 @@ namespace NWebDav.Server.Handlers
                         if ((propertyMode & PropertyMode.AllProperties) != 0)
                         {
                             foreach (var propertyName in propertyManager.Properties.Where(p => !p.IsExpensive).Select(p => p.Name))
-                                AddProperty(xPropStatValues, xPropStatErrors, propertyManager, entry.Entry, propertyName, addedProperties);
+                                AddProperty(principal, xPropStatValues, xPropStatErrors, propertyManager, entry.Entry, propertyName, addedProperties);
                         }
 
                         if ((propertyMode & PropertyMode.SelectedProperties) != 0)
                         {
                             foreach (var propertyName in propertyList)
-                                AddProperty(xPropStatValues, xPropStatErrors, propertyManager, entry.Entry, propertyName, addedProperties);
+                                AddProperty(principal, xPropStatValues, xPropStatErrors, propertyManager, entry.Entry, propertyName, addedProperties);
                         }
 
                         // Add the values (if any)
@@ -147,14 +147,14 @@ namespace NWebDav.Server.Handlers
             return true;
         }
 
-        private void AddProperty(XElement xPropStatValues, XElement xPropStatErrors, IPropertyManager propertyManager, IStoreItem item, XName propertyName, IList<XName> addedProperties)
+        private void AddProperty(IPrincipal principal, XElement xPropStatValues, XElement xPropStatErrors, IPropertyManager propertyManager, IStoreItem item, XName propertyName, IList<XName> addedProperties)
         {
             if (!addedProperties.Contains(propertyName))
             {
                 try
                 {
                     addedProperties.Add(propertyName);
-                    var value = propertyManager.GetProperty(item, propertyName);
+                    var value = propertyManager.GetProperty(principal, item, propertyName);
                     if (value is XElement)
                     {
                         xPropStatValues.Add(new XElement(propertyName, (XElement)value));

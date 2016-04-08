@@ -127,7 +127,7 @@ namespace NWebDav.Server.Handlers
                 DavStatusCode result;
                 try
                 {
-                    result = item.PropertyManager.SetProperty(item, propSet.Name, propSet.Value);
+                    result = item.PropertyManager.SetProperty(principal, item, propSet.Name, propSet.Value);
                 }
                 catch (Exception)
                 {
