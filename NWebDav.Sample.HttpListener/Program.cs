@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Configuration;
 using System.Net;
 using System.Threading;
-
+using System.Xml;
 using NWebDav.Server;
 using NWebDav.Server.Handlers;
 using NWebDav.Server.HttpListener;
@@ -9,17 +10,24 @@ using NWebDav.Server.Logging;
 using NWebDav.Server.Stores;
 
 using NWebDav.Sample.HttpListener.LogAdapters;
+using NWebDav.Server.Http;
 
 namespace NWebDav.Sample.HttpListener
 {
     internal class Program
     {
-        //private static bool CheckCredentials(HttpListenerBasicIdentity httpListenerBasicIdentity)
-        //{
-        //    return httpListenerBasicIdentity.Password == "test";
-        //}
+        private static readonly log4net.ILog s_log;
 
-        private static async void DispatchHttpRequestsAsync(System.Net.HttpListener httpListener, CancellationToken cancellationToken )
+        static Program()
+        {
+            // Configure LOG4NET
+            log4net.Config.XmlConfigurator.Configure();
+
+            // Obtain the logger
+            s_log = log4net.LogManager.GetLogger(typeof(Program));
+        }
+
+        private static async void DispatchHttpRequestsAsync(System.Net.HttpListener httpListener, CancellationToken cancellationToken)
         {
             // Create a request handler factory that uses basic authentication
             var requestHandlerFactory = new RequestHandlerFactory();
@@ -28,11 +36,20 @@ namespace NWebDav.Sample.HttpListener
             var homeFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             var webDavDispatcher = new WebDavDispatcher(new DiskStore(homeFolder), requestHandlerFactory);
 
+            // Determine the WebDAV username/password for authorization
+            // (only when basic authentication is enabled)
+            var webdavUsername = ConfigurationManager.AppSettings["webdav.username"] ?? "test";
+            var webdavPassword = ConfigurationManager.AppSettings["webdav.password"] ?? "test";
+
             HttpListenerContext httpListenerContext;
             while (!cancellationToken.IsCancellationRequested && (httpListenerContext = await httpListener.GetContextAsync().ConfigureAwait(false)) != null)
             {
-                //var httpContext = new HttpBasicContext(httpListenerContext, checkIdentity: CheckCredentials);
-                var httpContext = new HttpContext(httpListenerContext);
+                // Determine the proper HTTP context
+                IHttpContext httpContext;
+                if (httpListenerContext.Request.IsAuthenticated)
+                    httpContext = new HttpBasicContext(httpListenerContext, checkIdentity: i => i.Name == webdavUsername && i.Password == webdavPassword);
+                else
+                    httpContext = new HttpContext(httpListenerContext);
 
                 // The returned task is not awaited by design to make multiple
                 // parallel requests possible. With 'await' only a single
@@ -43,21 +60,36 @@ namespace NWebDav.Sample.HttpListener
 
         private static void Main(string[] args)
         {
-            // Configure LOG4NET
-            log4net.Config.XmlConfigurator.Configure();
-
             // Use the Log4NET adapter for logging
-            //var adapter = new Log4NetAdapter();
-            var adapter = new DebugOutputAdapter();
-            adapter.LogLevels.Add(LogLevel.Debug);
-            adapter.LogLevels.Add(LogLevel.Info);
-            LoggerFactory.Factory = adapter;
+            LoggerFactory.Factory = new Log4NetAdapter();
+
+            // Obtain the HTTP binding settings
+            var webdavProtocol = ConfigurationManager.AppSettings["webdav.protocol"] ?? "http";
+            var webdavIp = ConfigurationManager.AppSettings["webdav.ip"] ?? "127.0.0.1";
+            var webdavPort = ConfigurationManager.AppSettings["webdav.port"] ?? "11111";
 
             using (var httpListener = new System.Net.HttpListener())
             {
-                //httpListener.AuthenticationSchemes = AuthenticationSchemes.Basic;
-                //httpListener.Realm = "WebDAV server";
-                httpListener.Prefixes.Add("http://localhost:11111/");
+                // Add the prefix
+                httpListener.Prefixes.Add($"{webdavProtocol}://{webdavIp}:{webdavPort}/");
+
+                // Use basic authentication if requested
+                var webdavUseAuthentication = XmlConvert.ToBoolean(ConfigurationManager.AppSettings["webdav-authentication"] ?? "false");
+                if (webdavUseAuthentication)
+                {
+                    // Check if HTTPS is enabled
+                    if (webdavProtocol != "https" && s_log.IsWarnEnabled)
+                        s_log.Warn("Most WebDAV clients cannot use authentication on a non-HTTPS connection");
+
+                    // Set the authentication scheme and realm
+                    httpListener.AuthenticationSchemes = AuthenticationSchemes.Basic;
+                    httpListener.Realm = "WebDAV server";
+                }
+                else
+                {
+                    // Allow anonymous access
+                    httpListener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
+                }
 
                 // Start the HTTP listener
                 httpListener.Start();
@@ -67,9 +99,8 @@ namespace NWebDav.Sample.HttpListener
                 DispatchHttpRequestsAsync(httpListener, cancellationTokenSource.Token);
 
                 // Wait until somebody presses return
-                Console.WriteLine("WebDAV server running. Press <X> to quit.");
-                while (Console.ReadLine() != "EXIT")
-                    ;
+                Console.WriteLine("WebDAV server running. Press 'x' to quit.");
+                while (Console.ReadKey().KeyChar != 'x') ;
 
                 cancellationTokenSource.Cancel();
             }
