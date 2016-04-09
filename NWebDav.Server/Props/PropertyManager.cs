@@ -19,9 +19,12 @@ namespace NWebDav.Server.Props
 
             // Convert the properties to a dictionary for fast retrieval
             _properties = properties.ToDictionary(p => p.Name);
+
+            // Create the property information immediately
+            Properties = _properties.Select(p => new PropertyInfo(p.Value.Name, p.Value.IsExpensive)).ToList();
         }
 
-        public IEnumerable<PropertyInfo> Properties => _properties.Select(p => new PropertyInfo(p.Value.Name, p.Value.IsExpensive));
+        public IEnumerable<PropertyInfo> Properties { get; }
 
         public object GetProperty(IPrincipal principal, IStoreItem item, XName name, bool skipExpensive = false)
         {

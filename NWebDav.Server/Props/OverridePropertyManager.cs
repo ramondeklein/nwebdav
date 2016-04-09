@@ -15,6 +15,7 @@ namespace NWebDav.Server.Props
         private readonly Func<TEntry, IStoreItem> _converter;
         private readonly IDictionary<XName, DavProperty<TEntry>> _properties;
         private readonly IPropertyManager _basePropertyManager;
+        private readonly IList<PropertyInfo> _propertyInfo;
 
         public OverridePropertyManager(IEnumerable<DavProperty<TEntry>> properties, IPropertyManager basePropertyManager, Func<TEntry, IStoreItem> converter = null)
         {
@@ -28,9 +29,12 @@ namespace NWebDav.Server.Props
             _properties = properties.ToDictionary(p => p.Name);
             _basePropertyManager = basePropertyManager;
             _converter = converter ?? (si => si);
+
+            // Create the property information immediately
+            Properties = GetPropertyInfo();
         }
 
-        public IEnumerable<PropertyInfo> Properties => _properties.Select(p => new PropertyInfo(p.Value.Name, p.Value.IsExpensive));
+        public IEnumerable<PropertyInfo> Properties { get; }
 
         public object GetProperty(IPrincipal principal, IStoreItem item, XName name, bool skipExpensive = false)
         {
@@ -72,6 +76,16 @@ namespace NWebDav.Server.Props
 
             // Set the value
             return property.Setter(principal, (TEntry)item, value);
+        }
+
+        private IList<PropertyInfo> GetPropertyInfo()
+        {
+            // Obtain the base properties that do not have an override
+            var basePropertyInfo = _basePropertyManager.Properties.Where(p => !_properties.ContainsKey(p.Name));
+            var overridePropertyInfo = _properties.Values.Where(p => p.Getter != null || p.Setter != null).Select(p => new PropertyInfo(p.Name, p.IsExpensive));
+
+            // Combine both lists
+            return basePropertyInfo.Concat(overridePropertyInfo).ToList();
         }
     }
 }
