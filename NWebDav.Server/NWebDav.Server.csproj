@@ -100,6 +100,7 @@
     <Compile Include="MimeTypes.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="NWebDav.Server.nuspec" />
     <None Include="NWebDav.Server.project.json" />
     <None Include="project.json" />
   </ItemGroup>

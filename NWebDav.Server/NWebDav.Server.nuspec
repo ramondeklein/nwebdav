@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>NWebDav.Server</id>
-    <version>0.1.4.0</version>
+    <version>0.1.5.0</version>
     <title>NWebDav server library</title>
     <authors>Ramon de Klein &lt;mail@ramondeklein.nl&gt;</authors>
     <description>NWebDav.Server is a flexible WebDAV server library that can be used to expose files or other data using WebDAV.</description>
@@ -11,12 +11,9 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <copyright>Copyright 2016 Ramon de Klein &lt;mail@ramondeklein.nl&gt;</copyright>
     <tags>C# .NET WebDAV Server</tags>
-    <dependencies>
-      <dependency id="log4net" version="2.0.5" />
-    </dependencies>
     <language>en-US</language>
   </metadata>
   <files>
-    <file src="NWebDav.Server\bin\Release\NWebDav.Server.*" target="lib\net451" />
+    <file src="bin\Release\NWebDav.Server.*" target="lib\net451" />
   </files>
 </package>
