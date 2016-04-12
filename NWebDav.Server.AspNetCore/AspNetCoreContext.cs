@@ -7,15 +7,16 @@ namespace NWebDav.Server.AspNetCore
 {
     public partial class AspNetCoreContext : IHttpContext
     {
-        private readonly HttpContext _httpContext;
-
         public AspNetCoreContext(HttpContext httpContext)
         {
-            _httpContext = httpContext;
+            // Make sure a valid HTTP context is specified
+            if (httpContext == null)
+                throw new ArgumentNullException(nameof(httpContext));
 
-            Request = new AspNetCoreRequest(_httpContext.Request);
-            Response = new AspNetCoreResponse(_httpContext.Response);
-            Session = new AspNetCoreSession(_httpContext.User);
+            // Save request, response and session
+            Request = new AspNetCoreRequest(httpContext.Request);
+            Response = new AspNetCoreResponse(httpContext.Response);
+            Session = new AspNetCoreSession(httpContext.User);
         }
 
         public IHttpRequest Request { get; }
