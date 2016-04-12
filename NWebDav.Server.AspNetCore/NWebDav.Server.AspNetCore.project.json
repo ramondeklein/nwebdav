@@ -5,7 +5,8 @@
   "frameworks": {
     "net451": { },
     "net452": { },
-    "net46": { }
+    "net46": { },
+    "net461": { }
   },
   "dependencies": {
     "Microsoft.AspNet.Hosting": "1.0.0-rc1-final"
