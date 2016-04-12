@@ -90,7 +90,7 @@ namespace NWebDav.Server.Handlers
         private async Task MoveAsync(IStoreCollection sourceCollection, string sourceName, IStoreCollection destinationCollection, string destinationName, bool overwrite, IPrincipal principal, Uri baseUri, UriResultCollection errors)
         {
             // Determine the new base URI
-            var subBaseUri = new Uri(baseUri, destinationName);
+            var subBaseUri = UriHelper.Combine(baseUri, destinationName);
 
             // Obtain the actual item
             var moveCollection = await sourceCollection.GetItemAsync(sourceName, principal).ConfigureAwait(false) as IStoreCollection;

@@ -61,7 +61,7 @@ namespace NWebDav.Server.Handlers
             if (deleteCollection != null)
             {
                 // Determine the new base URI
-                var subBaseUri = new Uri(baseUri, name);
+                var subBaseUri = UriHelper.Combine(baseUri, name);
 
                 // Delete all entries first
                 foreach (var entry in await deleteCollection.GetItemsAsync(principal).ConfigureAwait(false))
@@ -71,7 +71,7 @@ namespace NWebDav.Server.Handlers
             // Attempt to delete the item
             var storeResult = await collection.DeleteItemAsync(name, principal).ConfigureAwait(false);
             if (storeResult != DavStatusCode.Ok)
-                errors.AddResult(new Uri(baseUri, name), storeResult);
+                errors.AddResult(UriHelper.Combine(baseUri, name), storeResult);
         }
     }
 }

@@ -90,7 +90,7 @@ namespace NWebDav.Server.Handlers
         private async Task CopyAsync(IStoreItem source, IStoreCollection destinationCollection, string name, bool overwrite, int depth, IPrincipal principal, Uri baseUri, UriResultCollection errors)
         {
             // Determine the new base Uri
-            var newBaseUri = new Uri(baseUri, name);
+            var newBaseUri = UriHelper.Combine(baseUri, name);
 
             // Copy the item
             var copyResult = await source.CopyAsync(destinationCollection, name, overwrite, principal).ConfigureAwait(false);
