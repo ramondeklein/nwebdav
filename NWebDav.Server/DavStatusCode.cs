@@ -11,34 +11,34 @@ namespace NWebDav.Server
         Processing = 102,
 
         [DavStatusCode("OK")]
-        Ok = (int)HttpStatusCode.OK,
+        Ok = HttpStatusCode.OK,
 
         [DavStatusCode("Created")]
-        Created = (int)HttpStatusCode.Created,
+        Created = HttpStatusCode.Created,
 
         [DavStatusCode("No Content")]
-        NoContent = (int)HttpStatusCode.NoContent,
+        NoContent = HttpStatusCode.NoContent,
 
         [DavStatusCode("Partial Content")]
-        PartialContent = (int)HttpStatusCode.PartialContent,
+        PartialContent = HttpStatusCode.PartialContent,
 
         [DavStatusCode("Multi-Status")]
         MultiStatus = 207,
 
         [DavStatusCode("Bad Request")]
-        BadRequest = (int)HttpStatusCode.BadRequest,
+        BadRequest = HttpStatusCode.BadRequest,
 
         [DavStatusCode("Forbidden")]
-        Forbidden = (int)HttpStatusCode.Forbidden,
-
-        [DavStatusCode("Conflict")]
-        Conflict = (int)HttpStatusCode.Conflict,
+        Forbidden = HttpStatusCode.Forbidden,
 
         [DavStatusCode("Not Found")]
-        NotFound = (int)HttpStatusCode.NotFound,
+        NotFound = HttpStatusCode.NotFound,
+        [DavStatusCode("Conflict")]
+        Conflict = HttpStatusCode.Conflict,
+
 
         [DavStatusCode("Precondition Failed")]
-        PreconditionFailed = (int)HttpStatusCode.PreconditionFailed,
+        PreconditionFailed = HttpStatusCode.PreconditionFailed,
 
         [DavStatusCode("Unprocessable Entity")]
         UnprocessableEntity = 422,
@@ -50,12 +50,12 @@ namespace NWebDav.Server
         FailedDependency = 424,
 
         [DavStatusCode("Internal Server Error")]
-        InternalServerError = (int)HttpStatusCode.InternalServerError,
+        InternalServerError = HttpStatusCode.InternalServerError,
 
         [DavStatusCode("Bad Gateway")]
-        BadGateway = (int)HttpStatusCode.BadGateway,
+        BadGateway = HttpStatusCode.BadGateway,
 
         [DavStatusCode("Insufficient Storage")]
-        InsufficientStorage = 507,
+        InsufficientStorage = 507
     }
 }
