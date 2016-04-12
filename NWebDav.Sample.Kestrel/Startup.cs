@@ -35,12 +35,11 @@ namespace NWebDav.Sample.Kestrel
 
             app.Run(async context =>
             {
+                // Create the proper HTTP context
                 var httpContext = new AspNetCoreContext(context);
 
-                // The returned task is not awaited by design to make multiple
-                // parallel requests possible. With 'await' only a single
-                // operation can be executed at a time.
-                webDavDispatcher.DispatchRequestAsync(httpContext);
+                // Dispatch request
+                await webDavDispatcher.DispatchRequestAsync(httpContext).ConfigureAwait(false);
             });
         }
     }

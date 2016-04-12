@@ -51,10 +51,8 @@ namespace NWebDav.Sample.HttpListener
                 else
                     httpContext = new HttpContext(httpListenerContext);
 
-                // The returned task is not awaited by design to make multiple
-                // parallel requests possible. With 'await' only a single
-                // operation can be executed at a time.
-                webDavDispatcher.DispatchRequestAsync(httpContext);
+                // Dispatch the request
+                await webDavDispatcher.DispatchRequestAsync(httpContext).ConfigureAwait(false);
             }
         }
 
