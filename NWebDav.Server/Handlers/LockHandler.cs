@@ -12,7 +12,6 @@ using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Handlers
 {
-    [Verb("LOCK")]
     public class LockHandler : IRequestHandler
     {
         public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)

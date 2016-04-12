@@ -10,7 +10,6 @@ using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Handlers
 {
-    [Verb("PUT")]
     public class PutHandler : IRequestHandler
     {
         public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)

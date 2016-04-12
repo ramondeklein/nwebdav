@@ -11,7 +11,6 @@ using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Handlers
 {
-    [Verb("PROPPATCH")]
     public class PropPatchHandler : IRequestHandler
     {
         private class PropSetCollection : List<PropSetCollection.PropSet>

@@ -9,8 +9,6 @@ using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Handlers
 {
-    [Verb("GET")]
-    [Verb("HEAD")]
     public class GetAndHeadHandler : IRequestHandler
     {
         public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)

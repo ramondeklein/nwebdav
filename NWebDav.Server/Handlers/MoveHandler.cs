@@ -9,7 +9,6 @@ using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Handlers
 {
-    [Verb("MOVE")]
     public class MoveHandler : IRequestHandler
     {
         public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)

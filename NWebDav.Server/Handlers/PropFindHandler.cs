@@ -13,7 +13,6 @@ using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Handlers
 {
-    [Verb("PROPFIND")]
     public class PropFindHandler : IRequestHandler
     {
         private struct PropertyEntry

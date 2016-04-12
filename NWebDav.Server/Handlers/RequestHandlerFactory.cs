@@ -1,36 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Reflection;
+
 using NWebDav.Server.Http;
 
 namespace NWebDav.Server.Handlers
 {
     public class RequestHandlerFactory : IRequestHandlerFactory
     {
-        private static readonly IDictionary<string, Type> s_requestHandlers = new Dictionary<string, Type>();
-
-        static RequestHandlerFactory()
+        private static readonly IDictionary<string, IRequestHandler> s_requestHandlers = new Dictionary<string, IRequestHandler>
         {
-            var assemblyTypes = typeof(RequestHandlerFactory).GetTypeInfo().Assembly.DefinedTypes;
-            foreach (var requestHandlerType in assemblyTypes.Where(t => typeof(IRequestHandler).GetTypeInfo().IsAssignableFrom(t)))
-            {
-                // Obtain the verbs of the request handler
-                foreach (var verbAttribute in requestHandlerType.GetCustomAttributes<VerbAttribute>())
-                    s_requestHandlers.Add(verbAttribute.Verb, requestHandlerType.AsType());
-            }
-        }
+            // Yes, we could have done this using .NET attribute :-)
+            { "COPY", new CopyHandler() },
+            { "DELETE", new DeleteHandler() },
+            { "GET", new GetAndHeadHandler() },
+            { "HEAD", new GetAndHeadHandler() },
+            { "LOCK", new LockHandler() },
+            { "MKCOL", new MkcolHandler() },
+            { "MOVE", new MoveHandler() },
+            { "OPTIONS", new OptionsHandler() },
+            { "PROPFIND", new PropFindHandler() },
+            { "PROPPATCH", new PropPatchHandler() },
+            { "PUT", new PutHandler() },
+            { "UNLOCK", new UnlockHandler() }
+        };
 
         public IRequestHandler GetRequestHandler(IHttpContext httpContext)
         {
             // Obtain the dispatcher
-            Type requestHandlerType;
-            if (!s_requestHandlers.TryGetValue(httpContext.Request.HttpMethod, out requestHandlerType))
+            IRequestHandler requestHandler;
+            if (!s_requestHandlers.TryGetValue(httpContext.Request.HttpMethod, out requestHandler))
                 return null;
 
             // Create an instance of the request handler
-            return (IRequestHandler)Activator.CreateInstance(requestHandlerType);
+            return requestHandler;
         }
+
+        public static IEnumerable<string> AllowedMethods => s_requestHandlers.Keys;
+
     }
 }

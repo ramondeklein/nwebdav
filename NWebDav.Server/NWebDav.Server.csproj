@@ -94,7 +94,6 @@
     <Compile Include="Props\Win32Properties.cs" />
     <Compile Include="Stores\DiskStore.cs" />
     <Compile Include="Stores\MultiStore.cs" />
-    <Compile Include="VerbAttribute.cs" />
     <Compile Include="WebDavNamespaces.cs" />
     <Compile Include="WebDavDispatcher.cs" />
     <Compile Include="IWebDavDispatcher.cs" />

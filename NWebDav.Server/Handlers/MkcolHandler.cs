@@ -7,7 +7,6 @@ using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Handlers
 {
-    [Verb("MKCOL")]
     public class MkcolHandler : IRequestHandler
     {
         public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)
