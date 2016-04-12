@@ -30,7 +30,7 @@ namespace NWebDav.Server.Stores
                 new DavCreationDate<DiskStoreItem>
                 {
                     Getter = (principal, item) => item._fileInfo.CreationTimeUtc,
-                    Setter = (principal, item, value) => { item._fileInfo.CreationTimeUtc = value; return DavStatusCode.OK; }
+                    Setter = (principal, item, value) => { item._fileInfo.CreationTimeUtc = value; return DavStatusCode.Ok; }
                 },
                 new DavDisplayName<DiskStoreItem>
                 {
@@ -54,7 +54,7 @@ namespace NWebDav.Server.Stores
                 new DavGetLastModified<DiskStoreItem>
                 {
                     Getter = (principal, item) => item._fileInfo.LastWriteTimeUtc,
-                    Setter = (principal, item, value) => { item._fileInfo.LastWriteTimeUtc = value; return DavStatusCode.OK; }
+                    Setter = (principal, item, value) => { item._fileInfo.LastWriteTimeUtc = value; return DavStatusCode.Ok; }
                 },
                 new DavGetResourceType<DiskStoreItem>
                 {
@@ -76,22 +76,22 @@ namespace NWebDav.Server.Stores
                 new Win32CreationTime<DiskStoreItem>
                 {
                     Getter = (principal, item) => item._fileInfo.CreationTimeUtc,
-                    Setter = (principal, item, value) => { item._fileInfo.CreationTimeUtc = value; return DavStatusCode.OK; }
+                    Setter = (principal, item, value) => { item._fileInfo.CreationTimeUtc = value; return DavStatusCode.Ok; }
                 },
                 new Win32LastAccessTime<DiskStoreItem>
                 {
                     Getter = (principal, item) => item._fileInfo.LastAccessTimeUtc,
-                    Setter = (principal, item, value) => { item._fileInfo.LastAccessTimeUtc = value; return DavStatusCode.OK; }
+                    Setter = (principal, item, value) => { item._fileInfo.LastAccessTimeUtc = value; return DavStatusCode.Ok; }
                 },
                 new Win32LastModifiedTime<DiskStoreItem>
                 {
                     Getter = (principal, item) => item._fileInfo.LastWriteTimeUtc,
-                    Setter = (principal, item, value) => { item._fileInfo.LastWriteTimeUtc = value; return DavStatusCode.OK; }
+                    Setter = (principal, item, value) => { item._fileInfo.LastWriteTimeUtc = value; return DavStatusCode.Ok; }
                 },
                 new Win32FileAttributes<DiskStoreItem>
                 {
                     Getter = (principal, item) => item._fileInfo.Attributes,
-                    Setter = (principal, item, value) => { item._fileInfo.Attributes = value; return DavStatusCode.OK; }
+                    Setter = (principal, item, value) => { item._fileInfo.Attributes = value; return DavStatusCode.Ok; }
                 }
         });
 

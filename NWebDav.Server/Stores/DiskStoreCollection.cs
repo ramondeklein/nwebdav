@@ -31,7 +31,7 @@ namespace NWebDav.Server.Stores
                 new DavCreationDate<DiskStoreCollection>
                 {
                     Getter = (principal, collection) => collection._directoryInfo.CreationTimeUtc,
-                    Setter = (principal, collection, value) => { collection._directoryInfo.CreationTimeUtc = value; return DavStatusCode.OK; }
+                    Setter = (principal, collection, value) => { collection._directoryInfo.CreationTimeUtc = value; return DavStatusCode.Ok; }
                 },
                 new DavDisplayName<DiskStoreCollection>
                 {
@@ -40,7 +40,7 @@ namespace NWebDav.Server.Stores
                 new DavGetLastModified<DiskStoreCollection>
                 {
                     Getter = (principal, collection) => collection._directoryInfo.LastWriteTimeUtc,
-                    Setter = (principal, collection, value) => { collection._directoryInfo.LastWriteTimeUtc = value; return DavStatusCode.OK; }
+                    Setter = (principal, collection, value) => { collection._directoryInfo.LastWriteTimeUtc = value; return DavStatusCode.Ok; }
                 },
                 new DavGetResourceType<DiskStoreCollection>
                 {
@@ -89,22 +89,22 @@ namespace NWebDav.Server.Stores
                 new Win32CreationTime<DiskStoreCollection>
                 {
                     Getter = (principal, collection) => collection._directoryInfo.CreationTimeUtc,
-                    Setter = (principal, collection, value) => { collection._directoryInfo.CreationTimeUtc = value; return DavStatusCode.OK; }
+                    Setter = (principal, collection, value) => { collection._directoryInfo.CreationTimeUtc = value; return DavStatusCode.Ok; }
                 },
                 new Win32LastAccessTime<DiskStoreCollection>
                 {
                     Getter = (principal, collection) => collection._directoryInfo.LastAccessTimeUtc,
-                    Setter = (principal, collection, value) => { collection._directoryInfo.LastAccessTimeUtc = value; return DavStatusCode.OK; }
+                    Setter = (principal, collection, value) => { collection._directoryInfo.LastAccessTimeUtc = value; return DavStatusCode.Ok; }
                 },
                 new Win32LastModifiedTime<DiskStoreCollection>
                 {
                     Getter = (principal, collection) => collection._directoryInfo.LastWriteTimeUtc,
-                    Setter = (principal, collection, value) => { collection._directoryInfo.LastWriteTimeUtc = value; return DavStatusCode.OK; }
+                    Setter = (principal, collection, value) => { collection._directoryInfo.LastWriteTimeUtc = value; return DavStatusCode.Ok; }
                 },
                 new Win32FileAttributes<DiskStoreCollection>
                 {
                     Getter = (principal, collection) => collection._directoryInfo.Attributes,
-                    Setter = (principal, collection, value) => { collection._directoryInfo.Attributes = value; return DavStatusCode.OK; }
+                    Setter = (principal, collection, value) => { collection._directoryInfo.Attributes = value; return DavStatusCode.Ok; }
                 }
         });
 
@@ -307,7 +307,7 @@ namespace NWebDav.Server.Stores
                 {
                     // Delete the file
                     File.Delete(fullPath);
-                    return Task.FromResult(DavStatusCode.OK);
+                    return Task.FromResult(DavStatusCode.Ok);
                 }
 
                 // Check if the directory exists
@@ -315,7 +315,7 @@ namespace NWebDav.Server.Stores
                 {
                     // Delete the directory
                     Directory.Delete(fullPath);
-                    return Task.FromResult(DavStatusCode.OK);
+                    return Task.FromResult(DavStatusCode.Ok);
                 }
 
                 // Item not found

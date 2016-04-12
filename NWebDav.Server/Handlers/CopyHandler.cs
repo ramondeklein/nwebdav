@@ -81,7 +81,7 @@ namespace NWebDav.Server.Handlers
             else
             {
                 // Set the response
-                response.SendResponse(DavStatusCode.OK);
+                response.SendResponse(DavStatusCode.Ok);
             }
 
             return true;

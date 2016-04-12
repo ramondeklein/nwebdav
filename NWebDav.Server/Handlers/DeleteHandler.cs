@@ -49,7 +49,7 @@ namespace NWebDav.Server.Handlers
             else
             {
                 // Set the response
-                response.SendResponse(DavStatusCode.OK);
+                response.SendResponse(DavStatusCode.Ok);
             }
             return true;
         }
@@ -70,7 +70,7 @@ namespace NWebDav.Server.Handlers
 
             // Attempt to delete the item
             var storeResult = await collection.DeleteItemAsync(name, principal).ConfigureAwait(false);
-            if (storeResult != DavStatusCode.OK)
+            if (storeResult != DavStatusCode.Ok)
                 errors.AddResult(new Uri(baseUri, name), storeResult);
         }
     }

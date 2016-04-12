@@ -66,7 +66,7 @@ namespace NWebDav.Server.Handlers
                 if (stream != null && stream != Stream.Null)
                 {
                     // Set the response
-                    response.SendResponse(DavStatusCode.OK);
+                    response.SendResponse(DavStatusCode.Ok);
 
                     // Set the expected content length
                     try

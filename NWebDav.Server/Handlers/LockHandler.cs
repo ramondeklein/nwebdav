@@ -94,7 +94,7 @@ namespace NWebDav.Server.Handlers
 
             // Perform the lock
             var result = lockingManager.Lock(item, lockType, lockScope, owner, depth > 0, timeouts);
-            if (result.Result != DavStatusCode.OK)
+            if (result.Result != DavStatusCode.Ok)
             {
                 // Set status to not found
                 response.SendResponse(result.Result);
@@ -111,7 +111,7 @@ namespace NWebDav.Server.Handlers
                         result.LockInfo.Value.ToXml())));
 
             // Stream the document
-            await response.SendResponseAsync(DavStatusCode.OK, xDocument).ConfigureAwait(false);
+            await response.SendResponseAsync(DavStatusCode.Ok, xDocument).ConfigureAwait(false);
             return true;
         }
     }

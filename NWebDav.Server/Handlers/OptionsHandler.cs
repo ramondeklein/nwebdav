@@ -27,7 +27,7 @@ namespace NWebDav.Server.Handlers
             response.SetHeaderValue("Public", string.Join(" ", s_verbs));
 
             // Finished
-            response.SendResponse(DavStatusCode.OK);
+            response.SendResponse(DavStatusCode.Ok);
             return Task.FromResult(true);
         }
     }

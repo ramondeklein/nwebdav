@@ -11,7 +11,7 @@ namespace NWebDav.Server
         Processing = 102,
 
         [DavStatusCode("OK")]
-        OK = (int)HttpStatusCode.OK,
+        Ok = (int)HttpStatusCode.OK,
 
         [DavStatusCode("Created")]
         Created = (int)HttpStatusCode.Created,

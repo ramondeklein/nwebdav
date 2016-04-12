@@ -81,7 +81,7 @@ namespace NWebDav.Server.Handlers
             else
             {
                 // Set the response
-                response.SendResponse(DavStatusCode.OK);
+                response.SendResponse(DavStatusCode.Ok);
             }
 
             return true;
@@ -110,7 +110,7 @@ namespace NWebDav.Server.Handlers
 
                 // Delete the source collection
                 var deleteResult = await sourceCollection.DeleteItemAsync(sourceName, principal);
-                if (deleteResult != DavStatusCode.OK)
+                if (deleteResult != DavStatusCode.Ok)
                 {
                     errors.AddResult(subBaseUri, newCollectionResult.Result);
                     return;

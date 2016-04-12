@@ -112,7 +112,7 @@ namespace NWebDav.Server.Locking
                         existingLockInfo.RefreshExpiration();
 
                         // Our lock has been updated
-                        return new LockResult(DavStatusCode.OK, GetActiveLockInfo(existingLockInfo));
+                        return new LockResult(DavStatusCode.Ok, GetActiveLockInfo(existingLockInfo));
                     }
                 }
 
@@ -123,7 +123,7 @@ namespace NWebDav.Server.Locking
                 itemLockList.Add(itemLockInfo);
 
                 // Return the active lock
-                return new LockResult(DavStatusCode.OK, GetActiveLockInfo(itemLockInfo));
+                return new LockResult(DavStatusCode.Ok, GetActiveLockInfo(itemLockInfo));
             }
         }
 
