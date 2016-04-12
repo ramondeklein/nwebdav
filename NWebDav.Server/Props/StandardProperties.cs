@@ -43,4 +43,9 @@ namespace NWebDav.Server.Props
     {
         public override XName Name => WebDavNamespaces.DavNs + "resourcetype";
     }
+
+    public class DavSource<TEntry> : DavXElement<TEntry> where TEntry : IStoreItem
+    {
+        public override XName Name => WebDavNamespaces.DavNs + "source";
+    }
 }
