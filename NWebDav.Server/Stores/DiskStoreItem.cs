@@ -169,7 +169,7 @@ namespace NWebDav.Server.Stores
 
         private string DetermineContentType()
         {
-            return MimeTypes.GetMimeType(_fileInfo.Name);
+            return MimeTypeHelper.GetMimeType(_fileInfo.Name);
         }
 
         private string CalculateEtag()

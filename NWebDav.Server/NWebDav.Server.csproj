@@ -97,7 +97,7 @@
     <Compile Include="WebDavNamespaces.cs" />
     <Compile Include="WebDavDispatcher.cs" />
     <Compile Include="IWebDavDispatcher.cs" />
-    <Compile Include="MimeTypes.cs" />
+    <Compile Include="Helpers\MimeTypeHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="NWebDav.Server.nuspec" />

@@ -6,8 +6,5 @@
     "net451": { },
     "net452": { },
     "net46": { }
-  },
-  "dependencies": {
-    "mimetypes": "1.0.5"
   }
 }
