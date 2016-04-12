@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Xml.Linq;
-using NWebDav.Server.Helpers;
+
 using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Locking

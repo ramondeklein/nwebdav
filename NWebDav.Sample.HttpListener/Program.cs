@@ -5,12 +5,12 @@ using System.Threading;
 using System.Xml;
 using NWebDav.Server;
 using NWebDav.Server.Handlers;
+using NWebDav.Server.Http;
 using NWebDav.Server.HttpListener;
 using NWebDav.Server.Logging;
 using NWebDav.Server.Stores;
 
 using NWebDav.Sample.HttpListener.LogAdapters;
-using NWebDav.Server.Http;
 
 namespace NWebDav.Sample.HttpListener
 {

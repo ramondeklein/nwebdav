@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net;
-using System.Security.Principal;
 
 using NWebDav.Server.Http;
 

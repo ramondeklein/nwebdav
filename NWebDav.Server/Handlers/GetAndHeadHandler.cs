@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Globalization;
 using System.IO;
-using System.Net;
 using System.Threading.Tasks;
+
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Stores;

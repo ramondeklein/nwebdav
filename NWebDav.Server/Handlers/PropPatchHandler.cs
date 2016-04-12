@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
