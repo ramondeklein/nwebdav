@@ -14,8 +14,8 @@ namespace NWebDav.Server.Handlers
             // Obtain response
             var response = httpContext.Response;
 
-            // We're currently a DAV class 1 server
-            response.SetHeaderValue("DAV", "1");
+            // We're a DAV class 2 server
+            response.SetHeaderValue("DAV", "2");
 
             // Set the Allow/Public headers
             response.SetHeaderValue("Allow", string.Join(" ", RequestHandlerFactory.AllowedMethods));
