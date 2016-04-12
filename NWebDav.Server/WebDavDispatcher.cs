@@ -64,10 +64,10 @@ namespace NWebDav.Server
                     if (requestHandler == null)
                     {
                         // Log warning
-                        s_log.Log(LogLevel.Warning, $"{logRequest} - Not supported.");
+                        s_log.Log(LogLevel.Warning, $"{logRequest} - Not implemented.");
 
-                        // Send BadRequest response
-                        httpContext.Response.SendResponse(DavStatusCode.BadRequest, "Unsupported request");
+                        // This request is not implemented
+                        httpContext.Response.SendResponse(DavStatusCode.NotImplemented);
                         return;
                     }
                 }
@@ -90,11 +90,11 @@ namespace NWebDav.Server
                     }
                     else
                     {
-                        // Set status code to bad request
-                        httpContext.Response.SendResponse(DavStatusCode.BadRequest, "Request not processed");
-
                         // Log warning
                         s_log.Log(LogLevel.Warning, $"{logRequest} - Not processed.");
+
+                        // Set status code to bad request
+                        httpContext.Response.SendResponse(DavStatusCode.NotImplemented);
                     }
                 }
                 catch (Exception exc)
