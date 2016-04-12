@@ -101,13 +101,13 @@ namespace NWebDav.Server.Handlers
             }
 
             // We should have an active lock result at this point
-            Debug.Assert(result.LockInfo.HasValue, "Lock information should be supplied, when creating or refreshing a lock");
+            Debug.Assert(result.Lock.HasValue, "Lock information should be supplied, when creating or refreshing a lock");
 
             // Return the information about the lock
             var xDocument = new XDocument(
                 new XElement(WebDavNamespaces.DavNs + "prop",
                     new XElement(WebDavNamespaces.DavNs + "lockdiscovery",
-                        result.LockInfo.Value.ToXml())));
+                        result.Lock.Value.ToXml())));
 
             // Stream the document
             await response.SendResponseAsync(DavStatusCode.Ok, xDocument).ConfigureAwait(false);

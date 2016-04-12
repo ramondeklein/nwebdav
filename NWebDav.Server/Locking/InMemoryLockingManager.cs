@@ -59,10 +59,10 @@ namespace NWebDav.Server.Locking
 
         private readonly IDictionary<IStoreItem, ItemLockTypeDictionary> _itemLocks = new Dictionary<IStoreItem, ItemLockTypeDictionary>();
 
-        private static readonly ScopeAndType[] s_supportedLocks =
+        private static readonly LockEntry[] s_supportedLocks =
         {
-            new ScopeAndType(LockScope.Exclusive, LockType.Write),
-            new ScopeAndType(LockScope.Shared, LockType.Write)
+            new LockEntry(LockScope.Exclusive, LockType.Write),
+            new LockEntry(LockScope.Shared, LockType.Write)
         };
 
         #endregion
@@ -176,14 +176,14 @@ namespace NWebDav.Server.Locking
             return DavStatusCode.PreconditionFailed;
         }
 
-        public IEnumerable<ActiveLockInfo> GetActiveLockInfo(IStoreItem item)
+        public IEnumerable<ActiveLock> GetActiveLockInfo(IStoreItem item)
         {
             lock (_itemLocks)
             {
                 // Make sure the item is in the dictionary
                 ItemLockTypeDictionary itemLockTypeDictionary;
                 if (!_itemLocks.TryGetValue(item, out itemLockTypeDictionary))
-                    return new ActiveLockInfo[0];
+                    return new ActiveLock[0];
 
                 // Determine current date
                 var utcNow = DateTime.UtcNow;
@@ -193,7 +193,7 @@ namespace NWebDav.Server.Locking
             }
         }
 
-        public IEnumerable<ScopeAndType> GetSupportedLocks(IStoreItem item)
+        public IEnumerable<LockEntry> GetSupportedLocks(IStoreItem item)
         {
             // We support both shared and exclusive locks for items and collections
             return s_supportedLocks;
@@ -236,9 +236,9 @@ namespace NWebDav.Server.Locking
 
         #region Private helper methods
 
-        private ActiveLockInfo GetActiveLockInfo(ItemLockInfo itemLockInfo)
+        private ActiveLock GetActiveLockInfo(ItemLockInfo itemLockInfo)
         {
-            return new ActiveLockInfo(itemLockInfo.Type, itemLockInfo.Scope, itemLockInfo.Recursive ? int.MaxValue : 0, itemLockInfo.Owner, itemLockInfo.Timeout, new Uri($"{TokenScheme}:{itemLockInfo.Token:D}"));
+            return new ActiveLock(itemLockInfo.Type, itemLockInfo.Scope, itemLockInfo.Recursive ? int.MaxValue : 0, itemLockInfo.Owner, itemLockInfo.Timeout, new Uri($"{TokenScheme}:{itemLockInfo.Token:D}"));
         }
 
         private Guid? GetTokenFromLockToken(Uri lockTokenUri)

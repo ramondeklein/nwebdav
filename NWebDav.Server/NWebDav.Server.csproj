@@ -68,7 +68,9 @@
     <Compile Include="Helpers\XmlHelper.cs" />
     <Compile Include="IRequestHandlerFactory.cs" />
     <Compile Include="IRequestHandler.cs" />
+    <Compile Include="Locking\ActiveLock.cs" />
     <Compile Include="Locking\InMemoryLockingManager.cs" />
+    <Compile Include="Locking\LockEntry.cs" />
     <Compile Include="Logging\ILoggerFactory.cs" />
     <Compile Include="Logging\ILogger.cs" />
     <Compile Include="Logging\LoggerFactory.cs" />
