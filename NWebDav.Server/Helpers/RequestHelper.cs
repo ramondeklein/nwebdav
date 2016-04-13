@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
-
+using System.Xml;
+using System.Xml.Linq;
 using NWebDav.Server.Http;
+using NWebDav.Server.Logging;
 
 namespace NWebDav.Server.Helpers
 {
@@ -23,6 +27,7 @@ namespace NWebDav.Server.Helpers
     public static class RequestHelper
     {
         private static readonly Regex s_rangeRegex = new Regex("bytes\\=(?<start>[0-9]*)-(?<end>[0-9]*)");
+        private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(RequestHelper));
 
         public static SplitUri SplitUri(string uri)
         {
@@ -159,6 +164,44 @@ namespace NWebDav.Server.Helpers
 
             // Return the range
             return range;
+        }
+
+        public static XDocument LoadXmlDocument(this IHttpRequest request)
+        {
+            var xDocument = XDocument.Load(request.Stream);
+
+#if DEBUG
+            var ms = new MemoryStream();
+            using (var xmlWriter = XmlWriter.Create(ms, new XmlWriterSettings
+            {
+                OmitXmlDeclaration = false,
+                Indent = true,
+                Encoding = Encoding.UTF8,
+            }))
+            {
+                // Add the namespaces
+                xDocument.Root.SetAttributeValue(XNamespace.Xmlns + WebDavNamespaces.DavNsShortcut, WebDavNamespaces.DavNs);
+                xDocument.Root.SetAttributeValue(XNamespace.Xmlns + WebDavNamespaces.Win32NsShortcut, WebDavNamespaces.Win32Ns);
+
+                // Write the XML document to the stream
+                xDocument.WriteTo(xmlWriter);
+            }
+
+            // Flush
+            ms.Flush();
+
+            // Reset stream and write the stream to the result
+            ms.Seek(0, SeekOrigin.Begin);
+
+            // Dump the XML document to the logging
+            if (s_log.IsLogEnabled(LogLevel.Debug))
+            {
+                var reader = new StreamReader(ms);
+                s_log.Log(LogLevel.Debug, reader.ReadToEnd());
+            }
+#endif
+            // Return the XML document
+            return xDocument;
         }
     }
 }

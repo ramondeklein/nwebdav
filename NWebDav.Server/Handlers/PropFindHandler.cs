@@ -181,7 +181,7 @@ namespace NWebDav.Server.Handlers
                 return PropertyMode.AllProperties;
 
             // Create an XML document from the stream
-            var xDocument = XDocument.Load(request.Stream);
+            var xDocument = request.LoadXmlDocument();
             if (xDocument.Root == null || xDocument.Root.Name != WebDavNamespaces.DavNs + "propfind")
             {
                 // TODO: Log

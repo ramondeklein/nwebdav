@@ -38,10 +38,10 @@ namespace NWebDav.Server.Handlers
 
             public IList<PropSet> PropertySetters { get; } = new List<PropSet>();
 
-            public PropSetCollection(Stream stream)
+            public PropSetCollection(IHttpRequest request)
             {
                 // Create an XML document from the stream
-                var xDoc = XDocument.Load(stream);
+                var xDoc = request.LoadXmlDocument();
 
                 // The document should contain a 'propertyupdate' root element
                 var xRoot = xDoc.Root;
@@ -111,7 +111,7 @@ namespace NWebDav.Server.Handlers
             try
             {
                 // Create an XML document from the stream
-                propSetCollection = new PropSetCollection(request.Stream);
+                propSetCollection = new PropSetCollection(request);
             }
             catch (Exception)
             {

@@ -35,7 +35,7 @@ namespace NWebDav.Server.Handlers
             try
             {
                 // Create an XML document from the stream
-                var xDoc = XDocument.Load(request.Stream);
+                var xDoc = request.LoadXmlDocument();
 
                 // The document should contain a 'propertyupdate' element
                 if (xDoc.Root?.Name != WebDavNamespaces.DavNs + "lockinfo")
