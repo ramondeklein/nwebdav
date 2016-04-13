@@ -40,7 +40,8 @@ namespace NWebDav.Server.Helpers
                     Encoding = Encoding.UTF8,
                 }))
                 {
-                    // Add the namespaces
+                    // Add the namespaces (Win7 WebDAV client requires them like this)
+                    // TODO: We should do this a bit more flexible, but it will do for now
                     xDocument.Root.SetAttributeValue(XNamespace.Xmlns + WebDavNamespaces.DavNsShortcut, WebDavNamespaces.DavNs);
                     //xDocument.Root.SetAttributeValue(XNamespace.Xmlns + WebDavNamespaces.OfficeNsShortcut, WebDavNamespaces.OfficeNs);
                     //xDocument.Root.SetAttributeValue(XNamespace.Xmlns + WebDavNamespaces.ReplNsShortcut, WebDavNamespaces.ReplNs);
