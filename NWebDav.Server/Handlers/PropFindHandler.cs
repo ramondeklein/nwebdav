@@ -94,6 +94,8 @@ namespace NWebDav.Server.Handlers
 
                 // Create tags for property values
                 var xPropStatValues = new XElement(WebDavNamespaces.DavNs + "propstat");
+                var xProp = new XElement(WebDavNamespaces.DavNs + "prop");
+                xPropStatValues.Add(xProp);
 
                 // Check if the entry supports properties
                 var propertyManager = entry.Entry.PropertyManager;
@@ -116,13 +118,13 @@ namespace NWebDav.Server.Handlers
                         if ((propertyMode & PropertyMode.AllProperties) != 0)
                         {
                             foreach (var propertyName in propertyManager.Properties.Where(p => !p.IsExpensive).Select(p => p.Name))
-                                AddProperty(principal, xPropStatValues, xPropStatErrors, propertyManager, entry.Entry, propertyName, addedProperties);
+                                AddProperty(principal, xProp, xPropStatErrors, propertyManager, entry.Entry, propertyName, addedProperties);
                         }
 
                         if ((propertyMode & PropertyMode.SelectedProperties) != 0)
                         {
                             foreach (var propertyName in propertyList)
-                                AddProperty(principal, xPropStatValues, xPropStatErrors, propertyManager, entry.Entry, propertyName, addedProperties);
+                                AddProperty(principal, xProp, xPropStatErrors, propertyManager, entry.Entry, propertyName, addedProperties);
                         }
 
                         // Add the values (if any)
@@ -134,6 +136,9 @@ namespace NWebDav.Server.Handlers
                             xResponse.Add(xPropStatValues);
                     }
                 }
+
+                // Add the status
+                xPropStatValues.Add(new XElement(WebDavNamespaces.DavNs + "status", "HTTP/1.1 200 OK"));
 
                 // Add the property
                 xMultiStatus.Add(xResponse);
