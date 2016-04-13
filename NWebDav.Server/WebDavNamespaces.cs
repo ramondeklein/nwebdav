@@ -13,6 +13,7 @@ namespace NWebDav.Server
         /// Main DAV namespace (<c>DAV:</c>).
         /// </summary>
         public static readonly XNamespace DavNs = "DAV:";
+        public static readonly string DavNsShortcut = "D";
 
         /// <summary>
         /// <para>
@@ -26,6 +27,7 @@ namespace NWebDav.Server
         /// </para>
         /// </summary>
         public static readonly XNamespace Win32Ns = "urn:schemas-microsoft-com:";
+        public static readonly string Win32NsShortcut = "Z";
 
         /// <summary>
         /// <para>
@@ -38,6 +40,7 @@ namespace NWebDav.Server
         /// </para>
         /// </summary>
         public static readonly XNamespace ReplNs = "http://schemas.microsoft.com/repl/";
+        public static readonly string ReplNsShortcut  = "Repl";
 
         /// <summary>
         /// <para>
@@ -50,5 +53,6 @@ namespace NWebDav.Server
         /// </para>
         /// </summary>
         public static readonly XNamespace OfficeNs = "urn:schemas-microsoft-com:office:office";
+        public static readonly string OfficeNsShortcut = "Office";
     }
 }

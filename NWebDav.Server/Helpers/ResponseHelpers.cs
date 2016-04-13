@@ -29,7 +29,7 @@ namespace NWebDav.Server.Helpers
             // Obtain the result as an XML document
             using (var ms = new MemoryStream())
             {
-                using (var xmlWriter = XmlWriter.Create(ms, new XmlWriterSettings()
+                using (var xmlWriter = XmlWriter.Create(ms, new XmlWriterSettings
                 {
                     OmitXmlDeclaration = false,
 #if DEBUG
@@ -37,9 +37,15 @@ namespace NWebDav.Server.Helpers
 #else
                     Indent = false,
 #endif
-                    Encoding = Encoding.UTF8
+                    Encoding = Encoding.UTF8,
                 }))
                 {
+                    // Add the namespaces
+                    xDocument.Root.SetAttributeValue(XNamespace.Xmlns + WebDavNamespaces.DavNsShortcut, WebDavNamespaces.DavNs);
+                    //xDocument.Root.SetAttributeValue(XNamespace.Xmlns + WebDavNamespaces.OfficeNsShortcut, WebDavNamespaces.OfficeNs);
+                    //xDocument.Root.SetAttributeValue(XNamespace.Xmlns + WebDavNamespaces.ReplNsShortcut, WebDavNamespaces.ReplNs);
+                    xDocument.Root.SetAttributeValue(XNamespace.Xmlns + WebDavNamespaces.Win32NsShortcut, WebDavNamespaces.Win32Ns);
+
                     // Write the XML document to the stream
                     xDocument.WriteTo(xmlWriter);
                 }
