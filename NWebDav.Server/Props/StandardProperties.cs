@@ -4,7 +4,7 @@ using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Props
 {
-    public class DavCreationDate<TEntry> : DavRfc1123Date<TEntry> where TEntry : IStoreItem
+    public class DavCreationDate<TEntry> : DavIso8601Date<TEntry> where TEntry : IStoreItem
     {
         public override XName Name => WebDavNamespaces.DavNs + "creationdate";
     }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Security.Principal;
+using System.Xml;
 using System.Xml.Linq;
 using NWebDav.Server.Stores;
 
@@ -66,6 +67,34 @@ namespace NWebDav.Server.Props
 
         private static IValidator TypeValidator { get; } = new Rfc1123DateValidator();
         private static IConverter<DateTime> TypeConverter { get; } = new Rfc1123DateConverter();
+
+        public override IValidator Validator => TypeValidator;
+        public override IConverter<DateTime> Converter => TypeConverter;
+    }
+
+    public abstract class DavIso8601Date<TEntry> : DavTypedProperty<TEntry, DateTime> where TEntry : IStoreItem
+    {
+        private class DavIso8601DateValidator : IValidator
+        {
+            public bool Validate(object value)
+            {
+                var dateString = value as string;
+                if (dateString == null)
+                    return false;
+
+                // TODO: Check if it matches the ISO8601
+                return true;
+            }
+        }
+
+        private class Iso8601DateConverter : IConverter<DateTime>
+        {
+            public object ToXml(DateTime value) => XmlConvert.ToString(value, XmlDateTimeSerializationMode.Utc);
+            public DateTime FromXml(object value) => XmlConvert.ToDateTime((string)value, XmlDateTimeSerializationMode.Utc);
+        }
+
+        private static IValidator TypeValidator { get; } = new DavIso8601DateValidator();
+        private static IConverter<DateTime> TypeConverter { get; } = new Iso8601DateConverter();
 
         public override IValidator Validator => TypeValidator;
         public override IConverter<DateTime> Converter => TypeConverter;
