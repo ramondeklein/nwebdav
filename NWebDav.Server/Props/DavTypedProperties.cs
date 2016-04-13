@@ -89,7 +89,14 @@ namespace NWebDav.Server.Props
 
         private class Iso8601DateConverter : IConverter<DateTime>
         {
-            public object ToXml(DateTime value) => XmlConvert.ToString(value, XmlDateTimeSerializationMode.Utc);
+            public object ToXml(DateTime value)
+            {
+                // We need to recreate the date again, because the Windows 7
+                // WebDAV client cannot deal with more than 3 digits for the
+                // milliseconds.
+                var dt = new DateTime(value.Year, value.Month, value.Day, value.Hour, value.Minute, value.Second, value.Millisecond, DateTimeKind.Utc);
+                return XmlConvert.ToString(dt, XmlDateTimeSerializationMode.Utc);
+            }
             public DateTime FromXml(object value) => XmlConvert.ToDateTime((string)value, XmlDateTimeSerializationMode.Utc);
         }
 
