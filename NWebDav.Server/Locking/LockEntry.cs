@@ -19,8 +19,8 @@ namespace NWebDav.Server.Locking
         public XElement ToXml()
         {
             return new XElement(WebDavNamespaces.DavNs + "lockentry",
-                new XElement(WebDavNamespaces.DavNs + "lockscope", DavStatusCodeHelper.GetStatusDescription(Scope)),
-                new XElement(WebDavNamespaces.DavNs + "locktype", DavStatusCodeHelper.GetStatusDescription(Type)));
+                new XElement(WebDavNamespaces.DavNs + "lockscope", new XElement(WebDavNamespaces.DavNs + XmlHelper.GetXmlValue(Scope))),
+                new XElement(WebDavNamespaces.DavNs + "locktype", new XElement(WebDavNamespaces.DavNs + XmlHelper.GetXmlValue(Type))));
         }
     }
 }
