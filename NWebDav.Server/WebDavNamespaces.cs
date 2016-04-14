@@ -13,7 +13,19 @@ namespace NWebDav.Server
         /// Main DAV namespace (<c>DAV:</c>).
         /// </summary>
         public static readonly XNamespace DavNs = "DAV:";
-        public static readonly string DavNsShortcut = "D";
+
+        /// <summary>
+        /// Main DAV namespace prefix.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Some WebDAV clients don't parse the Server generated XML properly
+        /// and expect that all DAV nodes use the "D" prefix. Although it's
+        /// perfectly legal not to use the namespace prefix, we do use it to
+        /// maximize compatibility.
+        /// </para>
+        /// </remarks>
+        public static readonly string DavNsPrefix = "D";
 
         /// <summary>
         /// <para>
@@ -27,7 +39,19 @@ namespace NWebDav.Server
         /// </para>
         /// </summary>
         public static readonly XNamespace Win32Ns = "urn:schemas-microsoft-com:";
-        public static readonly string Win32NsShortcut = "Z";
+
+        /// <summary>
+        /// Win32 namespace prefix.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Some WebDAV clients don't parse the Server generated XML properly
+        /// and expact that the Win32 nodes use the "Z" prefix. Although it's
+        /// perfectly legal not to use the namespace prefix, we do use it to
+        /// maximize compatibility.
+        /// </para>
+        /// </remarks>
+        public static readonly string Win32NsPrefix = "Z";
 
         /// <summary>
         /// <para>
@@ -40,7 +64,6 @@ namespace NWebDav.Server
         /// </para>
         /// </summary>
         public static readonly XNamespace ReplNs = "http://schemas.microsoft.com/repl/";
-        public static readonly string ReplNsShortcut  = "Repl";
 
         /// <summary>
         /// <para>
@@ -53,6 +76,5 @@ namespace NWebDav.Server
         /// </para>
         /// </summary>
         public static readonly XNamespace OfficeNs = "urn:schemas-microsoft-com:office:office";
-        public static readonly string OfficeNsShortcut = "Office";
     }
 }

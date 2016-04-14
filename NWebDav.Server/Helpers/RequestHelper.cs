@@ -179,10 +179,6 @@ namespace NWebDav.Server.Helpers
                 Encoding = Encoding.UTF8,
             }))
             {
-                // Add the namespaces
-                xDocument.Root.SetAttributeValue(XNamespace.Xmlns + WebDavNamespaces.DavNsShortcut, WebDavNamespaces.DavNs);
-                xDocument.Root.SetAttributeValue(XNamespace.Xmlns + WebDavNamespaces.Win32NsShortcut, WebDavNamespaces.Win32Ns);
-
                 // Write the XML document to the stream
                 xDocument.WriteTo(xmlWriter);
             }

@@ -41,11 +41,8 @@ namespace NWebDav.Server.Helpers
                 }))
                 {
                     // Add the namespaces (Win7 WebDAV client requires them like this)
-                    // TODO: We should do this a bit more flexible, but it will do for now
-                    xDocument.Root.SetAttributeValue(XNamespace.Xmlns + WebDavNamespaces.DavNsShortcut, WebDavNamespaces.DavNs);
-                    //xDocument.Root.SetAttributeValue(XNamespace.Xmlns + WebDavNamespaces.OfficeNsShortcut, WebDavNamespaces.OfficeNs);
-                    //xDocument.Root.SetAttributeValue(XNamespace.Xmlns + WebDavNamespaces.ReplNsShortcut, WebDavNamespaces.ReplNs);
-                    xDocument.Root.SetAttributeValue(XNamespace.Xmlns + WebDavNamespaces.Win32NsShortcut, WebDavNamespaces.Win32Ns);
+                    xDocument.Root.SetAttributeValue(XNamespace.Xmlns + WebDavNamespaces.DavNsPrefix, WebDavNamespaces.DavNs);
+                    xDocument.Root.SetAttributeValue(XNamespace.Xmlns + WebDavNamespaces.Win32NsPrefix, WebDavNamespaces.Win32Ns);
 
                     // Write the XML document to the stream
                     xDocument.WriteTo(xmlWriter);
