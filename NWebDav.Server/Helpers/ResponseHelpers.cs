@@ -7,22 +7,32 @@ using System.Xml;
 using System.Xml.Linq;
 
 using NWebDav.Server.Http;
-using NWebDav.Server.Logging;
 
 namespace NWebDav.Server.Helpers
 {
     public static class ResponseHelper
     {
-        private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(ResponseHelper));
+#if DEBUG
+        private static readonly NWebDav.Server.Logging.ILogger s_log = NWebDav.Server.Logging.LoggerFactory.CreateLogger(typeof(ResponseHelper));
+#endif
 
         public static void SendResponse(this IHttpResponse response, DavStatusCode statusCode, string statusDescription = null)
         {
+            // Set the status code and description
             response.Status = (int)statusCode;
-            response.StatusDescription = statusDescription ?? DavStatusCodeHelper.GetStatusDescription(statusCode, "Unknown");
+            response.StatusDescription = statusDescription ?? DavStatusCodeHelper.GetStatusDescription(statusCode);
         }
 
         public static async Task SendResponseAsync(this IHttpResponse response, DavStatusCode statusCode, XDocument xDocument)
         {
+            // Make sure an XML document is specified
+            if (xDocument == null)
+                throw new ArgumentNullException(nameof(xDocument));
+
+            // Make sure the XML document has a root node
+            if (xDocument.Root == null)
+                throw new ArgumentException("The specified XML document doesn't have a root node", nameof(xDocument));
+
             // Set the response
             response.SendResponse(statusCode);
 
@@ -50,19 +60,17 @@ namespace NWebDav.Server.Helpers
 
                 // Flush
                 ms.Flush();
-
 #if DEBUG
                 // Reset stream and write the stream to the result
                 ms.Seek(0, SeekOrigin.Begin);
 
                 // Dump the XML document to the logging
-                if (s_log.IsLogEnabled(LogLevel.Debug))
+                if (s_log.IsLogEnabled(NWebDav.Server.Logging.LogLevel.Debug))
                 {
                     var reader = new StreamReader(ms);
-                    s_log.Log(LogLevel.Debug, reader.ReadToEnd());
+                    s_log.Log(NWebDav.Server.Logging.LogLevel.Debug, reader.ReadToEnd());
                 }
 #endif
-
                 // Set content type/length
                 response.SetHeaderValue("Content-Type", "text/xml; charset=\"utf-8\"");
                 response.SetHeaderValue("Content-Length", ms.Position.ToString(CultureInfo.InvariantCulture));
