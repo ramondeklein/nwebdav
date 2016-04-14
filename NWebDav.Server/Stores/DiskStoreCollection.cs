@@ -52,35 +52,39 @@ namespace NWebDav.Server.Stores
                 new DavSupportedLockDefault<DiskStoreCollection>(),
 
                 // Hopmann/Lippert collection properties
-                new DavChildCount<DiskStoreCollection>
+                new DavExtCollectionChildCount<DiskStoreCollection>
                 {
                     Getter = (principal, collection) => collection._directoryInfo.EnumerateFiles().Count() + collection._directoryInfo.EnumerateDirectories().Count()
                 },
-                new DavIsCollection<DiskStoreCollection>
+                new DavExtCollectionIsFolder<DiskStoreCollection>
                 {
                     Getter = (principal, collection) => true
                 },
-                new DavIsFolder<DiskStoreCollection>
-                {
-                    Getter = (principal, collection) => true
-                },
-                new DavIsHidden<DiskStoreCollection>
+                new DavExtCollectionIsHidden<DiskStoreCollection>
                 {
                     Getter = (principal, collection) => (collection._directoryInfo.Attributes & FileAttributes.Hidden) != 0
                 },
-                new DavHasSubs<DiskStoreCollection>
-                {
-                    Getter = (principal, collection) => collection._directoryInfo.EnumerateDirectories().Any()
-                },
-                new DavNoSubs<DiskStoreCollection>
+                new DavExtCollectionIsStructuredDocument<DiskStoreCollection>
                 {
                     Getter = (principal, collection) => false
                 },
-                new DavObjectCount<DiskStoreCollection>
+                new DavExtCollectionHasSubs<DiskStoreCollection>
+                {
+                    Getter = (principal, collection) => collection._directoryInfo.EnumerateDirectories().Any()
+                },
+                new DavExtCollectionNoSubs<DiskStoreCollection>
+                {
+                    Getter = (principal, collection) => false
+                },
+                new DavExtCollectionObjectCount<DiskStoreCollection>
                 {
                     Getter = (principal, collection) => collection._directoryInfo.EnumerateFiles().Count()
                 },
-                new DavVisibleCount<DiskStoreCollection>
+                new DavExtCollectionReserved<DiskStoreCollection>
+                {
+                    Getter = (principal, collection) => false
+                },
+                new DavExtCollectionVisibleCount<DiskStoreCollection>
                 {
                     Getter = (principal, collection) => collection._directoryInfo.EnumerateFiles().Count(fi => (fi.Attributes & FileAttributes.Hidden) == 0)
                 },

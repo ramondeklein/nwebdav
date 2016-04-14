@@ -89,7 +89,7 @@
     <Compile Include="Props\IPropertyManager.cs" />
     <Compile Include="Props\DavProperty.cs" />
     <Compile Include="Props\DavTypedProperties.cs" />
-    <Compile Include="Props\MsExtensionProperties.cs" />
+    <Compile Include="Props\DavExtCollectionProperties.cs" />
     <Compile Include="Props\PropertyInfo.cs" />
     <Compile Include="Props\PropertyManager.cs" />
     <Compile Include="Props\StandardProperties.cs" />

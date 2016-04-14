@@ -67,7 +67,7 @@ namespace NWebDav.Server.Stores
 
                 // Hopmann/Lippert collection properties
                 // (although not a collection, the IsHidden property might be valuable)
-                new DavIsHidden<DiskStoreItem>
+                new DavExtCollectionIsHidden<DiskStoreItem>
                 {
                     Getter = (principal, item) => (item._fileInfo.Attributes & FileAttributes.Hidden) != 0
                 },

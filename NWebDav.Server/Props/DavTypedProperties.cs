@@ -255,4 +255,33 @@ namespace NWebDav.Server.Props
         public override IValidator Validator => TypeValidator;
         public override IConverter<XElement> Converter => TypeConverter;
     }
+
+    public abstract class DavUri<TEntry> : DavTypedProperty<TEntry, Uri> where TEntry : IStoreItem
+    {
+        private class UriValidator : IValidator
+        {
+            public bool Validate(object value)
+            {
+                var uriString = value as string;
+                if (uriString == null)
+                    return false;
+
+                // TODO: Check if URI is valid
+                return true;
+            }
+        }
+
+        private class UriConverter : IConverter<Uri>
+        {
+            public object ToXml(Uri value) => value.ToString();
+            public Uri FromXml(object value) => new Uri((string)value);
+        }
+
+        private static IValidator TypeValidator { get; } = new UriValidator();
+        private static IConverter<Uri> TypeConverter { get; } = new UriConverter();
+
+        public override IValidator Validator => TypeValidator;
+        public override IConverter<Uri> Converter => TypeConverter;
+    }
+
 }
