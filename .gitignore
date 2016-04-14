@@ -8,3 +8,4 @@ packages/
 **/*.user
 **/*.userprefs
 .vscode
+Help/
