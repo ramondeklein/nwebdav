@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Principal;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Linq;
+
 using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Props
@@ -15,7 +14,6 @@ namespace NWebDav.Server.Props
         private readonly Func<TEntry, IStoreItem> _converter;
         private readonly IDictionary<XName, DavProperty<TEntry>> _properties;
         private readonly IPropertyManager _basePropertyManager;
-        private readonly IList<PropertyInfo> _propertyInfo;
 
         public OverridePropertyManager(IEnumerable<DavProperty<TEntry>> properties, IPropertyManager basePropertyManager, Func<TEntry, IStoreItem> converter = null)
         {
