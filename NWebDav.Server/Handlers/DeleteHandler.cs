@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -16,7 +15,6 @@ namespace NWebDav.Server.Handlers
             // Obtain request and response
             var request = httpContext.Request;
             var response = httpContext.Response;
-            var principal = httpContext.Session?.Principal;
 
             // Keep track of all errors
             var errors = new UriResultCollection();
@@ -25,7 +23,7 @@ namespace NWebDav.Server.Handlers
             var splitUri = RequestHelper.SplitUri(request.Url);
 
             // Obtain parent collection
-            var parentCollection = await store.GetCollectionAsync(splitUri.CollectionUri, principal).ConfigureAwait(false);
+            var parentCollection = await store.GetCollectionAsync(splitUri.CollectionUri, httpContext).ConfigureAwait(false);
             if (parentCollection == null)
             {
                 // Source not found
@@ -34,7 +32,7 @@ namespace NWebDav.Server.Handlers
             }
 
             // Delete item
-            await DeleteItemAsync(parentCollection, splitUri.Name, principal, splitUri.CollectionUri, errors).ConfigureAwait(false);
+            await DeleteItemAsync(parentCollection, splitUri.Name, httpContext, splitUri.CollectionUri, errors).ConfigureAwait(false);
 
             // Check if there are any errors
             if (errors.HasItems)
@@ -53,22 +51,22 @@ namespace NWebDav.Server.Handlers
             return true;
         }
 
-        private async Task DeleteItemAsync(IStoreCollection collection, string name, IPrincipal principal, Uri baseUri, UriResultCollection errors)
+        private async Task DeleteItemAsync(IStoreCollection collection, string name, IHttpContext httpContext, Uri baseUri, UriResultCollection errors)
         {
             // Obtain the actual item
-            var deleteCollection = await collection.GetItemAsync(name, principal).ConfigureAwait(false) as IStoreCollection;
+            var deleteCollection = await collection.GetItemAsync(name, httpContext).ConfigureAwait(false) as IStoreCollection;
             if (deleteCollection != null)
             {
                 // Determine the new base URI
                 var subBaseUri = UriHelper.Combine(baseUri, name);
 
                 // Delete all entries first
-                foreach (var entry in await deleteCollection.GetItemsAsync(principal).ConfigureAwait(false))
-                    await DeleteItemAsync(deleteCollection, entry.Name, principal, subBaseUri, errors);
+                foreach (var entry in await deleteCollection.GetItemsAsync(httpContext).ConfigureAwait(false))
+                    await DeleteItemAsync(deleteCollection, entry.Name, httpContext, subBaseUri, errors);
             }
 
             // Attempt to delete the item
-            var storeResult = await collection.DeleteItemAsync(name, principal).ConfigureAwait(false);
+            var storeResult = await collection.DeleteItemAsync(name, httpContext).ConfigureAwait(false);
             if (storeResult != DavStatusCode.Ok)
                 errors.AddResult(UriHelper.Combine(baseUri, name), storeResult);
         }

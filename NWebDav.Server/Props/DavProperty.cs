@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Security.Principal;
 using System.Xml.Linq;
+
+using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Props
@@ -13,8 +14,8 @@ namespace NWebDav.Server.Props
 
     public interface IConverter<TSource>
     {
-        object ToXml(TSource value);
-        TSource FromXml(object value);
+        object ToXml(IHttpContext httpContext, TSource value);
+        TSource FromXml(IHttpContext httpContext, object value);
     }
 
     [DebuggerDisplay("{Name}")]
@@ -29,8 +30,8 @@ namespace NWebDav.Server.Props
 
         public abstract XName Name { get; }
         public bool IsExpensive { get; set; }
-        public Func<IPrincipal, TEntry, object> Getter { get; set; }
-        public Func<IPrincipal, TEntry, object, DavStatusCode> Setter { get; set; }
+        public Func<IHttpContext, TEntry, object> Getter { get; set; }
+        public Func<IHttpContext, TEntry, object, DavStatusCode> Setter { get; set; }
         public virtual IValidator Validator => DefaultValidator;
     }
 }

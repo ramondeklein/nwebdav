@@ -21,7 +21,7 @@ namespace NWebDav.Server.Handlers
             var splitUri = RequestHelper.SplitUri(request.Url);
 
             // Obtain collection
-            var collection = await store.GetCollectionAsync(splitUri.CollectionUri, principal).ConfigureAwait(false);
+            var collection = await store.GetCollectionAsync(splitUri.CollectionUri, httpContext).ConfigureAwait(false);
             if (collection == null)
             {
                 // Source not found
@@ -30,14 +30,14 @@ namespace NWebDav.Server.Handlers
             }
 
             // Obtain the item
-            var result = await collection.CreateItemAsync(splitUri.Name, true, principal).ConfigureAwait(false);
+            var result = await collection.CreateItemAsync(splitUri.Name, true, httpContext).ConfigureAwait(false);
             var status = result.Result;
             if (status == DavStatusCode.Created || status == DavStatusCode.NoContent)
             {
                 // Copy the stream
                 try
                 {
-                    using (var destinationStream = result.Item.GetWritableStream(principal))
+                    using (var destinationStream = result.Item.GetWritableStream(httpContext))
                     {
                         await request.Stream.CopyToAsync(destinationStream).ConfigureAwait(false);
                     }

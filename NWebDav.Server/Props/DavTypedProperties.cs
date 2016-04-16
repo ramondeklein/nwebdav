@@ -1,42 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Security.Principal;
 using System.Xml;
 using System.Xml.Linq;
+
+using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Props
 {
     public abstract class DavTypedProperty<TEntry, TType> : DavProperty<TEntry> where TEntry : IStoreItem
     {
-        private Func<IPrincipal, TEntry, TType> _getter;
-        private Func<IPrincipal, TEntry, TType, DavStatusCode> _setter;
+        private Func<IHttpContext, TEntry, TType> _getter;
+        private Func<IHttpContext, TEntry, TType, DavStatusCode> _setter;
 
-        public new Func<IPrincipal, TEntry, TType> Getter
+        public new Func<IHttpContext, TEntry, TType> Getter
         {
             get { return _getter; }
             set
             {
                 _getter = value;
-                base.Getter = (p,s) =>
+                base.Getter = (c,s) =>
                 {
-                    var v = _getter(p, s);
-                    return Converter != null ? Converter.ToXml(v) : v;
+                    var v = _getter(c, s);
+                    return Converter != null ? Converter.ToXml(c, v) : v;
                 };
             }
         }
 
-        public new Func<IPrincipal, TEntry, TType, DavStatusCode> Setter
+        public new Func<IHttpContext, TEntry, TType, DavStatusCode> Setter
         {
             get { return _setter; }
             set
             {
                 _setter = value;
-                base.Setter = (p, s, v) =>
+                base.Setter = (c, s, v) =>
                 {
-                    var tv = Converter != null ? Converter.FromXml(v) : (TType)v;
-                    return _setter(p, s, tv);
+                    var tv = Converter != null ? Converter.FromXml(c, v) : (TType)v;
+                    return _setter(c, s, tv);
                 };
             }
         }
@@ -61,8 +62,8 @@ namespace NWebDav.Server.Props
 
         private class Rfc1123DateConverter : IConverter<DateTime>
         {
-            public object ToXml(DateTime value) => value.ToString("R");
-            public DateTime FromXml(object value) => DateTime.Parse((string)value);
+            public object ToXml(IHttpContext httpContext, DateTime value) => value.ToString("R");
+            public DateTime FromXml(IHttpContext httpContext, object value) => DateTime.Parse((string)value);
         }
 
         private static IValidator TypeValidator { get; } = new Rfc1123DateValidator();
@@ -89,7 +90,7 @@ namespace NWebDav.Server.Props
 
         private class Iso8601DateConverter : IConverter<DateTime>
         {
-            public object ToXml(DateTime value)
+            public object ToXml(IHttpContext httpContext, DateTime value)
             {
                 // We need to recreate the date again, because the Windows 7
                 // WebDAV client cannot deal with more than 3 digits for the
@@ -97,7 +98,7 @@ namespace NWebDav.Server.Props
                 var dt = new DateTime(value.Year, value.Month, value.Day, value.Hour, value.Minute, value.Second, value.Millisecond, DateTimeKind.Utc);
                 return XmlConvert.ToString(dt, XmlDateTimeSerializationMode.Utc);
             }
-            public DateTime FromXml(object value) => XmlConvert.ToDateTime((string)value, XmlDateTimeSerializationMode.Utc);
+            public DateTime FromXml(IHttpContext httpContext, object value) => XmlConvert.ToDateTime((string)value, XmlDateTimeSerializationMode.Utc);
         }
 
         private static IValidator TypeValidator { get; } = new DavIso8601DateValidator();
@@ -124,8 +125,8 @@ namespace NWebDav.Server.Props
 
         private class BooleanConverter : IConverter<Boolean>
         {
-            public object ToXml(Boolean value) => value ? "1" : "0";
-            public Boolean FromXml(object value) => int.Parse(value.ToString()) != 0;
+            public object ToXml(IHttpContext httpContext, Boolean value) => value ? "1" : "0";
+            public Boolean FromXml(IHttpContext httpContext, object value) => int.Parse(value.ToString()) != 0;
         }
 
         private static IValidator TypeValidator { get; } = new BooleanValidator();
@@ -139,8 +140,8 @@ namespace NWebDav.Server.Props
     {
         private class StringConverter : IConverter<string>
         {
-            public object ToXml(string value) => value;
-            public string FromXml(object value) => value.ToString();
+            public object ToXml(IHttpContext httpContext, string value) => value;
+            public string FromXml(IHttpContext httpContext, object value) => value.ToString();
         }
 
         private static IConverter<string> TypeConverter { get; } = new StringConverter();
@@ -166,8 +167,8 @@ namespace NWebDav.Server.Props
 
         private class Int32Converter : IConverter<Int32>
         {
-            public object ToXml(Int32 value) => value.ToString(CultureInfo.InvariantCulture);
-            public Int32 FromXml(object value) => int.Parse(value.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture);
+            public object ToXml(IHttpContext httpContext, Int32 value) => value.ToString(CultureInfo.InvariantCulture);
+            public Int32 FromXml(IHttpContext httpContext, object value) => int.Parse(value.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture);
         }
 
         private static IValidator TypeValidator { get; } = new Int32Validator();
@@ -195,8 +196,8 @@ namespace NWebDav.Server.Props
 
         private class Int64Converter : IConverter<Int64>
         {
-            public object ToXml(Int64 value) => value.ToString(CultureInfo.InvariantCulture);
-            public Int64 FromXml(object value) => int.Parse(value.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture);
+            public object ToXml(IHttpContext httpContext, Int64 value) => value.ToString(CultureInfo.InvariantCulture);
+            public Int64 FromXml(IHttpContext httpContext, object value) => int.Parse(value.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture);
         }
 
         private static IValidator TypeValidator { get; } = new Int64Validator();
@@ -220,8 +221,8 @@ namespace NWebDav.Server.Props
 
         private class XElementArrayConverter : IConverter<IEnumerable<XElement>>
         {
-            public object ToXml(IEnumerable<XElement> value) => value;
-            public IEnumerable<XElement> FromXml(object value) => (IEnumerable<XElement>)value;
+            public object ToXml(IHttpContext httpContext, IEnumerable<XElement> value) => value;
+            public IEnumerable<XElement> FromXml(IHttpContext httpContext, object value) => (IEnumerable<XElement>)value;
         }
 
         private static IValidator TypeValidator { get; } = new XElementArrayValidator();
@@ -245,8 +246,8 @@ namespace NWebDav.Server.Props
 
         private class XElementConverter : IConverter<XElement>
         {
-            public object ToXml(XElement value) => value;
-            public XElement FromXml(object value) => (XElement)value;
+            public object ToXml(IHttpContext httpContext, XElement value) => value;
+            public XElement FromXml(IHttpContext httpContext, object value) => (XElement)value;
         }
 
         private static IValidator TypeValidator { get; } = new XElementValidator();
@@ -273,8 +274,8 @@ namespace NWebDav.Server.Props
 
         private class UriConverter : IConverter<Uri>
         {
-            public object ToXml(Uri value) => value.ToString();
-            public Uri FromXml(object value) => new Uri((string)value);
+            public object ToXml(IHttpContext httpContext, Uri value) => value.ToString();
+            public Uri FromXml(IHttpContext httpContext, object value) => new Uri((string)value);
         }
 
         private static IValidator TypeValidator { get; } = new UriValidator();

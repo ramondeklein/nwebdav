@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Principal;
 using System.Xml.Linq;
+
+using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Props
@@ -26,7 +27,7 @@ namespace NWebDav.Server.Props
 
         public IEnumerable<PropertyInfo> Properties { get; }
 
-        public object GetProperty(IPrincipal principal, IStoreItem item, XName name, bool skipExpensive = false)
+        public object GetProperty(IHttpContext httpContext, IStoreItem item, XName name, bool skipExpensive = false)
         {
             // Find the property
             DavProperty<TEntry> property;
@@ -42,14 +43,14 @@ namespace NWebDav.Server.Props
                 return null;
 
             // Obtain the value
-            var value = property.Getter(principal, (TEntry)item);
+            var value = property.Getter(httpContext, (TEntry)item);
 
             // Validate the value
             property.Validator.Validate(value);
             return value;
         }
 
-        public DavStatusCode SetProperty(IPrincipal principal, IStoreItem item, XName name, object value)
+        public DavStatusCode SetProperty(IHttpContext httpContext, IStoreItem item, XName name, object value)
         {
             // Find the property
             DavProperty<TEntry> property;
@@ -65,7 +66,7 @@ namespace NWebDav.Server.Props
                 return DavStatusCode.Conflict;
 
             // Set the value
-            return property.Setter(principal, (TEntry)item, value);
+            return property.Setter(httpContext, (TEntry)item, value);
         }
     }
 }

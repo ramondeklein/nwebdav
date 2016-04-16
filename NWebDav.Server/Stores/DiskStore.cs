@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Security;
-using System.Security.Principal;
 using System.Threading.Tasks;
 
+using NWebDav.Server.Http;
 using NWebDav.Server.Locking;
 
 namespace NWebDav.Server.Stores
@@ -19,7 +19,7 @@ namespace NWebDav.Server.Stores
         public string BaseDirectory { get; }
         public ILockingManager LockingManager { get; }
 
-        public Task<IStoreItem> GetItemAsync(Uri uri, IPrincipal principal)
+        public Task<IStoreItem> GetItemAsync(Uri uri, IHttpContext httpContext)
         {
             // Determine the path from the uri
             var path = GetPathFromUri(uri);
@@ -36,7 +36,7 @@ namespace NWebDav.Server.Stores
             return Task.FromResult<IStoreItem>(null);
         }
 
-        public Task<IStoreCollection> GetCollectionAsync(Uri uri, IPrincipal principal)
+        public Task<IStoreCollection> GetCollectionAsync(Uri uri, IHttpContext httpContext)
         {
             // Determine the path from the uri
             var path = GetPathFromUri(uri);

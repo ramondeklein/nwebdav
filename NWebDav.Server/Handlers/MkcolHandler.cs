@@ -14,13 +14,12 @@ namespace NWebDav.Server.Handlers
             // Obtain request and response
             var request = httpContext.Request;
             var response = httpContext.Response;
-            var principal = httpContext.Session?.Principal;
 
             // The collection must always be created inside another collection
             var splitUri = RequestHelper.SplitUri(request.Url);
 
             // Obtain the parent entry
-            var collection = await store.GetCollectionAsync(splitUri.CollectionUri, principal).ConfigureAwait(false);
+            var collection = await store.GetCollectionAsync(splitUri.CollectionUri, httpContext).ConfigureAwait(false);
             if (collection == null)
             {
                 // Source not found
@@ -29,7 +28,7 @@ namespace NWebDav.Server.Handlers
             }
 
             // Create the collection
-            var result = await collection.CreateCollectionAsync(splitUri.Name, false, principal).ConfigureAwait(false);
+            var result = await collection.CreateCollectionAsync(splitUri.Name, false, httpContext).ConfigureAwait(false);
 
             // Finished
             response.SendResponse(result.Result);

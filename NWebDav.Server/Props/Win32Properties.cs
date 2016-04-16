@@ -2,6 +2,8 @@
 using System.Globalization;
 using System.IO;
 using System.Xml.Linq;
+
+using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Props
@@ -112,8 +114,8 @@ namespace NWebDav.Server.Props
 
         private class FileAttributesConverter : IConverter<FileAttributes>
         {
-            public object ToXml(FileAttributes value) => ((int)value).ToString("X8");
-            public FileAttributes FromXml(object value) => (FileAttributes)Convert.ToInt32((string)value, 16);
+            public object ToXml(IHttpContext httpContext, FileAttributes value) => ((int)value).ToString("X8");
+            public FileAttributes FromXml(IHttpContext httpContext, object value) => (FileAttributes)Convert.ToInt32((string)value, 16);
         }
 
         private static IValidator TypeValidator { get; } = new FileAttributesValidator();

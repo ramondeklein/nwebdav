@@ -14,13 +14,12 @@ namespace NWebDav.Server.Handlers
             // Obtain request and response
             var request = httpContext.Request;
             var response = httpContext.Response;
-            var principal = httpContext.Session?.Principal;
 
             // Obtain the lock-token
             var lockToken = request.GetLockToken();
 
             // Obtain the WebDAV item
-            var item = await store.GetItemAsync(request.Url, principal).ConfigureAwait(false);
+            var item = await store.GetItemAsync(request.Url, httpContext).ConfigureAwait(false);
             if (item == null)
             {
                 // Set status to not found

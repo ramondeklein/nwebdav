@@ -24,7 +24,7 @@ namespace NWebDav.Server.Handlers
             var range = request.GetRange();
 
             // Obtain the WebDAV collection
-            var entry = await store.GetItemAsync(request.Url, principal).ConfigureAwait(false);
+            var entry = await store.GetItemAsync(request.Url, httpContext).ConfigureAwait(false);
             if (entry == null)
             {
                 // Set status to not found
@@ -37,28 +37,28 @@ namespace NWebDav.Server.Handlers
             if (propertyManager != null)
             {
                 // Add Last-Modified header
-                var lastModifiedUtc = (string)propertyManager.GetProperty(principal, entry, WebDavNamespaces.DavNs + "getlastmodified", true);
+                var lastModifiedUtc = (string)propertyManager.GetProperty(httpContext, entry, WebDavNamespaces.DavNs + "getlastmodified", true);
                 if (lastModifiedUtc != null)
                     response.SetHeaderValue("Last-Modified", lastModifiedUtc);
 
                 // Add ETag
-                var etag = (string)propertyManager.GetProperty(principal, entry, WebDavNamespaces.DavNs + "getetag", true);
+                var etag = (string)propertyManager.GetProperty(httpContext, entry, WebDavNamespaces.DavNs + "getetag", true);
                 if (etag != null)
                     response.SetHeaderValue("Etag", etag);
 
                 // Add type
-                var contentType = (string)propertyManager.GetProperty(principal, entry, WebDavNamespaces.DavNs + "getcontenttype", true);
+                var contentType = (string)propertyManager.GetProperty(httpContext, entry, WebDavNamespaces.DavNs + "getcontenttype", true);
                 if (contentType != null)
                     response.SetHeaderValue("Content-Type", contentType);
 
                 // Add language
-                var contentLanguage = (string)propertyManager.GetProperty(principal, entry, WebDavNamespaces.DavNs + "getcontentlanguage", true);
+                var contentLanguage = (string)propertyManager.GetProperty(httpContext, entry, WebDavNamespaces.DavNs + "getcontentlanguage", true);
                 if (contentLanguage != null)
                     response.SetHeaderValue("Content-Language", contentLanguage);
             }
 
             // Stream the actual entry
-            using (var stream = entry.GetReadableStream(principal))
+            using (var stream = entry.GetReadableStream(httpContext))
             {
                 if (stream != null && stream != Stream.Null)
                 {
@@ -81,7 +81,7 @@ namespace NWebDav.Server.Handlers
                             // Check if an 'If-Range' was specified
                             if (range?.If != null)
                             {
-                                var lastModified = DateTime.Parse((string)propertyManager.GetProperty(principal, entry, WebDavNamespaces.DavNs + "getlastmodified", true));
+                                var lastModified = DateTime.Parse((string)propertyManager.GetProperty(httpContext, entry, WebDavNamespaces.DavNs + "getlastmodified", true));
                                 if (lastModified != range.If)
                                     range = null;
                             }

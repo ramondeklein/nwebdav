@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using NWebDav.Server.Helpers;
+using NWebDav.Server.Http;
 
 namespace NWebDav.Server.Stores
 {
@@ -28,14 +29,14 @@ namespace NWebDav.Server.Stores
             _storeResolvers.Remove(prefix);
         }
 
-        public Task<IStoreItem> GetItemAsync(Uri uri, IPrincipal principal)
+        public Task<IStoreItem> GetItemAsync(Uri uri, IHttpContext httpContext)
         {
-            return Resolve(uri, (storeResolver, subUri) => storeResolver.GetItemAsync(subUri, principal));
+            return Resolve(uri, (storeResolver, subUri) => storeResolver.GetItemAsync(subUri, httpContext));
         }
 
-        public Task<IStoreCollection> GetCollectionAsync(Uri uri, IPrincipal principal)
+        public Task<IStoreCollection> GetCollectionAsync(Uri uri, IHttpContext httpContext)
         {
-            return Resolve(uri, (storeResolver, subUri) => storeResolver.GetCollectionAsync(subUri, principal));
+            return Resolve(uri, (storeResolver, subUri) => storeResolver.GetCollectionAsync(subUri, httpContext));
         }
 
         private T Resolve<T>(Uri uri, Func<IStore, Uri, T> action)

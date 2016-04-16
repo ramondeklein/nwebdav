@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
+using NWebDav.Server.Http;
 using NWebDav.Server.Locking;
 using NWebDav.Server.Logging;
 using NWebDav.Server.Props;
@@ -30,21 +30,21 @@ namespace NWebDav.Server.Stores
                 // RFC-2518 properties
                 new DavCreationDate<DiskStoreCollection>
                 {
-                    Getter = (principal, collection) => collection._directoryInfo.CreationTimeUtc,
-                    Setter = (principal, collection, value) => { collection._directoryInfo.CreationTimeUtc = value; return DavStatusCode.Ok; }
+                    Getter = (context, collection) => collection._directoryInfo.CreationTimeUtc,
+                    Setter = (context, collection, value) => { collection._directoryInfo.CreationTimeUtc = value; return DavStatusCode.Ok; }
                 },
                 new DavDisplayName<DiskStoreCollection>
                 {
-                    Getter = (principal, collection) => collection._directoryInfo.Name
+                    Getter = (context, collection) => collection._directoryInfo.Name
                 },
                 new DavGetLastModified<DiskStoreCollection>
                 {
-                    Getter = (principal, collection) => collection._directoryInfo.LastWriteTimeUtc,
-                    Setter = (principal, collection, value) => { collection._directoryInfo.LastWriteTimeUtc = value; return DavStatusCode.Ok; }
+                    Getter = (context, collection) => collection._directoryInfo.LastWriteTimeUtc,
+                    Setter = (context, collection, value) => { collection._directoryInfo.LastWriteTimeUtc = value; return DavStatusCode.Ok; }
                 },
                 new DavGetResourceType<DiskStoreCollection>
                 {
-                    Getter = (principal, collection) => new XElement(WebDavNamespaces.DavNs + "collection")
+                    Getter = (context, collection) => new XElement(WebDavNamespaces.DavNs + "collection")
                 },
 
                 // Default locking property handling via the LockingManager
@@ -54,61 +54,61 @@ namespace NWebDav.Server.Stores
                 // Hopmann/Lippert collection properties
                 new DavExtCollectionChildCount<DiskStoreCollection>
                 {
-                    Getter = (principal, collection) => collection._directoryInfo.EnumerateFiles().Count() + collection._directoryInfo.EnumerateDirectories().Count()
+                    Getter = (context, collection) => collection._directoryInfo.EnumerateFiles().Count() + collection._directoryInfo.EnumerateDirectories().Count()
                 },
                 new DavExtCollectionIsFolder<DiskStoreCollection>
                 {
-                    Getter = (principal, collection) => true
+                    Getter = (context, collection) => true
                 },
                 new DavExtCollectionIsHidden<DiskStoreCollection>
                 {
-                    Getter = (principal, collection) => (collection._directoryInfo.Attributes & FileAttributes.Hidden) != 0
+                    Getter = (context, collection) => (collection._directoryInfo.Attributes & FileAttributes.Hidden) != 0
                 },
                 new DavExtCollectionIsStructuredDocument<DiskStoreCollection>
                 {
-                    Getter = (principal, collection) => false
+                    Getter = (context, collection) => false
                 },
                 new DavExtCollectionHasSubs<DiskStoreCollection>
                 {
-                    Getter = (principal, collection) => collection._directoryInfo.EnumerateDirectories().Any()
+                    Getter = (context, collection) => collection._directoryInfo.EnumerateDirectories().Any()
                 },
                 new DavExtCollectionNoSubs<DiskStoreCollection>
                 {
-                    Getter = (principal, collection) => false
+                    Getter = (context, collection) => false
                 },
                 new DavExtCollectionObjectCount<DiskStoreCollection>
                 {
-                    Getter = (principal, collection) => collection._directoryInfo.EnumerateFiles().Count()
+                    Getter = (context, collection) => collection._directoryInfo.EnumerateFiles().Count()
                 },
                 new DavExtCollectionReserved<DiskStoreCollection>
                 {
-                    Getter = (principal, collection) => false
+                    Getter = (context, collection) => false
                 },
                 new DavExtCollectionVisibleCount<DiskStoreCollection>
                 {
-                    Getter = (principal, collection) => collection._directoryInfo.EnumerateFiles().Count(fi => (fi.Attributes & FileAttributes.Hidden) == 0)
+                    Getter = (context, collection) => collection._directoryInfo.EnumerateFiles().Count(fi => (fi.Attributes & FileAttributes.Hidden) == 0)
                 },
                 
                 // Win32 extensions
                 new Win32CreationTime<DiskStoreCollection>
                 {
-                    Getter = (principal, collection) => collection._directoryInfo.CreationTimeUtc,
-                    Setter = (principal, collection, value) => { collection._directoryInfo.CreationTimeUtc = value; return DavStatusCode.Ok; }
+                    Getter = (context, collection) => collection._directoryInfo.CreationTimeUtc,
+                    Setter = (context, collection, value) => { collection._directoryInfo.CreationTimeUtc = value; return DavStatusCode.Ok; }
                 },
                 new Win32LastAccessTime<DiskStoreCollection>
                 {
-                    Getter = (principal, collection) => collection._directoryInfo.LastAccessTimeUtc,
-                    Setter = (principal, collection, value) => { collection._directoryInfo.LastAccessTimeUtc = value; return DavStatusCode.Ok; }
+                    Getter = (context, collection) => collection._directoryInfo.LastAccessTimeUtc,
+                    Setter = (context, collection, value) => { collection._directoryInfo.LastAccessTimeUtc = value; return DavStatusCode.Ok; }
                 },
                 new Win32LastModifiedTime<DiskStoreCollection>
                 {
-                    Getter = (principal, collection) => collection._directoryInfo.LastWriteTimeUtc,
-                    Setter = (principal, collection, value) => { collection._directoryInfo.LastWriteTimeUtc = value; return DavStatusCode.Ok; }
+                    Getter = (context, collection) => collection._directoryInfo.LastWriteTimeUtc,
+                    Setter = (context, collection, value) => { collection._directoryInfo.LastWriteTimeUtc = value; return DavStatusCode.Ok; }
                 },
                 new Win32FileAttributes<DiskStoreCollection>
                 {
-                    Getter = (principal, collection) => collection._directoryInfo.Attributes,
-                    Setter = (principal, collection, value) => { collection._directoryInfo.Attributes = value; return DavStatusCode.Ok; }
+                    Getter = (context, collection) => collection._directoryInfo.Attributes,
+                    Setter = (context, collection, value) => { collection._directoryInfo.Attributes = value; return DavStatusCode.Ok; }
                 }
         });
 
@@ -116,13 +116,13 @@ namespace NWebDav.Server.Stores
         public string FullPath => _directoryInfo.FullName;
 
         // Disk collections (a.k.a. directories don't have their own data)
-        public Stream GetReadableStream(IPrincipal principal) => null;
-        public Stream GetWritableStream(IPrincipal principal) => null;
+        public Stream GetReadableStream(IHttpContext httpContext) => null;
+        public Stream GetWritableStream(IHttpContext httpContext) => null;
 
         public IPropertyManager PropertyManager => DefaultPropertyManager;
         public ILockingManager LockingManager { get; }
 
-        public Task<IStoreItem> GetItemAsync(string name, IPrincipal principal)
+        public Task<IStoreItem> GetItemAsync(string name, IHttpContext httpContext)
         {
             // Determine the full path
             var fullPath = Path.Combine(_directoryInfo.FullName, name);
@@ -139,7 +139,7 @@ namespace NWebDav.Server.Stores
             return Task.FromResult<IStoreItem>(null);
         }
 
-        public Task<IList<IStoreItem>> GetItemsAsync(IPrincipal principal)
+        public Task<IList<IStoreItem>> GetItemsAsync(IHttpContext httpContext)
         {
             var items = new List<IStoreItem>();
 
@@ -155,7 +155,7 @@ namespace NWebDav.Server.Stores
             return Task.FromResult<IList<IStoreItem>>(items);
         }
 
-        public Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, IPrincipal principal)
+        public Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, IHttpContext httpContext)
         {
             // Determine the destination path
             var destinationPath = Path.Combine(FullPath, name);
@@ -192,7 +192,7 @@ namespace NWebDav.Server.Stores
             return Task.FromResult(new StoreItemResult(result, new DiskStoreItem(LockingManager, new FileInfo(destinationPath))));
         }
 
-        public Task<StoreCollectionResult> CreateCollectionAsync(string name, bool overwrite, IPrincipal principal)
+        public Task<StoreCollectionResult> CreateCollectionAsync(string name, bool overwrite, IHttpContext httpContext)
         {
             // Determine the destination path
             var destinationPath = Path.Combine(FullPath, name);
@@ -230,17 +230,17 @@ namespace NWebDav.Server.Stores
             return Task.FromResult(new StoreCollectionResult(result, new DiskStoreCollection(LockingManager, new DirectoryInfo(destinationPath))));
         }
 
-        public async Task<StoreItemResult> CopyAsync(IStoreCollection destinationCollection, string name, bool overwrite, IPrincipal principal)
+        public async Task<StoreItemResult> CopyAsync(IStoreCollection destinationCollection, string name, bool overwrite, IHttpContext httpContext)
         {
             // Just create the folder itself
-            var result = await destinationCollection.CreateCollectionAsync(name, overwrite, principal);
+            var result = await destinationCollection.CreateCollectionAsync(name, overwrite, httpContext);
             return new StoreItemResult(result.Result, result.Collection);
         }
 
-        public async Task<StoreItemResult> MoveItemAsync(string sourceName, IStoreCollection destinationCollection, string destinationName, bool overwrite, IPrincipal principal)
+        public async Task<StoreItemResult> MoveItemAsync(string sourceName, IStoreCollection destinationCollection, string destinationName, bool overwrite, IHttpContext httpContext)
         {
             // Determine the object that is being moved
-            var item = await GetItemAsync(sourceName, principal);
+            var item = await GetItemAsync(sourceName, httpContext);
             if (item == null)
                 return new StoreItemResult(DavStatusCode.NotFound);
 
@@ -281,9 +281,9 @@ namespace NWebDav.Server.Stores
                 else
                 {
                     // Attempt to copy the item to the destination collection
-                    var result = await item.CopyAsync(destinationCollection, destinationName, overwrite, principal);
+                    var result = await item.CopyAsync(destinationCollection, destinationName, overwrite, httpContext);
                     if (result.Result == DavStatusCode.Created || result.Result == DavStatusCode.NoContent)
-                        await DeleteItemAsync(sourceName, principal);
+                        await DeleteItemAsync(sourceName, httpContext);
 
                     // Return the result
                     return result;
@@ -300,7 +300,7 @@ namespace NWebDav.Server.Stores
             }
         }
 
-        public Task<DavStatusCode> DeleteItemAsync(string name, IPrincipal principal)
+        public Task<DavStatusCode> DeleteItemAsync(string name, IHttpContext httpContext)
         {
             // Determine the full path
             var fullPath = Path.Combine(_directoryInfo.FullName, name);

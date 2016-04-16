@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Security.Principal;
 using System.Threading.Tasks;
 
+using NWebDav.Server.Http;
 using NWebDav.Server.Locking;
 using NWebDav.Server.Props;
 
@@ -35,8 +35,8 @@ namespace NWebDav.Server.Stores
 
     public interface IStore
     {
-        Task<IStoreItem> GetItemAsync(Uri uri, IPrincipal principal);
-        Task<IStoreCollection> GetCollectionAsync(Uri uri, IPrincipal principal);
+        Task<IStoreItem> GetItemAsync(Uri uri, IHttpContext httpContext);
+        Task<IStoreCollection> GetCollectionAsync(Uri uri, IHttpContext httpContext);
     }
 
     public interface IStoreItem
@@ -45,11 +45,11 @@ namespace NWebDav.Server.Stores
         string Name { get; }
 
         // Read/Write access to the data
-        Stream GetReadableStream(IPrincipal principal);
-        Stream GetWritableStream(IPrincipal principal);
+        Stream GetReadableStream(IHttpContext httpContext);
+        Stream GetWritableStream(IHttpContext httpContext);
 
         // Copy support
-        Task<StoreItemResult> CopyAsync(IStoreCollection destination, string name, bool overwrite, IPrincipal principal);
+        Task<StoreItemResult> CopyAsync(IStoreCollection destination, string name, bool overwrite, IHttpContext httpContext);
 
         // Property support
         IPropertyManager PropertyManager { get; }
@@ -61,18 +61,18 @@ namespace NWebDav.Server.Stores
     public interface IStoreCollection : IStoreItem
     {
         // Get specific item (or all items)
-        Task<IStoreItem> GetItemAsync(string name, IPrincipal principal);
-        Task<IList<IStoreItem>> GetItemsAsync(IPrincipal principal);
+        Task<IStoreItem> GetItemAsync(string name, IHttpContext httpContext);
+        Task<IList<IStoreItem>> GetItemsAsync(IHttpContext httpContext);
 
         // Create items and collections and add to the collection
-        Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, IPrincipal principal);
-        Task<StoreCollectionResult> CreateCollectionAsync(string name, bool overwrite, IPrincipal principal);
+        Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, IHttpContext httpContext);
+        Task<StoreCollectionResult> CreateCollectionAsync(string name, bool overwrite, IHttpContext httpContext);
 
         // Move items between collections
-        Task<StoreItemResult> MoveItemAsync(string sourceName, IStoreCollection destination, string destinationName, bool overwrite, IPrincipal principal);
+        Task<StoreItemResult> MoveItemAsync(string sourceName, IStoreCollection destination, string destinationName, bool overwrite, IHttpContext httpContext);
 
         // Delete items from collection
-        Task<DavStatusCode> DeleteItemAsync(string name, IPrincipal principal);
+        Task<DavStatusCode> DeleteItemAsync(string name, IHttpContext httpContext);
 
         bool AllowInfiniteDepthProperties { get; }
     }

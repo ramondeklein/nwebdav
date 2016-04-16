@@ -2,10 +2,10 @@
 using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
-using System.Security.Principal;
 using System.Threading.Tasks;
 
 using NWebDav.Server.Helpers;
+using NWebDav.Server.Http;
 using NWebDav.Server.Locking;
 using NWebDav.Server.Logging;
 using NWebDav.Server.Props;
@@ -29,36 +29,36 @@ namespace NWebDav.Server.Stores
                 // RFC-2518 properties
                 new DavCreationDate<DiskStoreItem>
                 {
-                    Getter = (principal, item) => item._fileInfo.CreationTimeUtc,
-                    Setter = (principal, item, value) => { item._fileInfo.CreationTimeUtc = value; return DavStatusCode.Ok; }
+                    Getter = (context, item) => item._fileInfo.CreationTimeUtc,
+                    Setter = (context, item, value) => { item._fileInfo.CreationTimeUtc = value; return DavStatusCode.Ok; }
                 },
                 new DavDisplayName<DiskStoreItem>
                 {
-                    Getter = (principal, item) => item._fileInfo.Name
+                    Getter = (context, item) => item._fileInfo.Name
                 },
                 new DavGetContentLength<DiskStoreItem>
                 {
-                    Getter = (principal, item) => item._fileInfo.Length
+                    Getter = (context, item) => item._fileInfo.Length
                 },
                 new DavGetContentType<DiskStoreItem>
                 {
-                    Getter = (principal, item) => item.DetermineContentType()
+                    Getter = (context, item) => item.DetermineContentType()
                 },
                 new DavGetEtag<DiskStoreItem>
                 {
                     // Calculating the Etag is an expensive operation,
                     // because we need to scan the entire file.
                     IsExpensive = true,
-                    Getter = (principal, item) => item.CalculateEtag()
+                    Getter = (context, item) => item.CalculateEtag()
                 },
                 new DavGetLastModified<DiskStoreItem>
                 {
-                    Getter = (principal, item) => item._fileInfo.LastWriteTimeUtc,
-                    Setter = (principal, item, value) => { item._fileInfo.LastWriteTimeUtc = value; return DavStatusCode.Ok; }
+                    Getter = (context, item) => item._fileInfo.LastWriteTimeUtc,
+                    Setter = (context, item, value) => { item._fileInfo.LastWriteTimeUtc = value; return DavStatusCode.Ok; }
                 },
                 new DavGetResourceType<DiskStoreItem>
                 {
-                    Getter = (principal, item) => null
+                    Getter = (context, item) => null
                 },
 
                 // Default locking property handling via the LockingManager
@@ -69,39 +69,39 @@ namespace NWebDav.Server.Stores
                 // (although not a collection, the IsHidden property might be valuable)
                 new DavExtCollectionIsHidden<DiskStoreItem>
                 {
-                    Getter = (principal, item) => (item._fileInfo.Attributes & FileAttributes.Hidden) != 0
+                    Getter = (context, item) => (item._fileInfo.Attributes & FileAttributes.Hidden) != 0
                 },
 
                 // Win32 extensions
                 new Win32CreationTime<DiskStoreItem>
                 {
-                    Getter = (principal, item) => item._fileInfo.CreationTimeUtc,
-                    Setter = (principal, item, value) => { item._fileInfo.CreationTimeUtc = value; return DavStatusCode.Ok; }
+                    Getter = (context, item) => item._fileInfo.CreationTimeUtc,
+                    Setter = (context, item, value) => { item._fileInfo.CreationTimeUtc = value; return DavStatusCode.Ok; }
                 },
                 new Win32LastAccessTime<DiskStoreItem>
                 {
-                    Getter = (principal, item) => item._fileInfo.LastAccessTimeUtc,
-                    Setter = (principal, item, value) => { item._fileInfo.LastAccessTimeUtc = value; return DavStatusCode.Ok; }
+                    Getter = (context, item) => item._fileInfo.LastAccessTimeUtc,
+                    Setter = (context, item, value) => { item._fileInfo.LastAccessTimeUtc = value; return DavStatusCode.Ok; }
                 },
                 new Win32LastModifiedTime<DiskStoreItem>
                 {
-                    Getter = (principal, item) => item._fileInfo.LastWriteTimeUtc,
-                    Setter = (principal, item, value) => { item._fileInfo.LastWriteTimeUtc = value; return DavStatusCode.Ok; }
+                    Getter = (context, item) => item._fileInfo.LastWriteTimeUtc,
+                    Setter = (context, item, value) => { item._fileInfo.LastWriteTimeUtc = value; return DavStatusCode.Ok; }
                 },
                 new Win32FileAttributes<DiskStoreItem>
                 {
-                    Getter = (principal, item) => item._fileInfo.Attributes,
-                    Setter = (principal, item, value) => { item._fileInfo.Attributes = value; return DavStatusCode.Ok; }
+                    Getter = (context, item) => item._fileInfo.Attributes,
+                    Setter = (context, item, value) => { item._fileInfo.Attributes = value; return DavStatusCode.Ok; }
                 }
         });
 
         public string Name => _fileInfo.Name;
-        public Stream GetReadableStream(IPrincipal principal) => _fileInfo.OpenRead();
-        public Stream GetWritableStream(IPrincipal principal) => _fileInfo.OpenWrite();
+        public Stream GetReadableStream(IHttpContext httpContext) => _fileInfo.OpenRead();
+        public Stream GetWritableStream(IHttpContext httpContext) => _fileInfo.OpenWrite();
         public IPropertyManager PropertyManager => DefaultPropertyManager;
         public ILockingManager LockingManager { get; }
 
-        public async Task<StoreItemResult> CopyAsync(IStoreCollection destination, string name, bool overwrite, IPrincipal principal)
+        public async Task<StoreItemResult> CopyAsync(IStoreCollection destination, string name, bool overwrite, IHttpContext httpContext)
         {
             try
             {
@@ -126,13 +126,13 @@ namespace NWebDav.Server.Stores
                 else
                 {
                     // Create the item in the destination collection
-                    var result = await destination.CreateItemAsync(name, overwrite, principal).ConfigureAwait(false);
+                    var result = await destination.CreateItemAsync(name, overwrite, httpContext).ConfigureAwait(false);
 
                     // Check if the item could be created
                     if (result.Item != null)
                     {
-                        using (var destinationStream = result.Item.GetWritableStream(principal))
-                        using (var sourceStream = GetReadableStream(principal))
+                        using (var destinationStream = result.Item.GetWritableStream(httpContext))
+                        using (var sourceStream = GetReadableStream(httpContext))
                         {
                             await sourceStream.CopyToAsync(destinationStream).ConfigureAwait(false);
                         }

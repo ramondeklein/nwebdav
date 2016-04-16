@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -51,7 +50,7 @@ namespace NWebDav.Server.Handlers
             var entries = new List<PropertyEntry>();
 
             // Obtain entry
-            var topEntry = await store.GetItemAsync(request.Url, principal).ConfigureAwait(false);
+            var topEntry = await store.GetItemAsync(request.Url, httpContext).ConfigureAwait(false);
             if (topEntry == null)
             {
                 response.SendResponse(DavStatusCode.NotFound);
@@ -73,7 +72,7 @@ namespace NWebDav.Server.Handlers
                 }
 
                 // Add all the entries
-                await AddEntriesAsync(topCollection, depth, principal, request.Url, entries).ConfigureAwait(false);
+                await AddEntriesAsync(topCollection, depth, httpContext, request.Url, entries).ConfigureAwait(false);
             }
             else
             {
@@ -118,13 +117,13 @@ namespace NWebDav.Server.Handlers
                         if ((propertyMode & PropertyMode.AllProperties) != 0)
                         {
                             foreach (var propertyName in propertyManager.Properties.Where(p => !p.IsExpensive).Select(p => p.Name))
-                                AddProperty(principal, xProp, xPropStatErrors, propertyManager, entry.Entry, propertyName, addedProperties);
+                                AddProperty(httpContext, xProp, xPropStatErrors, propertyManager, entry.Entry, propertyName, addedProperties);
                         }
 
                         if ((propertyMode & PropertyMode.SelectedProperties) != 0)
                         {
                             foreach (var propertyName in propertyList)
-                                AddProperty(principal, xProp, xPropStatErrors, propertyManager, entry.Entry, propertyName, addedProperties);
+                                AddProperty(httpContext, xProp, xPropStatErrors, propertyManager, entry.Entry, propertyName, addedProperties);
                         }
 
                         // Add the values (if any)
@@ -151,14 +150,14 @@ namespace NWebDav.Server.Handlers
             return true;
         }
 
-        private void AddProperty(IPrincipal principal, XElement xPropStatValues, XElement xPropStatErrors, IPropertyManager propertyManager, IStoreItem item, XName propertyName, IList<XName> addedProperties)
+        private void AddProperty(IHttpContext httpContext, XElement xPropStatValues, XElement xPropStatErrors, IPropertyManager propertyManager, IStoreItem item, XName propertyName, IList<XName> addedProperties)
         {
             if (!addedProperties.Contains(propertyName))
             {
                 try
                 {
                     addedProperties.Add(propertyName);
-                    var value = propertyManager.GetProperty(principal, item, propertyName);
+                    var value = propertyManager.GetProperty(httpContext, item, propertyName);
                     if (value is XElement)
                     {
                         xPropStatValues.Add(new XElement(propertyName, (XElement)value));
@@ -236,7 +235,7 @@ namespace NWebDav.Server.Handlers
             return propertyMode;
         }
 
-        private async Task AddEntriesAsync(IStoreCollection collection, int depth, IPrincipal principal, Uri uri, IList<PropertyEntry> entries)
+        private async Task AddEntriesAsync(IStoreCollection collection, int depth, IHttpContext httpContext, Uri uri, IList<PropertyEntry> entries)
         {
             // Add the collection to the list
             entries.Add(new PropertyEntry(uri, collection));
@@ -245,12 +244,12 @@ namespace NWebDav.Server.Handlers
             if (depth > 0)
             {
                 // Add all child collections
-                foreach (var childEntry in await collection.GetItemsAsync(principal).ConfigureAwait(false))
+                foreach (var childEntry in await collection.GetItemsAsync(httpContext).ConfigureAwait(false))
                 {
                     var subUri = UriHelper.Combine(uri, childEntry.Name);
                     var subCollection = childEntry as IStoreCollection;
                     if (subCollection != null)
-                        await AddEntriesAsync(subCollection, depth - 1, principal, subUri, entries).ConfigureAwait(false);
+                        await AddEntriesAsync(subCollection, depth - 1, httpContext, subUri, entries).ConfigureAwait(false);
                     else
                         entries.Add(new PropertyEntry(subUri, childEntry));
                 }

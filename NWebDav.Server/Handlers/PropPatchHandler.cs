@@ -99,7 +99,7 @@ namespace NWebDav.Server.Handlers
             var principal = httpContext.Session?.Principal;
 
             // Obtain item
-            var item = await store.GetItemAsync(request.Url, principal).ConfigureAwait(false);
+            var item = await store.GetItemAsync(request.Url, httpContext).ConfigureAwait(false);
             if (item == null)
             {
                 response.SendResponse(DavStatusCode.NotFound);
@@ -126,7 +126,7 @@ namespace NWebDav.Server.Handlers
                 DavStatusCode result;
                 try
                 {
-                    result = item.PropertyManager.SetProperty(principal, item, propSet.Name, propSet.Value);
+                    result = item.PropertyManager.SetProperty(httpContext, item, propSet.Name, propSet.Value);
                 }
                 catch (Exception)
                 {
