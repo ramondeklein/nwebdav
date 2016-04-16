@@ -98,31 +98,15 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class Win32FileAttributes<TEntry> : DavTypedProperty<TEntry, FileAttributes> where TEntry : IStoreItem
     {
-        private class FileAttributesValidator : IValidator
-        {
-            public bool Validate(object value)
-            {
-                var intString = value as string;
-                if (intString == null)
-                    return false;
-
-                // Check if it's a valid HEX number
-                int result;
-                return int.TryParse(intString, NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out result);
-            }
-        }
-
-        private class FileAttributesConverter : IConverter<FileAttributes>
+        private class FileAttributesConverter : IConverter
         {
             public object ToXml(IHttpContext httpContext, FileAttributes value) => ((int)value).ToString("X8");
             public FileAttributes FromXml(IHttpContext httpContext, object value) => (FileAttributes)Convert.ToInt32((string)value, 16);
         }
 
-        private static IValidator TypeValidator { get; } = new FileAttributesValidator();
-        private static IConverter<FileAttributes> TypeConverter { get; } = new FileAttributesConverter();
+        private static IConverter TypeConverter { get; } = new FileAttributesConverter();
 
         public override XName Name => WebDavNamespaces.Win32Ns + "Win32FileAttributes";
-        public override IValidator Validator => TypeValidator;
-        public override IConverter<FileAttributes> Converter => TypeConverter;
+        public override IConverter Converter => TypeConverter;
     }
 }

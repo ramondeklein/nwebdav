@@ -43,11 +43,7 @@ namespace NWebDav.Server.Props
                 return null;
 
             // Obtain the value
-            var value = property.Getter(httpContext, (TEntry)item);
-
-            // Validate the value
-            property.Validator.Validate(value);
-            return value;
+            return property.Getter(httpContext, (TEntry)item);
         }
 
         public DavStatusCode SetProperty(IHttpContext httpContext, IStoreItem item, XName name, object value)
@@ -59,10 +55,6 @@ namespace NWebDav.Server.Props
 
             // Check if the property has a setter
             if (property.Setter == null)
-                return DavStatusCode.Conflict;
-
-            // Validate the value (if not null)
-            if (value != null && !property.Validator.Validate(value))
                 return DavStatusCode.Conflict;
 
             // Set the value
