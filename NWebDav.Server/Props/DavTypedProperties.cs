@@ -11,9 +11,49 @@ namespace NWebDav.Server.Props
 {
     public abstract class DavTypedProperty<TEntry, TType> : DavProperty<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Converter defining methods to convert property values from/to XML.
+        /// </summary>
         public interface IConverter
         {
+            /// <summary>
+            /// Get the XML representation of the specified value.
+            /// </summary>
+            /// <param name="httpContext">
+            /// Current HTTP context.
+            /// </param>
+            /// <param name="value">
+            /// Value that needs to be converted to XML output.
+            /// </param>
+            /// <returns>
+            /// The XML representation of the <see cref="value"/>. The XML
+            /// output should either be a <see cref="System.String"/> or an 
+            /// <see cref="System.Xml.Linq.XElement"/>.
+            /// </returns>
+            /// <remarks>
+            /// The current HTTP context can be used to generate XML that is
+            /// compatible with the requesting WebDAV client.
+            /// </remarks>
             object ToXml(IHttpContext httpContext, TType value);
+            
+            /// <summary>
+            /// Get the typed value of the specified XML representation.
+            /// </summary>
+            /// <param name="httpContext">
+            /// Current HTTP context.
+            /// </param>
+            /// <param name="value">
+            /// The XML value that needs to be converted to the target
+            /// type. This value is always a <see cref="System.String"/>
+            /// or an <see cref="System.Xml.Linq.XElement"/>.
+            /// </param>
+            /// <returns>
+            /// The typed value of the XML representation.
+            /// </returns>
+            /// <remarks>
+            /// The current HTTP context can be used to generate XML that is
+            /// compatible with the requesting WebDAV client.
+            /// </remarks>
             TType FromXml(IHttpContext httpContext, object value);
         }
 
@@ -26,7 +66,7 @@ namespace NWebDav.Server.Props
             set
             {
                 _getter = value;
-                base.Getter = (c,s) =>
+                base.Getter = (c, s) =>
                 {
                     var v = _getter(c, s);
                     return Converter != null ? Converter.ToXml(c, v) : v;
