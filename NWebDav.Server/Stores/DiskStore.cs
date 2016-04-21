@@ -8,7 +8,7 @@ using NWebDav.Server.Locking;
 
 namespace NWebDav.Server.Stores
 {
-    public class DiskStore : IStore
+    public sealed class DiskStore : IStore
     {
         public DiskStore(string directory, ILockingManager lockingManager = null)
         {

@@ -13,7 +13,7 @@ using NWebDav.Server.Props;
 namespace NWebDav.Server.Stores
 {
     [DebuggerDisplay("{_fileInfo.FullPath}")]
-    public class DiskStoreItem : IStoreItem
+    public sealed class DiskStoreItem : IDiskStoreItem
     {
         private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(DiskStoreItem));
         private readonly FileInfo _fileInfo;

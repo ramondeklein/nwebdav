@@ -14,7 +14,7 @@ using NWebDav.Server.Props;
 namespace NWebDav.Server.Stores
 {
     [DebuggerDisplay("{_directoryInfo.FullPath}\\")]
-    public class DiskStoreCollection : IStoreCollection
+    public sealed class DiskStoreCollection : IDiskStoreCollection
     {
         private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(DiskStoreCollection));
         private readonly DirectoryInfo _directoryInfo;

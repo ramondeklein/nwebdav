@@ -80,6 +80,8 @@
     <Compile Include="Props\OverridePropertyManager.cs" />
     <Compile Include="Stores\DiskStoreCollection.cs" />
     <Compile Include="Stores\DiskStoreItem.cs" />
+    <Compile Include="Stores\IDiskStoreCollection.cs" />
+    <Compile Include="Stores\IDiskStoreItem.cs" />
     <Compile Include="Stores\IStore.cs" />
     <Compile Include="Locking\ILockingManager.cs" />
     <Compile Include="Locking\LockScope.cs" />
