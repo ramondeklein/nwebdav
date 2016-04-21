@@ -135,6 +135,24 @@ namespace NWebDav.Server.Props
     }
 
     /// <summary>
+    /// Describes the active locks on a resource.
+    /// </summary>
+    /// <remarks>
+    /// This property returns a listing of who has a lock, what type of lock he
+    /// has, the timeout type and the time remaining on the timeout, and the
+    /// associated lock token. The server is free to withhold any or all of
+    /// this information if the requesting principal does not have sufficient
+    /// access rights to see the requested data.
+    /// </remarks>
+    /// <typeparam name="TEntry">
+    /// Store item or collection to which this DAV property applies.
+    /// </typeparam>
+    public class DavLockDiscovery<TEntry> : DavXElementArray<TEntry> where TEntry : IStoreItem
+    {
+        public override XName Name => WebDavNamespaces.DavNs + "lockdiscovery";
+    }
+
+    /// <summary>
     /// Specifies the nature of the resource.
     /// </summary>
     /// <remarks>
@@ -173,5 +191,30 @@ namespace NWebDav.Server.Props
     public class DavSource<TEntry> : DavXElement<TEntry> where TEntry : IStoreItem
     {
         public override XName Name => WebDavNamespaces.DavNs + "source";
+    }
+
+    /// <summary>
+    /// Provides a listing of the lock capabilities supported by the resource.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This property of a resource returns a listing of the combinations of
+    /// scope and access types which may be specified in a lock request on the
+    /// resource. Note that the actual contents are themselves controlled by
+    /// access controls so a server is not required to provide information the
+    /// client is not authorized to see.
+    /// </para>
+    /// <para>
+    /// See 
+    /// <see href="http://www.webdav.org/specs/rfc2518.html#rfc.section.13.11.1">section 13.11 of RFC 2418</see>
+    /// for more information and an example of a source result.
+    /// </para>
+    /// </remarks>
+    /// <typeparam name="TEntry">
+    /// Store item or collection to which this DAV property applies.
+    /// </typeparam>
+    public class DavSupportedLock<TEntry> : DavXElementArray<TEntry> where TEntry : IStoreItem
+    {
+        public override XName Name => WebDavNamespaces.DavNs + "supportedlock";
     }
 }
