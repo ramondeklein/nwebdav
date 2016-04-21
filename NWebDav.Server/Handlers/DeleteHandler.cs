@@ -32,10 +32,8 @@ namespace NWebDav.Server.Handlers
             }
 
             // Delete item
-            await DeleteItemAsync(parentCollection, splitUri.Name, httpContext, splitUri.CollectionUri, errors).ConfigureAwait(false);
-
-            // Check if there are any errors
-            if (errors.HasItems)
+            var status = await DeleteItemAsync(parentCollection, splitUri.Name, httpContext, splitUri.CollectionUri, errors).ConfigureAwait(false);
+            if (status == DavStatusCode.Ok && errors.HasItems)
             {
                 // Obtain the status document
                 var xDocument = new XDocument(errors.GetXmlMultiStatus());
@@ -45,13 +43,13 @@ namespace NWebDav.Server.Handlers
             }
             else
             {
-                // Set the response
-                response.SendResponse(DavStatusCode.Ok);
+                // Return the proper status
+                response.SendResponse(status);
             }
             return true;
         }
 
-        private async Task DeleteItemAsync(IStoreCollection collection, string name, IHttpContext httpContext, Uri baseUri, UriResultCollection errors)
+        private async Task<DavStatusCode> DeleteItemAsync(IStoreCollection collection, string name, IHttpContext httpContext, Uri baseUri, UriResultCollection errors)
         {
             // Obtain the actual item
             var deleteCollection = await collection.GetItemAsync(name, httpContext).ConfigureAwait(false) as IStoreCollection;
@@ -66,9 +64,7 @@ namespace NWebDav.Server.Handlers
             }
 
             // Attempt to delete the item
-            var storeResult = await collection.DeleteItemAsync(name, httpContext).ConfigureAwait(false);
-            if (storeResult != DavStatusCode.Ok)
-                errors.AddResult(UriHelper.Combine(baseUri, name), storeResult);
+            return await collection.DeleteItemAsync(name, httpContext).ConfigureAwait(false);
         }
     }
 }
