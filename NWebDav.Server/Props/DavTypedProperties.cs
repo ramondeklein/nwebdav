@@ -110,13 +110,27 @@ namespace NWebDav.Server.Props
         {
             public object ToXml(IHttpContext httpContext, DateTime value)
             {
-                // We need to recreate the date again, because the Windows 7
-                // WebDAV client cannot deal with more than 3 digits for the
+                // The older built-in Windows WebDAV clients have a problem, so
+                // they cannot deal with more than 3 digits for the
                 // milliseconds.
-                var dt = new DateTime(value.Year, value.Month, value.Day, value.Hour, value.Minute, value.Second, value.Millisecond, DateTimeKind.Utc);
-                return XmlConvert.ToString(dt, XmlDateTimeSerializationMode.Utc);
+                if (HasIso8601FractionBug(httpContext))
+                {
+                    // We need to recreate the date again, because the Windows 7
+                    // WebDAV client cannot 
+                    var dt = new DateTime(value.Year, value.Month, value.Day, value.Hour, value.Minute, value.Second, value.Millisecond, DateTimeKind.Utc);
+                    return XmlConvert.ToString(dt, XmlDateTimeSerializationMode.Utc);
+                }
+
+                return XmlConvert.ToString(value, XmlDateTimeSerializationMode.Utc);
             }
+
             public DateTime FromXml(IHttpContext httpContext, object value) => XmlConvert.ToDateTime((string)value, XmlDateTimeSerializationMode.Utc);
+
+            private bool HasIso8601FractionBug(IHttpContext httpContext)
+            {
+                // TODO: Determine which WebDAV clients have this bug
+                return true;
+            }
         }
 
         private static IConverter TypeConverter { get; } = new Iso8601DateConverter();
