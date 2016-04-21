@@ -27,89 +27,113 @@ namespace NWebDav.Server.Stores
 
         public static PropertyManager<DiskStoreCollection> DefaultPropertyManager { get; } = new PropertyManager<DiskStoreCollection>(new DavProperty<DiskStoreCollection>[]
         {
-                // RFC-2518 properties
-                new DavCreationDate<DiskStoreCollection>
+            // RFC-2518 properties
+            new DavCreationDate<DiskStoreCollection>
+            {
+                Getter = (context, collection) => collection._directoryInfo.CreationTimeUtc,
+                Setter = (context, collection, value) =>
                 {
-                    Getter = (context, collection) => collection._directoryInfo.CreationTimeUtc,
-                    Setter = (context, collection, value) => { collection._directoryInfo.CreationTimeUtc = value; return DavStatusCode.Ok; }
-                },
-                new DavDisplayName<DiskStoreCollection>
-                {
-                    Getter = (context, collection) => collection._directoryInfo.Name
-                },
-                new DavGetLastModified<DiskStoreCollection>
-                {
-                    Getter = (context, collection) => collection._directoryInfo.LastWriteTimeUtc,
-                    Setter = (context, collection, value) => { collection._directoryInfo.LastWriteTimeUtc = value; return DavStatusCode.Ok; }
-                },
-                new DavGetResourceType<DiskStoreCollection>
-                {
-                    Getter = (context, collection) => new XElement(WebDavNamespaces.DavNs + "collection")
-                },
-
-                // Default locking property handling via the LockingManager
-                new DavLockDiscoveryDefault<DiskStoreCollection>(),
-                new DavSupportedLockDefault<DiskStoreCollection>(),
-
-                // Hopmann/Lippert collection properties
-                new DavExtCollectionChildCount<DiskStoreCollection>
-                {
-                    Getter = (context, collection) => collection._directoryInfo.EnumerateFiles().Count() + collection._directoryInfo.EnumerateDirectories().Count()
-                },
-                new DavExtCollectionIsFolder<DiskStoreCollection>
-                {
-                    Getter = (context, collection) => true
-                },
-                new DavExtCollectionIsHidden<DiskStoreCollection>
-                {
-                    Getter = (context, collection) => (collection._directoryInfo.Attributes & FileAttributes.Hidden) != 0
-                },
-                new DavExtCollectionIsStructuredDocument<DiskStoreCollection>
-                {
-                    Getter = (context, collection) => false
-                },
-                new DavExtCollectionHasSubs<DiskStoreCollection>
-                {
-                    Getter = (context, collection) => collection._directoryInfo.EnumerateDirectories().Any()
-                },
-                new DavExtCollectionNoSubs<DiskStoreCollection>
-                {
-                    Getter = (context, collection) => false
-                },
-                new DavExtCollectionObjectCount<DiskStoreCollection>
-                {
-                    Getter = (context, collection) => collection._directoryInfo.EnumerateFiles().Count()
-                },
-                new DavExtCollectionReserved<DiskStoreCollection>
-                {
-                    Getter = (context, collection) => false
-                },
-                new DavExtCollectionVisibleCount<DiskStoreCollection>
-                {
-                    Getter = (context, collection) => collection._directoryInfo.EnumerateFiles().Count(fi => (fi.Attributes & FileAttributes.Hidden) == 0)
-                },
-                
-                // Win32 extensions
-                new Win32CreationTime<DiskStoreCollection>
-                {
-                    Getter = (context, collection) => collection._directoryInfo.CreationTimeUtc,
-                    Setter = (context, collection, value) => { collection._directoryInfo.CreationTimeUtc = value; return DavStatusCode.Ok; }
-                },
-                new Win32LastAccessTime<DiskStoreCollection>
-                {
-                    Getter = (context, collection) => collection._directoryInfo.LastAccessTimeUtc,
-                    Setter = (context, collection, value) => { collection._directoryInfo.LastAccessTimeUtc = value; return DavStatusCode.Ok; }
-                },
-                new Win32LastModifiedTime<DiskStoreCollection>
-                {
-                    Getter = (context, collection) => collection._directoryInfo.LastWriteTimeUtc,
-                    Setter = (context, collection, value) => { collection._directoryInfo.LastWriteTimeUtc = value; return DavStatusCode.Ok; }
-                },
-                new Win32FileAttributes<DiskStoreCollection>
-                {
-                    Getter = (context, collection) => collection._directoryInfo.Attributes,
-                    Setter = (context, collection, value) => { collection._directoryInfo.Attributes = value; return DavStatusCode.Ok; }
+                    collection._directoryInfo.CreationTimeUtc = value;
+                    return DavStatusCode.Ok;
                 }
+            },
+            new DavDisplayName<DiskStoreCollection>
+            {
+                Getter = (context, collection) => collection._directoryInfo.Name
+            },
+            new DavGetLastModified<DiskStoreCollection>
+            {
+                Getter = (context, collection) => collection._directoryInfo.LastWriteTimeUtc,
+                Setter = (context, collection, value) =>
+                {
+                    collection._directoryInfo.LastWriteTimeUtc = value;
+                    return DavStatusCode.Ok;
+                }
+            },
+            new DavGetResourceType<DiskStoreCollection>
+            {
+                Getter = (context, collection) => new XElement(WebDavNamespaces.DavNs + "collection")
+            },
+
+            // Default locking property handling via the LockingManager
+            new DavLockDiscoveryDefault<DiskStoreCollection>(),
+            new DavSupportedLockDefault<DiskStoreCollection>(),
+
+            // Hopmann/Lippert collection properties
+            new DavExtCollectionChildCount<DiskStoreCollection>
+            {
+                Getter = (context, collection) => collection._directoryInfo.EnumerateFiles().Count() + collection._directoryInfo.EnumerateDirectories().Count()
+            },
+            new DavExtCollectionIsFolder<DiskStoreCollection>
+            {
+                Getter = (context, collection) => true
+            },
+            new DavExtCollectionIsHidden<DiskStoreCollection>
+            {
+                Getter = (context, collection) => (collection._directoryInfo.Attributes & FileAttributes.Hidden) != 0
+            },
+            new DavExtCollectionIsStructuredDocument<DiskStoreCollection>
+            {
+                Getter = (context, collection) => false
+            },
+            new DavExtCollectionHasSubs<DiskStoreCollection>
+            {
+                Getter = (context, collection) => collection._directoryInfo.EnumerateDirectories().Any()
+            },
+            new DavExtCollectionNoSubs<DiskStoreCollection>
+            {
+                Getter = (context, collection) => false
+            },
+            new DavExtCollectionObjectCount<DiskStoreCollection>
+            {
+                Getter = (context, collection) => collection._directoryInfo.EnumerateFiles().Count()
+            },
+            new DavExtCollectionReserved<DiskStoreCollection>
+            {
+                Getter = (context, collection) => false
+            },
+            new DavExtCollectionVisibleCount<DiskStoreCollection>
+            {
+                Getter = (context, collection) => collection._directoryInfo.EnumerateFiles().Count(fi => (fi.Attributes & FileAttributes.Hidden) == 0)
+            },
+
+            // Win32 extensions
+            new Win32CreationTime<DiskStoreCollection>
+            {
+                Getter = (context, collection) => collection._directoryInfo.CreationTimeUtc,
+                Setter = (context, collection, value) =>
+                {
+                    collection._directoryInfo.CreationTimeUtc = value;
+                    return DavStatusCode.Ok;
+                }
+            },
+            new Win32LastAccessTime<DiskStoreCollection>
+            {
+                Getter = (context, collection) => collection._directoryInfo.LastAccessTimeUtc,
+                Setter = (context, collection, value) =>
+                {
+                    collection._directoryInfo.LastAccessTimeUtc = value;
+                    return DavStatusCode.Ok;
+                }
+            },
+            new Win32LastModifiedTime<DiskStoreCollection>
+            {
+                Getter = (context, collection) => collection._directoryInfo.LastWriteTimeUtc,
+                Setter = (context, collection, value) =>
+                {
+                    collection._directoryInfo.LastWriteTimeUtc = value;
+                    return DavStatusCode.Ok;
+                }
+            },
+            new Win32FileAttributes<DiskStoreCollection>
+            {
+                Getter = (context, collection) => collection._directoryInfo.Attributes,
+                Setter = (context, collection, value) =>
+                {
+                    collection._directoryInfo.Attributes = value;
+                    return DavStatusCode.Ok;
+                }
+            }
         });
 
         public string Name => _directoryInfo.Name;

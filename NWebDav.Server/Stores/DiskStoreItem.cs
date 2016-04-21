@@ -26,76 +26,101 @@ namespace NWebDav.Server.Stores
 
         private static PropertyManager<DiskStoreItem> DefaultPropertyManager { get; } = new PropertyManager<DiskStoreItem>(new DavProperty<DiskStoreItem>[]
         {
-                // RFC-2518 properties
-                new DavCreationDate<DiskStoreItem>
+            // RFC-2518 properties
+            new DavCreationDate<DiskStoreItem>
+            {
+                Getter = (context, item) => item._fileInfo.CreationTimeUtc,
+                Setter = (context, item, value) =>
                 {
-                    Getter = (context, item) => item._fileInfo.CreationTimeUtc,
-                    Setter = (context, item, value) => { item._fileInfo.CreationTimeUtc = value; return DavStatusCode.Ok; }
-                },
-                new DavDisplayName<DiskStoreItem>
-                {
-                    Getter = (context, item) => item._fileInfo.Name
-                },
-                new DavGetContentLength<DiskStoreItem>
-                {
-                    Getter = (context, item) => item._fileInfo.Length
-                },
-                new DavGetContentType<DiskStoreItem>
-                {
-                    Getter = (context, item) => item.DetermineContentType()
-                },
-                new DavGetEtag<DiskStoreItem>
-                {
-                    // Calculating the Etag is an expensive operation,
-                    // because we need to scan the entire file.
-                    IsExpensive = true,
-                    Getter = (context, item) => item.CalculateEtag()
-                },
-                new DavGetLastModified<DiskStoreItem>
-                {
-                    Getter = (context, item) => item._fileInfo.LastWriteTimeUtc,
-                    Setter = (context, item, value) => { item._fileInfo.LastWriteTimeUtc = value; return DavStatusCode.Ok; }
-                },
-                new DavGetResourceType<DiskStoreItem>
-                {
-                    Getter = (context, item) => null
-                },
-
-                // Default locking property handling via the LockingManager
-                new DavLockDiscoveryDefault<DiskStoreItem>(),
-                new DavSupportedLockDefault<DiskStoreItem>(),
-
-                // Hopmann/Lippert collection properties
-                // (although not a collection, the IsHidden property might be valuable)
-                new DavExtCollectionIsHidden<DiskStoreItem>
-                {
-                    Getter = (context, item) => (item._fileInfo.Attributes & FileAttributes.Hidden) != 0
-                },
-
-                // Win32 extensions
-                new Win32CreationTime<DiskStoreItem>
-                {
-                    Getter = (context, item) => item._fileInfo.CreationTimeUtc,
-                    Setter = (context, item, value) => { item._fileInfo.CreationTimeUtc = value; return DavStatusCode.Ok; }
-                },
-                new Win32LastAccessTime<DiskStoreItem>
-                {
-                    Getter = (context, item) => item._fileInfo.LastAccessTimeUtc,
-                    Setter = (context, item, value) => { item._fileInfo.LastAccessTimeUtc = value; return DavStatusCode.Ok; }
-                },
-                new Win32LastModifiedTime<DiskStoreItem>
-                {
-                    Getter = (context, item) => item._fileInfo.LastWriteTimeUtc,
-                    Setter = (context, item, value) => { item._fileInfo.LastWriteTimeUtc = value; return DavStatusCode.Ok; }
-                },
-                new Win32FileAttributes<DiskStoreItem>
-                {
-                    Getter = (context, item) => item._fileInfo.Attributes,
-                    Setter = (context, item, value) => { item._fileInfo.Attributes = value; return DavStatusCode.Ok; }
+                    item._fileInfo.CreationTimeUtc = value;
+                    return DavStatusCode.Ok;
                 }
+            },
+            new DavDisplayName<DiskStoreItem>
+            {
+                Getter = (context, item) => item._fileInfo.Name
+            },
+            new DavGetContentLength<DiskStoreItem>
+            {
+                Getter = (context, item) => item._fileInfo.Length
+            },
+            new DavGetContentType<DiskStoreItem>
+            {
+                Getter = (context, item) => item.DetermineContentType()
+            },
+            new DavGetEtag<DiskStoreItem>
+            {
+                // Calculating the Etag is an expensive operation,
+                // because we need to scan the entire file.
+                IsExpensive = true,
+                Getter = (context, item) => item.CalculateEtag()
+            },
+            new DavGetLastModified<DiskStoreItem>
+            {
+                Getter = (context, item) => item._fileInfo.LastWriteTimeUtc,
+                Setter = (context, item, value) =>
+                {
+                    item._fileInfo.LastWriteTimeUtc = value;
+                    return DavStatusCode.Ok;
+                }
+            },
+            new DavGetResourceType<DiskStoreItem>
+            {
+                Getter = (context, item) => null
+            },
+
+            // Default locking property handling via the LockingManager
+            new DavLockDiscoveryDefault<DiskStoreItem>(),
+            new DavSupportedLockDefault<DiskStoreItem>(),
+
+            // Hopmann/Lippert collection properties
+            // (although not a collection, the IsHidden property might be valuable)
+            new DavExtCollectionIsHidden<DiskStoreItem>
+            {
+                Getter = (context, item) => (item._fileInfo.Attributes & FileAttributes.Hidden) != 0
+            },
+
+            // Win32 extensions
+            new Win32CreationTime<DiskStoreItem>
+            {
+                Getter = (context, item) => item._fileInfo.CreationTimeUtc,
+                Setter = (context, item, value) =>
+                {
+                    item._fileInfo.CreationTimeUtc = value;
+                    return DavStatusCode.Ok;
+                }
+            },
+            new Win32LastAccessTime<DiskStoreItem>
+            {
+                Getter = (context, item) => item._fileInfo.LastAccessTimeUtc,
+                Setter = (context, item, value) =>
+                {
+                    item._fileInfo.LastAccessTimeUtc = value;
+                    return DavStatusCode.Ok;
+                }
+            },
+            new Win32LastModifiedTime<DiskStoreItem>
+            {
+                Getter = (context, item) => item._fileInfo.LastWriteTimeUtc,
+                Setter = (context, item, value) =>
+                {
+                    item._fileInfo.LastWriteTimeUtc = value;
+                    return DavStatusCode.Ok;
+                }
+            },
+            new Win32FileAttributes<DiskStoreItem>
+            {
+                Getter = (context, item) => item._fileInfo.Attributes,
+                Setter = (context, item, value) =>
+                {
+                    item._fileInfo.Attributes = value;
+                    return DavStatusCode.Ok;
+                }
+            }
         });
 
         public string Name => _fileInfo.Name;
+        public string FullPath => _fileInfo.FullName;
         public Stream GetReadableStream(IHttpContext httpContext) => _fileInfo.OpenRead();
         public Stream GetWritableStream(IHttpContext httpContext) => _fileInfo.OpenWrite();
         public IPropertyManager PropertyManager => DefaultPropertyManager;
