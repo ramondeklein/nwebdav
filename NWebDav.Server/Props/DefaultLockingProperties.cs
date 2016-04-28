@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 
+using NWebDav.Server.Locking;
 using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Props
@@ -16,8 +17,14 @@ namespace NWebDav.Server.Props
     /// <typeparam name="TEntry">
     /// Store item or collection to which this DAV property applies.
     /// </typeparam>
-    public class DavLockDiscoveryDefault<TEntry> : DavLockDiscovery<TEntry> where TEntry : IStoreItem
+    public sealed class DavLockDiscoveryDefault<TEntry> : DavLockDiscovery<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Create an instance of the <see cref="DavLockDiscovery{TEntry}"/>
+        /// property that implementes the property using the
+        /// <see cref="ILockingManager.GetActiveLockInfo"/> method of the
+        /// item's locking manager.
+        /// </summary>
         public DavLockDiscoveryDefault()
         {
             Getter = (httpContext, item) => item.LockingManager.GetActiveLockInfo(item).Select(ali => ali.ToXml());
@@ -36,8 +43,14 @@ namespace NWebDav.Server.Props
     /// <typeparam name="TEntry">
     /// Store item or collection to which this DAV property applies.
     /// </typeparam>
-    public class DavSupportedLockDefault<TEntry> : DavSupportedLock<TEntry> where TEntry : IStoreItem
+    public sealed class DavSupportedLockDefault<TEntry> : DavSupportedLock<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Create an instance of the <see cref="DavSupportedLock{TEntry}"/>
+        /// property that implementes the property using the
+        /// <see cref="ILockingManager.GetSupportedLocks"/> method of the
+        /// item's locking manager.
+        /// </summary>
         public DavSupportedLockDefault()
         {
             Getter = (httpContext, item) => item.LockingManager.GetSupportedLocks(item).Select(sl => sl.ToXml());

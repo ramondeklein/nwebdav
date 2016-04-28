@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using System.IO;
 using System.Xml.Linq;
 
@@ -20,6 +19,9 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class Win32CreationTime<TEntry> : DavRfc1123Date<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property.
+        /// </summary>
         public override XName Name => WebDavNamespaces.Win32Ns + "Win32CreationTime";
     }
 
@@ -36,6 +38,9 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class Win32LastAccessTime<TEntry> : DavRfc1123Date<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property.
+        /// </summary>
         public override XName Name => WebDavNamespaces.Win32Ns + "Win32LastAccessTime";
     }
 
@@ -52,6 +57,9 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class Win32LastModifiedTime<TEntry> : DavRfc1123Date<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property.
+        /// </summary>
         public override XName Name => WebDavNamespaces.Win32Ns + "Win32LastModifiedTime";
     }
 
@@ -106,7 +114,15 @@ namespace NWebDav.Server.Props
 
         private static IConverter TypeConverter { get; } = new FileAttributesConverter();
 
+        /// <summary>
+        /// Name of the property.
+        /// </summary>
         public override XName Name => WebDavNamespaces.Win32Ns + "Win32FileAttributes";
+
+        /// <summary>
+        /// Converter that is used to convert the actual value into the XML
+        /// format that is required by WebDAV.
+        /// </summary>
         public override IConverter Converter => TypeConverter;
     }
 }
