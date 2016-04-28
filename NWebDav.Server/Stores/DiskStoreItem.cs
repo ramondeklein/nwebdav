@@ -24,7 +24,7 @@ namespace NWebDav.Server.Stores
             _fileInfo = fileInfo;
         }
 
-        private static PropertyManager<DiskStoreItem> DefaultPropertyManager { get; } = new PropertyManager<DiskStoreItem>(new DavProperty<DiskStoreItem>[]
+        public static PropertyManager<DiskStoreItem> DefaultPropertyManager { get; } = new PropertyManager<DiskStoreItem>(new DavProperty<DiskStoreItem>[]
         {
             // RFC-2518 properties
             new DavCreationDate<DiskStoreItem>
