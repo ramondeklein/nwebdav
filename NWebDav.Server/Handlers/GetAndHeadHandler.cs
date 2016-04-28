@@ -15,7 +15,6 @@ namespace NWebDav.Server.Handlers
             // Obtain request and response
             var request = httpContext.Request;
             var response = httpContext.Response;
-            var principal = httpContext.Session?.Principal;
 
             // Determine if we are invoked as HEAD
             var head = request.HttpMethod == "HEAD";

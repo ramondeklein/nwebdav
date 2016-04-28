@@ -96,7 +96,6 @@ namespace NWebDav.Server.Handlers
             // Obtain request and response
             var request = httpContext.Request;
             var response = httpContext.Response;
-            var principal = httpContext.Session?.Principal;
 
             // Obtain item
             var item = await store.GetItemAsync(request.Url, httpContext).ConfigureAwait(false);

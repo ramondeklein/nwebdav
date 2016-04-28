@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Security.Principal;
 using System.Threading.Tasks;
+
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 

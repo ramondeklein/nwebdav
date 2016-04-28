@@ -40,7 +40,6 @@ namespace NWebDav.Server.Handlers
             // Obtain request and response
             var request = httpContext.Request;
             var response = httpContext.Response;
-            var principal = httpContext.Session?.Principal;
 
             // Determine the list of properties that need to be obtained
             var propertyList = new List<XName>();
