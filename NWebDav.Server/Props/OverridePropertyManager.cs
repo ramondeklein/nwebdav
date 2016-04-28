@@ -32,7 +32,7 @@ namespace NWebDav.Server.Props
             Properties = GetPropertyInfo();
         }
 
-        public IEnumerable<PropertyInfo> Properties { get; }
+        public IList<PropertyInfo> Properties { get; }
 
         public object GetProperty(IHttpContext httpContext, IStoreItem item, XName name, bool skipExpensive = false)
         {

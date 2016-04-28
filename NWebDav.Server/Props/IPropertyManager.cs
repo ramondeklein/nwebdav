@@ -9,7 +9,10 @@ namespace NWebDav.Server.Props
 {
     public interface IPropertyManager
     {
-        IEnumerable<PropertyInfo> Properties { get; }
+        /// <summary>
+        /// Obtain the list of all implemented properties.
+        /// </summary>
+        IList<PropertyInfo> Properties { get; }
         object GetProperty(IHttpContext httpContext, IStoreItem item, XName name, bool skipExpensive = false);
         DavStatusCode SetProperty(IHttpContext httpContext, IStoreItem item, XName name, object value);
     }

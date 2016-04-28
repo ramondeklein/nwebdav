@@ -25,7 +25,10 @@ namespace NWebDav.Server.Props
             Properties = _properties.Select(p => new PropertyInfo(p.Value.Name, p.Value.IsExpensive)).ToList();
         }
 
-        public IEnumerable<PropertyInfo> Properties { get; }
+        /// <summary>
+        /// Obtain the list of all implemented properties.
+        /// </summary>
+        public IList<PropertyInfo> Properties { get; }
 
         public object GetProperty(IHttpContext httpContext, IStoreItem item, XName name, bool skipExpensive = false)
         {
