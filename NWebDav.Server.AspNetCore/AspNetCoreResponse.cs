@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 
 
 using NWebDav.Server.Http;

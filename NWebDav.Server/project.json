@@ -27,10 +27,10 @@
         "System.Xml.XDocument": "4.0.10.0"
       }
     },
-    "dnxcore50": {
+    "netstandard1.5": {
       "dependencies": {
         "Microsoft.NETCore.Platforms": "1.0.1-rc2-24027",
-		"System.Diagnostics.Debug": "4.0.11-rc2-24027",
+		    "System.Diagnostics.Debug": "4.0.11-rc2-24027",
         "System.IO.FileSystem": "4.0.1-rc2-24027",
         "System.Globalization": "4.0.11-rc2-24027",
         "System.Linq": "4.1.0-rc2-24027",
@@ -38,10 +38,10 @@
         "System.Reflection.Extensions": "4.0.1-rc2-24027",
         "System.Reflection.TypeExtensions": "4.1.0-rc2-24027",
         "System.Runtime.Extensions": "4.1.0-rc2-24027",
-        "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-22231",
+		    "System.Security.Cryptography.Algorithms": "4.1.0-rc2-24027",
         "System.Security.Principal": "4.0.1-rc2-24027",
-	    "System.Text.RegularExpressions": "4.0.12-rc2-24027",
-		"System.Threading": "4.0.11-rc2-24027",
+        "System.Text.RegularExpressions": "4.0.12-rc2-24027",
+		    "System.Threading": "4.0.11-rc2-24027",
         "System.Xml.XDocument": "4.0.11-rc2-24027",
         "System.Xml.XmlSerializer": "4.0.11-rc2-24027"
       }

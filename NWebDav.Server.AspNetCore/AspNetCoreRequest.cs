@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 
 using NWebDav.Server.Http;
 

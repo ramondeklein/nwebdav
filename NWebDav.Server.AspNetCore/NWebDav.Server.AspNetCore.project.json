@@ -9,6 +9,6 @@
     "net461": { }
   },
   "dependencies": {
-    "Microsoft.AspNet.Hosting": "1.0.0-rc1-final"
+    "Microsoft.AspNetCore.Hosting": "1.0.0-rc2-final"
   }
 }
