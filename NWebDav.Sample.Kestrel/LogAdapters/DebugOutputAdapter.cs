@@ -26,7 +26,7 @@ namespace NWebDav.Sample.Kestrel.LogAdapters
                  return Parent.LogLevels.Contains(logLevel);
             }
 
-            public void Log(LogLevel logLevel, string message, Exception exception = null)
+            public void Log(LogLevel logLevel, string message, Exception exception)
             {
                 if (IsLogEnabled(logLevel))
                 {

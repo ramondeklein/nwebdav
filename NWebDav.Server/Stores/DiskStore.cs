@@ -12,6 +12,9 @@ namespace NWebDav.Server.Stores
     {
         public DiskStore(string directory, ILockingManager lockingManager = null)
         {
+            if (directory == null)
+                throw new ArgumentNullException(nameof(directory));
+
             BaseDirectory = directory;
             LockingManager = lockingManager ?? new InMemoryLockingManager();
         }

@@ -1,19 +1,12 @@
 {
-  "version": "0.1.9-*",
+  "version": "0.1.10-*",
 
-  "compilationOptions": {
+  "buildOptions": {
     "emitEntryPoint": false
   },
 
   "frameworks": {
-    "net451": {
-      "frameworkAssemblies": {
-        "System.Xml": "4.0.0.0",
-        "System.Xml.Linq": "4.0.0.0",
-        "System.Xml.XDocument": "4.0.0.0"
-      }
-    },
-    "net452": {
+    "net45": {
       "frameworkAssemblies": {
         "System.Xml": "4.0.0.0",
         "System.Xml.Linq": "4.0.0.0",
@@ -29,6 +22,6 @@
     }
   },
   "dependencies": {
-    "NWebDav.Server": "0.0.0.0"
+    "NWebDav.Server": "0.1.*"
   }
 }

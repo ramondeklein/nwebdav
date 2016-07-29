@@ -1,7 +1,7 @@
 ﻿using System;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Server.Kestrel;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.Logging;
 
@@ -14,23 +14,18 @@ namespace NWebDav.Sample.Kestrel
 {
     public class Startup
     {
-        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory, IApplicationEnvironment env)
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
-            // Set the Kestrel server configuration
-            var ksi = app.ServerFeatures.Get<IKestrelServerInformation>();
-            //ksi.ThreadCount = 4;
-            ksi.NoDelay = true;
-
             // Add logging
             // TODO: Migrate this logging with NWebDav logging
-            loggerFactory.MinimumLevel = LogLevel.Debug;
             loggerFactory.AddConsole(LogLevel.Debug);
 
             // Create the request handler factory
             var requestHandlerFactory = new RequestHandlerFactory();
 
             // Create WebDAV dispatcher
-            var homeFolder = Environment.GetEnvironmentVariable("HOME");
+            var homeFolder = Environment.GetEnvironmentVariable("HOME") ?? Environment.GetEnvironmentVariable("USERPROFILE");
             var webDavDispatcher = new WebDavDispatcher(new DiskStore(homeFolder), requestHandlerFactory);
 
             app.Run(async context =>

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using System.Security;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -131,7 +131,7 @@ namespace NWebDav.Server.Handlers
 
                         // Add the errors (if any)
                         if (xPropStatErrors.HasElements)
-                            xResponse.Add(xPropStatValues);
+                            xResponse.Add(xPropStatErrors);
                     }
                 }
 
@@ -179,17 +179,10 @@ namespace NWebDav.Server.Handlers
 
         private PropertyMode GetRequestedProperties(IHttpRequest request, IList<XName> properties)
         {
-            // If there is no input stream, then request all properties
-            if (request.Stream == null || request.Stream == Stream.Null)
-                return PropertyMode.AllProperties;
-
             // Create an XML document from the stream
             var xDocument = request.LoadXmlDocument();
-            if (xDocument.Root == null || xDocument.Root.Name != WebDavNamespaces.DavNs + "propfind")
-            {
-                // TODO: Log
+            if (xDocument?.Root == null || xDocument.Root.Name != WebDavNamespaces.DavNs + "propfind")
                 return PropertyMode.AllProperties;
-            }
 
             // Obtain the propfind node
             var xPropFind = xDocument.Root;

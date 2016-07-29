@@ -1,5 +1,4 @@
-using System;
-using System.Linq;
+using Microsoft.AspNetCore.Hosting;
 
 using NWebDav.Server.Logging;
 
@@ -17,8 +16,15 @@ namespace NWebDav.Sample.Kestrel
             adapter.LogLevels.Add(LogLevel.Info);
             LoggerFactory.Factory = adapter;
 
-            var mergedArgs = new[] { "--server", "Microsoft.AspNet.Server.Kestrel" }.Concat(args).ToArray();
-            Microsoft.AspNet.Hosting.Program.Main(mergedArgs);
+            var host = new WebHostBuilder()
+                .UseKestrel(options => {
+                    options.ThreadCount = 4;
+                    //options.UseConnectionLogging();
+                })
+                .UseStartup<Startup>()
+                .Build();
+
+            host.Run();
         }
     }
 }

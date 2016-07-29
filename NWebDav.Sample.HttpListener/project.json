@@ -1,13 +1,14 @@
 {
-  "version": "0.1.9-*",
+  "version": "0.1.10-*",
 
-  "compilationOptions": {
+  "buildOptions": {
     "emitEntryPoint": true
   },
 
   "frameworks": {
-    "net451": {
+    "net45": {
       "frameworkAssemblies": {
+      	"System.Configuration": "4.0.0.0",
         "System.Xml": "4.0.0.0",
         "System.Xml.Linq": "4.0.0.0",
         "System.Xml.XDocument": "4.0.0.0"
@@ -15,6 +16,7 @@
     },
     "net46": {
       "frameworkAssemblies": {
+	      "System.Configuration": "4.0.0.0",
         "System.Xml": "4.0.0.0",
         "System.Xml.Linq": "4.0.0.0",
         "System.Xml.XDocument": "4.0.10.0"
@@ -22,8 +24,8 @@
     }
   },
   "dependencies": {
-    "NWebDav.Server.HttpListener": "0.0.0.0",
-    "NWebDav.Server": "0.0.0.0",
+    "NWebDav.Server.HttpListener": "0.1.*",
+    "NWebDav.Server": "0.1.*",
     "log4net": "1.2.10"
   }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
@@ -83,7 +84,6 @@ namespace NWebDav.Server.Helpers
             return overwriteHeader.ToUpperInvariant() == "T";
         }
 
-
         public static IList<int> GetTimeouts(this IHttpRequest request)
         {
             // Get the value of the timeout header as a string
@@ -166,6 +166,19 @@ namespace NWebDav.Server.Helpers
 
         public static XDocument LoadXmlDocument(this IHttpRequest request)
         {
+            // If there is no input stream, then there is no XML document
+            if (request.Stream == null || request.Stream == Stream.Null)
+                return null;
+
+            // If there is no data,
+            var contentLengthString = request.GetHeaderValue("Content-Length");
+            if (contentLengthString != null)
+            {
+                int contentLength;
+                if (!int.TryParse(contentLengthString, out contentLength) || contentLength == 0)
+                    return null;
+            }
+
             // Obtain an XML document from the stream
             var xDocument = XDocument.Load(request.Stream);
 #if DEBUG

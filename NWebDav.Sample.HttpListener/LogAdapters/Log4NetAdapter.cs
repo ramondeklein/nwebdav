@@ -33,7 +33,7 @@ namespace NWebDav.Sample.HttpListener.LogAdapters
                 throw new ArgumentException($"Log level '{logLevel}' is not supported.", nameof(logLevel));
             }
 
-            public void Log(LogLevel logLevel, string message, Exception exception = null)
+            public void Log(LogLevel logLevel, string message, Exception exception)
             {
                 switch (logLevel)
                 {
