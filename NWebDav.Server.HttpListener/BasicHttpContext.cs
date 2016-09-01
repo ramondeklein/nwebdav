@@ -16,8 +16,6 @@ namespace NWebDav.Server.HttpListener
 
             // Resolve to a principal
             var principal = getPrincipal(basicIdentity);
-            if (principal == null)
-                throw new SecurityException("Basic authorization failed.");
 
             // Create the session
             Session = new HttpSession(principal);
