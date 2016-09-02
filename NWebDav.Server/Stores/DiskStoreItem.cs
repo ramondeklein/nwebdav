@@ -18,10 +18,11 @@ namespace NWebDav.Server.Stores
         private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(DiskStoreItem));
         private readonly FileInfo _fileInfo;
 
-        public DiskStoreItem(ILockingManager lockingManager, FileInfo fileInfo)
+        public DiskStoreItem(ILockingManager lockingManager, FileInfo fileInfo, bool isWritable)
         {
             LockingManager = lockingManager;
             _fileInfo = fileInfo;
+            IsWritable = isWritable;
         }
 
         public static PropertyManager<DiskStoreItem> DefaultPropertyManager { get; } = new PropertyManager<DiskStoreItem>(new DavProperty<DiskStoreItem>[]
@@ -119,11 +120,12 @@ namespace NWebDav.Server.Stores
             }
         });
 
+        public bool IsWritable { get; }
         public string Name => _fileInfo.Name;
         public string UniqueKey => _fileInfo.FullName;
         public string FullPath => _fileInfo.FullName;
         public Stream GetReadableStream(IHttpContext httpContext) => _fileInfo.OpenRead();
-        public Stream GetWritableStream(IHttpContext httpContext) => _fileInfo.OpenWrite();
+        public Stream GetWritableStream(IHttpContext httpContext) => IsWritable ? _fileInfo.OpenWrite() : null;
         public IPropertyManager PropertyManager => DefaultPropertyManager;
         public ILockingManager LockingManager { get; }
 
@@ -136,6 +138,10 @@ namespace NWebDav.Server.Stores
                 var diskCollection = destination as DiskStoreCollection;
                 if (diskCollection != null)
                 {
+                    // Check if the collection is writable
+                    if (!diskCollection.IsWritable)
+                        return new StoreItemResult(DavStatusCode.PreconditionFailed);
+
                     var destinationPath = Path.Combine(diskCollection.FullPath, name);
 
                     // Check if the file already exists

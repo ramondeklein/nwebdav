@@ -19,10 +19,11 @@ namespace NWebDav.Server.Stores
         private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(DiskStoreCollection));
         private readonly DirectoryInfo _directoryInfo;
 
-        public DiskStoreCollection(ILockingManager lockingManager, DirectoryInfo directoryInfo)
+        public DiskStoreCollection(ILockingManager lockingManager, DirectoryInfo directoryInfo, bool isWritable)
         {
             LockingManager = lockingManager;
             _directoryInfo = directoryInfo;
+            IsWritable = isWritable;
         }
 
         public static PropertyManager<DiskStoreCollection> DefaultPropertyManager { get; } = new PropertyManager<DiskStoreCollection>(new DavProperty<DiskStoreCollection>[]
@@ -90,11 +91,13 @@ namespace NWebDav.Server.Stores
             },
             new DavExtCollectionReserved<DiskStoreCollection>
             {
-                Getter = (context, collection) => false
+                Getter = (context, collection) => !collection.IsWritable
             },
             new DavExtCollectionVisibleCount<DiskStoreCollection>
             {
-                Getter = (context, collection) => collection._directoryInfo.EnumerateFiles().Count(fi => (fi.Attributes & FileAttributes.Hidden) == 0)
+                Getter = (context, collection) =>
+                    collection._directoryInfo.EnumerateDirectories().Count(di => (di.Attributes & FileAttributes.Hidden) == 0) +
+                    collection._directoryInfo.EnumerateFiles().Count(fi => (fi.Attributes & FileAttributes.Hidden) == 0)
             },
 
             // Win32 extensions
@@ -136,6 +139,7 @@ namespace NWebDav.Server.Stores
             }
         });
 
+        public bool IsWritable { get; }
         public string Name => _directoryInfo.Name;
         public string UniqueKey => _directoryInfo.FullName;
         public string FullPath => _directoryInfo.FullName;
@@ -154,11 +158,11 @@ namespace NWebDav.Server.Stores
 
             // Check if the item is a file
             if (File.Exists(fullPath))
-                return Task.FromResult<IStoreItem>(new DiskStoreItem(LockingManager, new FileInfo(fullPath)));
+                return Task.FromResult<IStoreItem>(new DiskStoreItem(LockingManager, new FileInfo(fullPath), IsWritable));
 
             // Check if the item is a directory
             if (Directory.Exists(fullPath))
-                return Task.FromResult<IStoreItem>(new DiskStoreCollection(LockingManager, new DirectoryInfo(fullPath)));
+                return Task.FromResult<IStoreItem>(new DiskStoreCollection(LockingManager, new DirectoryInfo(fullPath), IsWritable));
 
             // Item not found
             return Task.FromResult<IStoreItem>(null);
@@ -170,11 +174,11 @@ namespace NWebDav.Server.Stores
 
             // Add all directories
             foreach (var subDirectory in _directoryInfo.GetDirectories())
-                items.Add(new DiskStoreCollection(LockingManager, subDirectory));
+                items.Add(new DiskStoreCollection(LockingManager, subDirectory, IsWritable));
 
             // Add all files
             foreach (var file in _directoryInfo.GetFiles())
-                items.Add(new DiskStoreItem(LockingManager, file));
+                items.Add(new DiskStoreItem(LockingManager, file, IsWritable));
 
             // Return the items
             return Task.FromResult<IList<IStoreItem>>(items);
@@ -182,6 +186,10 @@ namespace NWebDav.Server.Stores
 
         public Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, IHttpContext httpContext)
         {
+            // Return error
+            if (!IsWritable)
+                return Task.FromResult(new StoreItemResult(DavStatusCode.PreconditionFailed));
+
             // Determine the destination path
             var destinationPath = Path.Combine(FullPath, name);
 
@@ -214,11 +222,15 @@ namespace NWebDav.Server.Stores
             }
 
             // Return result
-            return Task.FromResult(new StoreItemResult(result, new DiskStoreItem(LockingManager, new FileInfo(destinationPath))));
+            return Task.FromResult(new StoreItemResult(result, new DiskStoreItem(LockingManager, new FileInfo(destinationPath), IsWritable)));
         }
 
         public Task<StoreCollectionResult> CreateCollectionAsync(string name, bool overwrite, IHttpContext httpContext)
         {
+            // Return error
+            if (!IsWritable)
+                return Task.FromResult(new StoreCollectionResult(DavStatusCode.PreconditionFailed));
+
             // Determine the destination path
             var destinationPath = Path.Combine(FullPath, name);
 
@@ -252,7 +264,7 @@ namespace NWebDav.Server.Stores
             }
 
             // Return the collection
-            return Task.FromResult(new StoreCollectionResult(result, new DiskStoreCollection(LockingManager, new DirectoryInfo(destinationPath))));
+            return Task.FromResult(new StoreCollectionResult(result, new DiskStoreCollection(LockingManager, new DirectoryInfo(destinationPath), IsWritable)));
         }
 
         public async Task<StoreItemResult> CopyAsync(IStoreCollection destinationCollection, string name, bool overwrite, IHttpContext httpContext)
@@ -264,6 +276,10 @@ namespace NWebDav.Server.Stores
 
         public async Task<StoreItemResult> MoveItemAsync(string sourceName, IStoreCollection destinationCollection, string destinationName, bool overwrite, IHttpContext httpContext)
         {
+            // Return error
+            if (!IsWritable)
+                return new StoreItemResult(DavStatusCode.PreconditionFailed);
+
             // Determine the object that is being moved
             var item = await GetItemAsync(sourceName, httpContext);
             if (item == null)
@@ -277,6 +293,10 @@ namespace NWebDav.Server.Stores
                 var destinationDiskStoreCollection = destinationCollection as DiskStoreCollection;
                 if (destinationDiskStoreCollection != null)
                 {
+                    // Return error
+                    if (!destinationDiskStoreCollection.IsWritable)
+                        return new StoreItemResult(DavStatusCode.PreconditionFailed);
+
                     // Determine source and destination paths
                     var sourcePath = Path.Combine(_directoryInfo.FullName, sourceName);
                     var destinationPath = Path.Combine(destinationDiskStoreCollection._directoryInfo.FullName, destinationName);
@@ -301,7 +321,7 @@ namespace NWebDav.Server.Stores
 
                     // Move the file
                     File.Move(sourcePath, destinationPath);
-                    return new StoreItemResult(result, new DiskStoreItem(LockingManager, new FileInfo(destinationPath)));
+                    return new StoreItemResult(result, new DiskStoreItem(LockingManager, new FileInfo(destinationPath), IsWritable));
                 }
                 else
                 {
@@ -314,19 +334,21 @@ namespace NWebDav.Server.Stores
                     return result;
                 }
             }
-            else
-            {
-                // If it's not a plain item, then it's a collection
-                Debug.Assert(item is DiskStoreCollection);
 
-                // Collections will never be moved, but always be created
-                // (we always move the individual items to make sure locking is checked properly)
-                throw new InvalidOperationException("Collections should never be moved directly.");
-            }
+            // If it's not a plain item, then it's a collection
+            Debug.Assert(item is DiskStoreCollection);
+
+            // Collections will never be moved, but always be created
+            // (we always move the individual items to make sure locking is checked properly)
+            throw new InvalidOperationException("Collections should never be moved directly.");
         }
 
         public Task<DavStatusCode> DeleteItemAsync(string name, IHttpContext httpContext)
         {
+            // Return error
+            if (!IsWritable)
+                return Task.FromResult(DavStatusCode.PreconditionFailed);
+
             // Determine the full path
             var fullPath = Path.Combine(_directoryInfo.FullName, name);
             try

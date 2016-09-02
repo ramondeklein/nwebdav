@@ -10,7 +10,7 @@ namespace NWebDav.Server.Stores
 {
     public sealed class DiskStore : IStore
     {
-        public DiskStore(string directory, ILockingManager lockingManager = null)
+        public DiskStore(string directory, bool isWritable = true, ILockingManager lockingManager = null)
         {
             if (directory == null)
                 throw new ArgumentNullException(nameof(directory));
@@ -19,6 +19,7 @@ namespace NWebDav.Server.Stores
             LockingManager = lockingManager ?? new InMemoryLockingManager();
         }
 
+        public bool IsWritable { get; }
         public string BaseDirectory { get; }
         public ILockingManager LockingManager { get; }
 
@@ -29,11 +30,11 @@ namespace NWebDav.Server.Stores
 
             // Check if it's a directory
             if (Directory.Exists(path))
-                return Task.FromResult<IStoreItem>(new DiskStoreCollection(LockingManager, new DirectoryInfo(path)));
+                return Task.FromResult<IStoreItem>(new DiskStoreCollection(LockingManager, new DirectoryInfo(path), IsWritable));
 
             // Check if it's a file
             if (File.Exists(path))
-                return Task.FromResult<IStoreItem>(new DiskStoreItem(LockingManager, new FileInfo(path)));
+                return Task.FromResult<IStoreItem>(new DiskStoreItem(LockingManager, new FileInfo(path), IsWritable));
 
             // The item doesn't exist
             return Task.FromResult<IStoreItem>(null);
@@ -47,7 +48,7 @@ namespace NWebDav.Server.Stores
                 return Task.FromResult<IStoreCollection>(null);
 
             // Return the item
-            return Task.FromResult<IStoreCollection>(new DiskStoreCollection(LockingManager, new DirectoryInfo(path)));
+            return Task.FromResult<IStoreCollection>(new DiskStoreCollection(LockingManager, new DirectoryInfo(path), IsWritable));
         }
 
         private string GetPathFromUri(Uri uri)
