@@ -100,7 +100,7 @@ namespace NWebDav.Server.Helpers
 
                 // Parse the number of seconds
                 int timeout;
-                if (!t.StartsWith("Second-") || !int.TryParse(t, out timeout))
+                if (!t.StartsWith("Second-") || !int.TryParse(t.Substring(7), out timeout))
                     return 0;
                 return timeout;
             };
@@ -122,6 +122,21 @@ namespace NWebDav.Server.Helpers
 
             // Create an Uri of the intermediate part
             return new Uri(lockTokenHeader.Substring(1, lockTokenHeader.Length - 2), UriKind.Absolute);
+        }
+
+        public static Uri GetIfLockToken(this IHttpRequest request)
+        {
+            // Get the value of the lock-token header as a string
+            var lockTokenHeader = request.GetHeaderValue("If");
+            if (string.IsNullOrEmpty(lockTokenHeader))
+                return null;
+
+            // Strip the brackets from the header
+            if (!lockTokenHeader.StartsWith("(<") || !lockTokenHeader.EndsWith(">)"))
+                return null;
+
+            // Create an Uri of the intermediate part
+            return new Uri(lockTokenHeader.Substring(2, lockTokenHeader.Length - 4), UriKind.Absolute);
         }
 
         public static Range GetRange(this IHttpRequest request)

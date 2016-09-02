@@ -31,6 +31,30 @@ namespace NWebDav.Server.Handlers
                 return true;
             }
 
+            // Obtain the item that actually is deleted
+            var deleteItem = await parentCollection.GetItemAsync(splitUri.Name, httpContext).ConfigureAwait(false);
+            if (deleteItem == null)
+            {
+                // Source not found
+                response.SendResponse(DavStatusCode.NotFound);
+                return true;
+            }
+
+            // Check if the item is locked
+            if (deleteItem.LockingManager?.IsLocked(deleteItem) ?? false)
+            {
+                // Obtain the lock token
+                var ifToken = request.GetIfLockToken();
+                if (!deleteItem.LockingManager.HasLock(deleteItem, ifToken))
+                {
+                    response.SendResponse(DavStatusCode.Locked);
+                    return true;
+                }
+
+                // Remove the token
+                deleteItem.LockingManager.Unlock(deleteItem, ifToken);
+            }
+
             // Delete item
             var status = await DeleteItemAsync(parentCollection, splitUri.Name, httpContext, splitUri.CollectionUri, errors).ConfigureAwait(false);
             if (status == DavStatusCode.Ok && errors.HasItems)
@@ -46,6 +70,8 @@ namespace NWebDav.Server.Handlers
                 // Return the proper status
                 response.SendResponse(status);
             }
+
+
             return true;
         }
 
