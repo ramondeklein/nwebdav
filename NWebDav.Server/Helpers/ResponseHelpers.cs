@@ -61,12 +61,12 @@ namespace NWebDav.Server.Helpers
                 // Flush
                 ms.Flush();
 #if DEBUG
-                // Reset stream and write the stream to the result
-                ms.Seek(0, SeekOrigin.Begin);
-
                 // Dump the XML document to the logging
                 if (s_log.IsLogEnabled(NWebDav.Server.Logging.LogLevel.Debug))
                 {
+                    // Reset stream and write the stream to the result
+                    ms.Seek(0, SeekOrigin.Begin);
+
                     var reader = new StreamReader(ms);
                     s_log.Log(NWebDav.Server.Logging.LogLevel.Debug, reader.ReadToEnd());
                 }
