@@ -137,6 +137,7 @@ namespace NWebDav.Server.Stores
         });
 
         public string Name => _directoryInfo.Name;
+        public string UniqueKey => _directoryInfo.FullName;
         public string FullPath => _directoryInfo.FullName;
 
         // Disk collections (a.k.a. directories don't have their own data)

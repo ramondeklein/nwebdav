@@ -120,6 +120,7 @@ namespace NWebDav.Server.Stores
         });
 
         public string Name => _fileInfo.Name;
+        public string UniqueKey => _fileInfo.FullName;
         public string FullPath => _fileInfo.FullName;
         public Stream GetReadableStream(IHttpContext httpContext) => _fileInfo.OpenRead();
         public Stream GetWritableStream(IHttpContext httpContext) => _fileInfo.OpenWrite();

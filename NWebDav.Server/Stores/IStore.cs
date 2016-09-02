@@ -43,6 +43,7 @@ namespace NWebDav.Server.Stores
     {
         // Item properties
         string Name { get; }
+        string UniqueKey { get; }
 
         // Read/Write access to the data
         Stream GetReadableStream(IHttpContext httpContext);
