@@ -119,6 +119,11 @@ namespace NWebDav.Server.Handlers
                     new XElement(WebDavNamespaces.DavNs + "lockdiscovery",
                         lockResult.Lock.Value.ToXml())));
 
+            // Add the Lock-Token in the response
+            // (only when creating a new lock)
+            if (refreshLockToken == null)
+                response.SetHeaderValue("Lock-Token", $"<{lockResult.Lock.Value.LockToken.AbsoluteUri}>");
+
             // Stream the document
             await response.SendResponseAsync(DavStatusCode.Ok, xDocument).ConfigureAwait(false);
             return true;
