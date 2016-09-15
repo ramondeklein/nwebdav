@@ -99,7 +99,7 @@ namespace NWebDav.Server.Handlers
                 }
 
                 // Perform the lock
-                lockResult = lockingManager.Lock(item, lockType, lockScope, owner, depth > 0, timeouts);
+                lockResult = lockingManager.Lock(item, lockType, lockScope, owner, request.Url, depth > 0, timeouts);
             }
 
             // Check if result is fine

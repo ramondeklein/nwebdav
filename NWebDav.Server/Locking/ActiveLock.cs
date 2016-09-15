@@ -14,8 +14,9 @@ namespace NWebDav.Server.Locking
         public XElement Owner { get; }
         public int Timeout { get; }
         public Uri LockToken { get; }
+        public Uri LockRoot { get; }
 
-        public ActiveLock(LockType type, LockScope scope, int depth, XElement owner, int timeout, Uri lockToken)
+        public ActiveLock(LockType type, LockScope scope, int depth, XElement owner, int timeout, Uri lockToken, Uri lockRoot)
         {
             Type = type;
             Scope = scope;
@@ -23,6 +24,7 @@ namespace NWebDav.Server.Locking
             Owner = owner;
             Timeout = timeout;
             LockToken = lockToken;
+            LockRoot = lockRoot;
         }
 
         public XElement ToXml()
@@ -33,7 +35,8 @@ namespace NWebDav.Server.Locking
                 new XElement(WebDavNamespaces.DavNs + "depth", Depth == int.MaxValue ? "infinity" : Depth.ToString(CultureInfo.InvariantCulture)),
                 new XElement(WebDavNamespaces.DavNs + "owner", Owner),
                 new XElement(WebDavNamespaces.DavNs + "timeout", Timeout == -1 ? "Infinite" : "Second-" + Timeout.ToString(CultureInfo.InvariantCulture)),
-                new XElement(WebDavNamespaces.DavNs + "locktoken", new XElement(WebDavNamespaces.DavNs + "href", LockToken.AbsoluteUri)));
+                new XElement(WebDavNamespaces.DavNs + "locktoken", new XElement(WebDavNamespaces.DavNs + "href", LockToken.AbsoluteUri)),
+                new XElement(WebDavNamespaces.DavNs + "lockroot", new XElement(WebDavNamespaces.DavNs + "href", LockRoot.AbsoluteUri)));
         }
     }
 }

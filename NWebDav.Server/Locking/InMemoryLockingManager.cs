@@ -19,18 +19,20 @@ namespace NWebDav.Server.Locking
             public IStoreItem Item { get; }
             public LockType Type { get; }
             public LockScope Scope { get; set; }
+            public Uri LockRootUri { get; set; }
             public bool Recursive { get; set; }
             public XElement Owner { get; set; }
             public int Timeout { get; set; }
             public DateTime? Expires { get; private set; }
             public bool IsExpired => !Expires.HasValue || Expires < DateTime.UtcNow;
 
-            public ItemLockInfo(IStoreItem item, LockType lockType, LockScope lockScope, bool recursive, XElement owner, int timeout)
+            public ItemLockInfo(IStoreItem item, LockType lockType, LockScope lockScope, Uri lockRootUri, bool recursive, XElement owner, int timeout)
             {
                 Token = Guid.NewGuid();
                 Item = item;
                 Type = lockType;
                 Scope = lockScope;
+                LockRootUri = lockRootUri;
                 Recursive = recursive;
                 Owner = owner;
                 Timeout = timeout;
@@ -70,7 +72,7 @@ namespace NWebDav.Server.Locking
 
         #region Public methods
 
-        public LockResult Lock(IStoreItem item, LockType lockType, LockScope lockScope, XElement owner, bool recursive, IEnumerable<int> timeouts)
+        public LockResult Lock(IStoreItem item, LockType lockType, LockScope lockScope, XElement owner, Uri lockRootUri, bool recursive, IEnumerable<int> timeouts)
         {
             // Determine the expiration based on the first time-out
             var timeout = timeouts.Cast<int?>().FirstOrDefault();
@@ -100,7 +102,7 @@ namespace NWebDav.Server.Locking
                 }
 
                 // Create the lock info object
-                var itemLockInfo = new ItemLockInfo(item, lockType, lockScope, recursive, owner, timeout ?? -1);
+                var itemLockInfo = new ItemLockInfo(item, lockType, lockScope, lockRootUri, recursive, owner, timeout ?? -1);
 
                 // Add the lock
                 itemLockList.Add(itemLockInfo);
@@ -287,7 +289,7 @@ namespace NWebDav.Server.Locking
 
         private ActiveLock GetActiveLockInfo(ItemLockInfo itemLockInfo)
         {
-            return new ActiveLock(itemLockInfo.Type, itemLockInfo.Scope, itemLockInfo.Recursive ? int.MaxValue : 0, itemLockInfo.Owner, itemLockInfo.Timeout, new Uri($"{TokenScheme}:{itemLockInfo.Token:D}"));
+            return new ActiveLock(itemLockInfo.Type, itemLockInfo.Scope, itemLockInfo.Recursive ? int.MaxValue : 0, itemLockInfo.Owner, itemLockInfo.Timeout, new Uri($"{TokenScheme}:{itemLockInfo.Token:D}"), itemLockInfo.LockRootUri);
         }
 
         private Guid? GetTokenFromLockToken(Uri lockTokenUri)

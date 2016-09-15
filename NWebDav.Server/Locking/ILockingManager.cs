@@ -21,7 +21,7 @@ namespace NWebDav.Server.Locking
     // TODO: Call the locking methods from the handlers
     public interface ILockingManager
     {
-        LockResult Lock(IStoreItem item, LockType lockType, LockScope lockScope, XElement owner, bool recursiveLock, IEnumerable<int> timeouts);
+        LockResult Lock(IStoreItem item, LockType lockType, LockScope lockScope, XElement owner, Uri lockRootUri, bool recursiveLock, IEnumerable<int> timeouts);
         DavStatusCode Unlock(IStoreItem item, Uri token);
         LockResult RefreshLock(IStoreItem item, bool recursiveLock, IEnumerable<int> timeouts, Uri lockTokenUri);
 
