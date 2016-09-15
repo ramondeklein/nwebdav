@@ -16,6 +16,7 @@ namespace NWebDav.Server.Handlers
 
             // We're a DAV class 1 and 2 compatible server
             response.SetHeaderValue("Dav", "1, 2");
+            response.SetHeaderValue("MS-Author-Via", "DAV");
 
             // Set the Allow/Public headers
             response.SetHeaderValue("Allow", string.Join(", ", RequestHandlerFactory.AllowedMethods));
