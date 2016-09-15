@@ -18,8 +18,8 @@ namespace NWebDav.Server.Handlers
             response.SetHeaderValue("DAV", "2");
 
             // Set the Allow/Public headers
-            response.SetHeaderValue("Allow", string.Join(" ", RequestHandlerFactory.AllowedMethods));
-            response.SetHeaderValue("Public", string.Join(" ", RequestHandlerFactory.AllowedMethods));
+            response.SetHeaderValue("Allow", string.Join(", ", RequestHandlerFactory.AllowedMethods));
+            response.SetHeaderValue("Public", string.Join(", ", RequestHandlerFactory.AllowedMethods));
 
             // Finished
             response.SendResponse(DavStatusCode.Ok);
