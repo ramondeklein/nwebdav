@@ -33,19 +33,10 @@ namespace NWebDav.Server.Handlers
             var status = result.Result;
             if (status == DavStatusCode.Created || status == DavStatusCode.NoContent)
             {
-                // Copy the stream
-                try
-                {
-                    using (var destinationStream = await result.Item.GetWritableStreamAsync(httpContext).ConfigureAwait(false))
-                    {
-                        await request.Stream.CopyToAsync(destinationStream).ConfigureAwait(false);
-                    }
-                }
-                catch (IOException ioException) when (ioException.IsDiskFull())
-                {
-                    // TODO: Log exceeption
-                    status = DavStatusCode.InsufficientStorage;
-                }
+                // Upload the information to the item
+                var uploadStatus = await result.Item.UploadFromStreamAsync(httpContext, request.Stream).ConfigureAwait(false);
+                if (uploadStatus != DavStatusCode.Ok)
+                    status = uploadStatus;
             }
 
             // Finished writing

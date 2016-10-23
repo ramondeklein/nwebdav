@@ -125,7 +125,29 @@ namespace NWebDav.Server.Stores
         public string UniqueKey => _fileInfo.FullName;
         public string FullPath => _fileInfo.FullName;
         public Task<Stream> GetReadableStreamAsync(IHttpContext httpContext) => Task.FromResult((Stream)_fileInfo.OpenRead());
-        public Task<Stream> GetWritableStreamAsync(IHttpContext httpContext) => Task.FromResult(IsWritable ? (Stream)_fileInfo.OpenWrite() : null);
+
+        public async Task<DavStatusCode> UploadFromStreamAsync(IHttpContext httpContext, Stream inputStream)
+        {
+            // Check if the item is writable
+            if (!IsWritable)
+                return DavStatusCode.Conflict;
+
+            // Copy the stream
+            try
+            {
+                // Copy the information to the destination stream
+                using (var outputStream = _fileInfo.OpenWrite())
+                {
+                    await inputStream.CopyToAsync(outputStream).ConfigureAwait(false);
+                }
+                return DavStatusCode.Ok;
+            }
+            catch (IOException ioException) when (ioException.IsDiskFull())
+            {
+                return DavStatusCode.InsufficientStorage;
+            }
+        }
+
         public IPropertyManager PropertyManager => DefaultPropertyManager;
         public ILockingManager LockingManager { get; }
 
@@ -163,21 +185,17 @@ namespace NWebDav.Server.Stores
                     // Check if the item could be created
                     if (result.Item != null)
                     {
-                        using (var destinationStream = await result.Item.GetWritableStreamAsync(httpContext).ConfigureAwait(false))
                         using (var sourceStream = await GetReadableStreamAsync(httpContext).ConfigureAwait(false))
                         {
-                            await sourceStream.CopyToAsync(destinationStream).ConfigureAwait(false);
+                            var copyResult = await result.Item.UploadFromStreamAsync(httpContext, sourceStream).ConfigureAwait(false);
+                            if (copyResult != DavStatusCode.Ok)
+                                return new StoreItemResult(copyResult, result.Item);
                         }
                     }
 
                     // Return result
                     return new StoreItemResult(result.Result, result.Item);
                 }
-            }
-            catch (IOException ioException) when (ioException.IsDiskFull())
-            {
-                s_log.Log(LogLevel.Error, "Out of disk space while copying data.", ioException);
-                return new StoreItemResult(DavStatusCode.InsufficientStorage);
             }
             catch (Exception exc)
             {

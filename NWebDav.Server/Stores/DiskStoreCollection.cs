@@ -146,7 +146,7 @@ namespace NWebDav.Server.Stores
 
         // Disk collections (a.k.a. directories don't have their own data)
         public Task<Stream> GetReadableStreamAsync(IHttpContext httpContext) => Task.FromResult((Stream)null);
-        public Task<Stream> GetWritableStreamAsync(IHttpContext httpContext) => Task.FromResult((Stream)null);
+        public Task<DavStatusCode> UploadFromStreamAsync(IHttpContext httpContext, Stream inputStream) => Task.FromResult(DavStatusCode.Conflict);
 
         public IPropertyManager PropertyManager => DefaultPropertyManager;
         public ILockingManager LockingManager { get; }
