@@ -9,6 +9,7 @@ using NWebDav.Server.Http;
 using NWebDav.Server.HttpListener;
 using NWebDav.Server.Logging;
 using NWebDav.Server.Stores;
+using NWebDav.Extension.Azure;
 
 using NWebDav.Sample.HttpListener.LogAdapters;
 
@@ -33,8 +34,10 @@ namespace NWebDav.Sample.HttpListener
             var requestHandlerFactory = new RequestHandlerFactory();
 
             // Create WebDAV dispatcher
-            var homeFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            var webDavDispatcher = new WebDavDispatcher(new DiskStore(homeFolder), requestHandlerFactory);
+            var azureStorageConnectionString = ConfigurationManager.AppSettings["webdav.azure.storeConnectionString"];
+            var azureContainer = ConfigurationManager.AppSettings["webdav.azure.container"];
+            var store = new AzureStore(azureStorageConnectionString, azureContainer);
+            var webDavDispatcher = new WebDavDispatcher(store, requestHandlerFactory);
 
             // Determine the WebDAV username/password for authorization
             // (only when basic authentication is enabled)

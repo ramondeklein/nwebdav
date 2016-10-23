@@ -16,6 +16,7 @@
     }
   },
   "dependencies": {
+    "NWebDav.Extension.Azure": "0.1.*",
     "NWebDav.Server.HttpListener": "0.1.*",
     "NWebDav.Server": "0.1.*",
     "log4net": "1.2.10"
