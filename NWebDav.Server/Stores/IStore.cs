@@ -46,8 +46,8 @@ namespace NWebDav.Server.Stores
         string UniqueKey { get; }
 
         // Read/Write access to the data
-        Stream GetReadableStream(IHttpContext httpContext);
-        Stream GetWritableStream(IHttpContext httpContext);
+        Task<Stream> GetReadableStreamAsync(IHttpContext httpContext);
+        Task<Stream> GetWritableStreamAsync(IHttpContext httpContext);
 
         // Copy support
         Task<StoreItemResult> CopyAsync(IStoreCollection destination, string name, bool overwrite, IHttpContext httpContext);

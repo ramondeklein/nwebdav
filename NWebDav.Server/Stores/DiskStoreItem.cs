@@ -124,8 +124,8 @@ namespace NWebDav.Server.Stores
         public string Name => _fileInfo.Name;
         public string UniqueKey => _fileInfo.FullName;
         public string FullPath => _fileInfo.FullName;
-        public Stream GetReadableStream(IHttpContext httpContext) => _fileInfo.OpenRead();
-        public Stream GetWritableStream(IHttpContext httpContext) => IsWritable ? _fileInfo.OpenWrite() : null;
+        public Task<Stream> GetReadableStreamAsync(IHttpContext httpContext) => Task.FromResult((Stream)_fileInfo.OpenRead());
+        public Task<Stream> GetWritableStreamAsync(IHttpContext httpContext) => Task.FromResult(IsWritable ? (Stream)_fileInfo.OpenWrite() : null);
         public IPropertyManager PropertyManager => DefaultPropertyManager;
         public ILockingManager LockingManager { get; }
 
@@ -163,8 +163,8 @@ namespace NWebDav.Server.Stores
                     // Check if the item could be created
                     if (result.Item != null)
                     {
-                        using (var destinationStream = result.Item.GetWritableStream(httpContext))
-                        using (var sourceStream = GetReadableStream(httpContext))
+                        using (var destinationStream = await result.Item.GetWritableStreamAsync(httpContext).ConfigureAwait(false))
+                        using (var sourceStream = await GetReadableStreamAsync(httpContext).ConfigureAwait(false))
                         {
                             await sourceStream.CopyToAsync(destinationStream).ConfigureAwait(false);
                         }

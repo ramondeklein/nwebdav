@@ -57,7 +57,7 @@ namespace NWebDav.Server.Handlers
             }
 
             // Stream the actual entry
-            using (var stream = entry.GetReadableStream(httpContext))
+            using (var stream = await entry.GetReadableStreamAsync(httpContext).ConfigureAwait(false))
             {
                 if (stream != null && stream != Stream.Null)
                 {

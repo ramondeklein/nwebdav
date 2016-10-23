@@ -36,7 +36,7 @@ namespace NWebDav.Server.Handlers
                 // Copy the stream
                 try
                 {
-                    using (var destinationStream = result.Item.GetWritableStream(httpContext))
+                    using (var destinationStream = await result.Item.GetWritableStreamAsync(httpContext).ConfigureAwait(false))
                     {
                         await request.Stream.CopyToAsync(destinationStream).ConfigureAwait(false);
                     }

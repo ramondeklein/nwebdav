@@ -145,8 +145,8 @@ namespace NWebDav.Server.Stores
         public string FullPath => _directoryInfo.FullName;
 
         // Disk collections (a.k.a. directories don't have their own data)
-        public Stream GetReadableStream(IHttpContext httpContext) => null;
-        public Stream GetWritableStream(IHttpContext httpContext) => null;
+        public Task<Stream> GetReadableStreamAsync(IHttpContext httpContext) => Task.FromResult((Stream)null);
+        public Task<Stream> GetWritableStreamAsync(IHttpContext httpContext) => Task.FromResult((Stream)null);
 
         public IPropertyManager PropertyManager => DefaultPropertyManager;
         public ILockingManager LockingManager { get; }
