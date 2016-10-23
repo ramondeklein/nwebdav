@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -59,31 +60,61 @@ namespace NWebDav.Server.Props
 
         private Func<IHttpContext, TEntry, TType> _getter;
         private Func<IHttpContext, TEntry, TType, DavStatusCode> _setter;
+        private Func<IHttpContext, TEntry, Task<TType>> _getterAsync;
+        private Func<IHttpContext, TEntry, TType, Task<DavStatusCode>> _setterAsync;
 
-        public new Func<IHttpContext, TEntry, TType> Getter
+        public Func<IHttpContext, TEntry, TType> Getter
         {
             get { return _getter; }
             set
             {
                 _getter = value;
-                base.Getter = (c, s) =>
+                base.GetterAsync = (c, s) =>
                 {
                     var v = _getter(c, s);
-                    return Converter != null ? Converter.ToXml(c, v) : v;
+                    return Task.FromResult(Converter != null ? Converter.ToXml(c, v) : v);
                 };
             }
         }
 
-        public new Func<IHttpContext, TEntry, TType, DavStatusCode> Setter
+        public Func<IHttpContext, TEntry, TType, DavStatusCode> Setter
         {
             get { return _setter; }
             set
             {
                 _setter = value;
-                base.Setter = (c, s, v) =>
+                base.SetterAsync = (c, s, v) =>
                 {
                     var tv = Converter != null ? Converter.FromXml(c, v) : (TType)v;
-                    return _setter(c, s, tv);
+                    return Task.FromResult(_setter(c, s, tv));
+                };
+            }
+        }
+
+        public new Func<IHttpContext, TEntry, Task<TType>> GetterAsync
+        {
+            get { return _getterAsync; }
+            set
+            {
+                _getterAsync = value;
+                base.GetterAsync = async (c, s) =>
+                {
+                    var v = await _getterAsync(c, s).ConfigureAwait(false);
+                    return Converter != null ? Converter.ToXml(c, v) : v;
+                };
+            }
+        }
+
+        public new Func<IHttpContext, TEntry, TType, Task<DavStatusCode>> SetterAsync
+        {
+            get { return _setterAsync; }
+            set
+            {
+                _setterAsync = value;
+                base.SetterAsync = (c, s, v) =>
+                {
+                    var tv = Converter != null ? Converter.FromXml(c, v) : (TType)v;
+                    return _setterAsync(c, s, tv);
                 };
             }
         }

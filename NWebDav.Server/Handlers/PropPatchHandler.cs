@@ -125,7 +125,7 @@ namespace NWebDav.Server.Handlers
                 DavStatusCode result;
                 try
                 {
-                    result = item.PropertyManager.SetProperty(httpContext, item, propSet.Name, propSet.Value);
+                    result = await item.PropertyManager.SetPropertyAsync(httpContext, item, propSet.Name, propSet.Value).ConfigureAwait(false);
                 }
                 catch (Exception)
                 {

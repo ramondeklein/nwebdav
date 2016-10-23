@@ -116,13 +116,13 @@ namespace NWebDav.Server.Handlers
                         if ((propertyMode & PropertyMode.AllProperties) != 0)
                         {
                             foreach (var propertyName in propertyManager.Properties.Where(p => !p.IsExpensive).Select(p => p.Name))
-                                AddProperty(httpContext, xProp, xPropStatErrors, propertyManager, entry.Entry, propertyName, addedProperties);
+                                await AddPropertyAsync(httpContext, xProp, xPropStatErrors, propertyManager, entry.Entry, propertyName, addedProperties).ConfigureAwait(false);
                         }
 
                         if ((propertyMode & PropertyMode.SelectedProperties) != 0)
                         {
                             foreach (var propertyName in propertyList)
-                                AddProperty(httpContext, xProp, xPropStatErrors, propertyManager, entry.Entry, propertyName, addedProperties);
+                                await AddPropertyAsync(httpContext, xProp, xPropStatErrors, propertyManager, entry.Entry, propertyName, addedProperties).ConfigureAwait(false);
                         }
 
                         // Add the values (if any)
@@ -149,14 +149,14 @@ namespace NWebDav.Server.Handlers
             return true;
         }
 
-        private void AddProperty(IHttpContext httpContext, XElement xPropStatValues, XElement xPropStatErrors, IPropertyManager propertyManager, IStoreItem item, XName propertyName, IList<XName> addedProperties)
+        private async Task AddPropertyAsync(IHttpContext httpContext, XElement xPropStatValues, XElement xPropStatErrors, IPropertyManager propertyManager, IStoreItem item, XName propertyName, IList<XName> addedProperties)
         {
             if (!addedProperties.Contains(propertyName))
             {
                 try
                 {
                     addedProperties.Add(propertyName);
-                    var value = propertyManager.GetProperty(httpContext, item, propertyName);
+                    var value = await propertyManager.GetPropertyAsync(httpContext, item, propertyName).ConfigureAwait(false);
                     if (value is XElement)
                     {
                         xPropStatValues.Add(new XElement(propertyName, (XElement)value));

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 using NWebDav.Server.Http;
@@ -34,45 +35,45 @@ namespace NWebDav.Server.Props
 
         public IList<PropertyInfo> Properties { get; }
 
-        public object GetProperty(IHttpContext httpContext, IStoreItem item, XName name, bool skipExpensive = false)
+        public Task<object> GetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName name, bool skipExpensive = false)
         {
             // Find the property
             DavProperty<TEntry> property;
             if (!_properties.TryGetValue(name, out property))
-                return _basePropertyManager.GetProperty(httpContext, _converter((TEntry)item), name, skipExpensive);
+                return _basePropertyManager.GetPropertyAsync(httpContext, _converter((TEntry)item), name, skipExpensive);
 
             // Check if the property has a getter
-            if (property.Getter == null)
-                return _basePropertyManager.GetProperty(httpContext, _converter((TEntry)item), name, skipExpensive);
+            if (property.GetterAsync == null)
+                return _basePropertyManager.GetPropertyAsync(httpContext, _converter((TEntry)item), name, skipExpensive);
 
             // Skip expsensive properties
             if (skipExpensive && property.IsExpensive)
-                return null;
+                return Task.FromResult((object)null);
 
             // Obtain the value
-            return property.Getter(httpContext, (TEntry)item);
+            return property.GetterAsync(httpContext, (TEntry)item);
         }
 
-        public DavStatusCode SetProperty(IHttpContext httpContext, IStoreItem item, XName name, object value)
+        public Task<DavStatusCode> SetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName name, object value)
         {
             // Find the property
             DavProperty<TEntry> property;
             if (!_properties.TryGetValue(name, out property))
-                return _basePropertyManager.SetProperty(httpContext, _converter((TEntry)item), name, value);
+                return _basePropertyManager.SetPropertyAsync(httpContext, _converter((TEntry)item), name, value);
 
             // Check if the property has a setter
-            if (property.Setter == null)
-                return _basePropertyManager.SetProperty(httpContext, _converter((TEntry)item), name, value);
+            if (property.SetterAsync == null)
+                return _basePropertyManager.SetPropertyAsync(httpContext, _converter((TEntry)item), name, value);
 
             // Set the value
-            return property.Setter(httpContext, (TEntry)item, value);
+            return property.SetterAsync(httpContext, (TEntry)item, value);
         }
 
         private IList<PropertyInfo> GetPropertyInfo()
         {
             // Obtain the base properties that do not have an override
             var basePropertyInfo = _basePropertyManager.Properties.Where(p => !_properties.ContainsKey(p.Name));
-            var overridePropertyInfo = _properties.Values.Where(p => p.Getter != null || p.Setter != null).Select(p => new PropertyInfo(p.Name, p.IsExpensive));
+            var overridePropertyInfo = _properties.Values.Where(p => p.GetterAsync != null || p.SetterAsync != null).Select(p => new PropertyInfo(p.Name, p.IsExpensive));
 
             // Combine both lists
             return basePropertyInfo.Concat(overridePropertyInfo).ToList();

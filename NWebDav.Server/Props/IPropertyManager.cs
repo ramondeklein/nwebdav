@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 using NWebDav.Server.Http;
@@ -13,7 +14,7 @@ namespace NWebDav.Server.Props
         /// Obtain the list of all implemented properties.
         /// </summary>
         IList<PropertyInfo> Properties { get; }
-        object GetProperty(IHttpContext httpContext, IStoreItem item, XName name, bool skipExpensive = false);
-        DavStatusCode SetProperty(IHttpContext httpContext, IStoreItem item, XName name, object value);
+        Task<object> GetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName name, bool skipExpensive = false);
+        Task<DavStatusCode> SetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName name, object value);
     }
 }

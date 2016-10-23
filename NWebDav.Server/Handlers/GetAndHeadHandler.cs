@@ -36,22 +36,22 @@ namespace NWebDav.Server.Handlers
             if (propertyManager != null)
             {
                 // Add Last-Modified header
-                var lastModifiedUtc = (string)propertyManager.GetProperty(httpContext, entry, WebDavNamespaces.DavNs + "getlastmodified", true);
+                var lastModifiedUtc = (string)await propertyManager.GetPropertyAsync(httpContext, entry, WebDavNamespaces.DavNs + "getlastmodified", true).ConfigureAwait(false);
                 if (lastModifiedUtc != null)
                     response.SetHeaderValue("Last-Modified", lastModifiedUtc);
 
                 // Add ETag
-                var etag = (string)propertyManager.GetProperty(httpContext, entry, WebDavNamespaces.DavNs + "getetag", true);
+                var etag = (string)await propertyManager.GetPropertyAsync(httpContext, entry, WebDavNamespaces.DavNs + "getetag", true).ConfigureAwait(false);
                 if (etag != null)
                     response.SetHeaderValue("Etag", etag);
 
                 // Add type
-                var contentType = (string)propertyManager.GetProperty(httpContext, entry, WebDavNamespaces.DavNs + "getcontenttype", true);
+                var contentType = (string)await propertyManager.GetPropertyAsync(httpContext, entry, WebDavNamespaces.DavNs + "getcontenttype", true).ConfigureAwait(false);
                 if (contentType != null)
                     response.SetHeaderValue("Content-Type", contentType);
 
                 // Add language
-                var contentLanguage = (string)propertyManager.GetProperty(httpContext, entry, WebDavNamespaces.DavNs + "getcontentlanguage", true);
+                var contentLanguage = (string)await propertyManager.GetPropertyAsync(httpContext, entry, WebDavNamespaces.DavNs + "getcontentlanguage", true).ConfigureAwait(false);
                 if (contentLanguage != null)
                     response.SetHeaderValue("Content-Language", contentLanguage);
             }
@@ -80,7 +80,7 @@ namespace NWebDav.Server.Handlers
                             // Check if an 'If-Range' was specified
                             if (range?.If != null)
                             {
-                                var lastModified = DateTime.Parse((string)propertyManager.GetProperty(httpContext, entry, WebDavNamespaces.DavNs + "getlastmodified", true));
+                                var lastModified = DateTime.Parse((string)await propertyManager.GetPropertyAsync(httpContext, entry, WebDavNamespaces.DavNs + "getlastmodified", true).ConfigureAwait(false));
                                 if (lastModified != range.If)
                                     range = null;
                             }

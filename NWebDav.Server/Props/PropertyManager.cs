@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 using NWebDav.Server.Http;
@@ -30,26 +31,26 @@ namespace NWebDav.Server.Props
         /// </summary>
         public IList<PropertyInfo> Properties { get; }
 
-        public object GetProperty(IHttpContext httpContext, IStoreItem item, XName name, bool skipExpensive = false)
+        public async Task<object> GetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName name, bool skipExpensive = false)
         {
             // Find the property
             DavProperty<TEntry> property;
             if (!_properties.TryGetValue(name, out property))
-                return null;
+                return Task.FromResult((object)null);
 
             // Check if the property has a getter
-            if (property.Getter == null)
-                return null;
+            if (property.GetterAsync == null)
+                return Task.FromResult((object)null);
 
-            // Skip expsensive properties
+            // Skip expensive properties
             if (skipExpensive && property.IsExpensive)
-                return null;
+                return Task.FromResult((object)null);
 
             // Obtain the value
-            return property.Getter(httpContext, (TEntry)item);
+            return await property.GetterAsync(httpContext, (TEntry)item).ConfigureAwait(false);
         }
 
-        public DavStatusCode SetProperty(IHttpContext httpContext, IStoreItem item, XName name, object value)
+        public async Task<DavStatusCode> SetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName name, object value)
         {
             // Find the property
             DavProperty<TEntry> property;
@@ -57,11 +58,11 @@ namespace NWebDav.Server.Props
                 return DavStatusCode.NotFound;
 
             // Check if the property has a setter
-            if (property.Setter == null)
+            if (property.SetterAsync == null)
                 return DavStatusCode.Conflict;
 
             // Set the value
-            return property.Setter(httpContext, (TEntry)item, value);
+            return await property.SetterAsync(httpContext, (TEntry)item, value).ConfigureAwait(false);
         }
     }
 }
