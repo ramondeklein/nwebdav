@@ -68,7 +68,7 @@ namespace NWebDav.Server.Helpers
                     ms.Seek(0, SeekOrigin.Begin);
 
                     var reader = new StreamReader(ms);
-                    s_log.Log(NWebDav.Server.Logging.LogLevel.Debug, reader.ReadToEnd());
+                    s_log.Log(NWebDav.Server.Logging.LogLevel.Debug, () => reader.ReadToEnd());
                 }
 #endif
                 // Set content type/length

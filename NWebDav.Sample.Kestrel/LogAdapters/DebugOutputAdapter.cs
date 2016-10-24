@@ -26,11 +26,11 @@ namespace NWebDav.Sample.Kestrel.LogAdapters
                  return Parent.LogLevels.Contains(logLevel);
             }
 
-            public void Log(LogLevel logLevel, string message, Exception exception)
+            public void Log(LogLevel logLevel, Func<string> messageFunc, Exception exception)
             {
                 if (IsLogEnabled(logLevel))
                 {
-                    Debug.WriteLine($"{logLevel.ToString().ToUpper()}:{Type.FullName} - {message}");
+                    Debug.WriteLine($"{logLevel.ToString().ToUpper()}:{Type.FullName} - {messageFunc()}");
                     if (exception != null) 
                     {
                         Debug.WriteLine($"- Exception: {exception.Message}");
