@@ -11,14 +11,14 @@ namespace NWebDav.Extension.Azure
 {
     public class AzureBlob
     {
-        private const string MetaIsCollection = "is-collection";
-        private const string MetaCreationTimeUtc = "creation-time-utc";
-        private const string MetaLastWriteTimeUtc = "last-modified-time-utc";
-        private const string MetaLastAccessTimeUtc = "last-access-time-utc";
-        private const string MetaWin32Attributes = "win32-attributes";
+        private const string MetaIsCollection = "iscollection";
+        private const string MetaCreationTimeUtc = "creationtime";
+        private const string MetaLastWriteTimeUtc = "lastmodifiedtime";
+        private const string MetaLastAccessTimeUtc = "lastaccesstime";
+        private const string MetaWin32Attributes = "win32attributes";
 
+        private static readonly AzureBlob[] NoChilds = new AzureBlob[0];
         public readonly CloudBlockBlob _cloudBlockBlob;
-        private IList<AzureBlob> _items;
 
         public AzureBlob(CloudBlockBlob cloudBlockBlob)
         {
@@ -42,13 +42,28 @@ namespace NWebDav.Extension.Azure
 
         public Task SetIsCollectionAsync(bool isCollection) => SetMetaBooleanAsync(MetaIsCollection, isCollection);
         public Task SetCreationTimeUtcAsync(DateTime dateTime) => SetMetaDateTimeAsync(MetaCreationTimeUtc, dateTime);
-        public Task SetLastWriteTimeUtcAsync(DateTime dateTime) => SetMetaDateTimeAsync(MetaCreationTimeUtc, dateTime);
-        public Task SetLastAccessTimeUtcAsync(DateTime dateTime) => SetMetaDateTimeAsync(MetaCreationTimeUtc, dateTime);
-        public Task SetAttributesAsync(FileAttributes attributes) => SetMetaIntegerAsync(MetaCreationTimeUtc, (int)attributes);
+        public Task SetLastWriteTimeUtcAsync(DateTime dateTime) => SetMetaDateTimeAsync(MetaLastWriteTimeUtc, dateTime);
+        public Task SetLastAccessTimeUtcAsync(DateTime dateTime) => SetMetaDateTimeAsync(MetaLastAccessTimeUtc, dateTime);
+        public Task SetAttributesAsync(FileAttributes attributes) => SetMetaIntegerAsync(MetaWin32Attributes, (int)attributes);
 
-        public Task<IEnumerable<AzureBlob>> GetChildsAsync()
+        public async Task<IEnumerable<AzureBlob>> GetChildsAsync()
         {
-            throw new NotImplementedException();
+            // If it's not a collection, then we don't have any childs
+            if (!IsCollection)
+                return NoChilds;
+
+            // Start listing blobs
+            var childItems = new List<AzureBlob>();
+            BlobResultSegment result;
+            do
+            {
+                result = await _cloudBlockBlob.Container.ListBlobsSegmentedAsync(FullName, true, BlobListingDetails.Metadata, 1000, null, new BlobRequestOptions(), null).ConfigureAwait(false);
+                foreach (CloudBlockBlob childBlob in result.Results)
+                    childItems.Add(new AzureBlob(childBlob));
+            } while (result.ContinuationToken != null);
+
+            // Return the list of child-items
+            return childItems;
         }
 
         public async Task<IEnumerable<AzureBlob>> GetItemsAsync()

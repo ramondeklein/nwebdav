@@ -14,7 +14,6 @@ namespace NWebDav.Extension.Azure
 {
     public class AzureStore : IStore
     {
-        private const string CollectionMetaEntry = "IsCollection";
         private readonly string _connectionString, _containerName;
         private readonly object _sync = new object();
         private CloudBlobContainer _container;
@@ -80,19 +79,15 @@ namespace NWebDav.Extension.Azure
             await InitializeAsync().ConfigureAwait(false);
 
             // Determine the local path
-            var localPath = uri.LocalPath;
-
-            // Determine the specified path
-            var partSegments = localPath.Split('/');
-            var blobName = (string.Join("/", partSegments.Take(partSegments.Length - 1)) + "//" + partSegments[partSegments.Length - 1]).Substring(1);
+            var blobName = "root" + uri.LocalPath;
 
             // Obtain the BLOB
             var cloudBlob = _container.GetBlockBlobReference(blobName);
-            if (cloudBlob.Exists())
+            if (await cloudBlob.ExistsAsync().ConfigureAwait(false))
                 return new AzureBlob(cloudBlob);
 
             // Non-roots are not created automatically
-            if (localPath != "/")
+            if (blobName != "root/")
                 return null;
 
             // Auto-create the root container

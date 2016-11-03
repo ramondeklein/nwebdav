@@ -170,8 +170,9 @@ namespace NWebDav.Extension.Azure
             throw new NotImplementedException();
         }
 
-        public Task<IList<IStoreItem>> GetItemsAsync(IHttpContext httpContext)
+        public async Task<IList<IStoreItem>> GetItemsAsync(IHttpContext httpContext)
         {
+            await _azureBlob.GetChildsAsync().ConfigureAwait(false);
             throw new NotImplementedException();
         }
 
