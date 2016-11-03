@@ -380,7 +380,7 @@ namespace NWebDav.Server.Stores
             }
         }
 
-        public bool AllowInfiniteDepthProperties => false;
+        public InfiniteDepthMode InfiniteDepthMode => InfiniteDepthMode.Rejected;
 
         public override int GetHashCode()
         {
