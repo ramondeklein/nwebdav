@@ -199,7 +199,7 @@ namespace NWebDav.Server.Stores
             }
             catch (Exception exc)
             {
-                s_log.Log(LogLevel.Error, "Unexpected exception while copying data.", exc);
+                s_log.Log(LogLevel.Error, () => "Unexpected exception while copying data.", exc);
                 return new StoreItemResult(DavStatusCode.InternalServerError);
             }
         }

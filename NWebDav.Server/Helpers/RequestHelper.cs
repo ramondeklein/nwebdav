@@ -222,7 +222,7 @@ namespace NWebDav.Server.Helpers
 
                     // Log the XML text to the logging
                     var reader = new System.IO.StreamReader(ms);
-                    s_log.Log(LogLevel.Debug, reader.ReadToEnd());
+                    s_log.Log(LogLevel.Debug, () => reader.ReadToEnd());
                 }
             }
 #endif

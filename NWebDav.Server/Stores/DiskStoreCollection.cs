@@ -217,7 +217,7 @@ namespace NWebDav.Server.Stores
             catch (Exception exc)
             {
                 // Log exception
-                s_log.Log(LogLevel.Error, $"Unable to create '{destinationPath}' file.", exc);
+                s_log.Log(LogLevel.Error, () => $"Unable to create '{destinationPath}' file.", exc);
                 return Task.FromResult(new StoreItemResult(DavStatusCode.InternalServerError));
             }
 
@@ -259,7 +259,7 @@ namespace NWebDav.Server.Stores
             catch (Exception exc)
             {
                 // Log exception
-                s_log.Log(LogLevel.Error, $"Unable to create '{destinationPath}' directory.", exc);
+                s_log.Log(LogLevel.Error, () => $"Unable to create '{destinationPath}' directory.", exc);
                 return null;
             }
 
@@ -375,12 +375,12 @@ namespace NWebDav.Server.Stores
             catch (Exception exc)
             {
                 // Log exception
-                s_log.Log(LogLevel.Error, $"Unable to delete '{fullPath}' directory.", exc);
+                s_log.Log(LogLevel.Error, () => $"Unable to delete '{fullPath}' directory.", exc);
                 return Task.FromResult(DavStatusCode.InternalServerError);
             }
         }
 
-        public bool AllowInfiniteDepthProperties => false;
+        public InfiniteDepthMode InfiniteDepthMode => InfiniteDepthMode.Rejected;
 
         public override int GetHashCode()
         {

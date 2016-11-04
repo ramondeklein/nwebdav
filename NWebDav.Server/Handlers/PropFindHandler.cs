@@ -64,10 +64,20 @@ namespace NWebDav.Server.Handlers
                 var depth = request.GetDepth();
 
                 // Check if the collection supports Infinite depth for properties
-                if (depth > 1 && !topCollection.AllowInfiniteDepthProperties)
+                if (depth > 1)
                 {
-                    response.SendResponse(DavStatusCode.Forbidden, "Not allowed to obtain properties with infinite depth.");
-                    return true;
+                    switch (topCollection.InfiniteDepthMode)
+                    {
+                        case InfiniteDepthMode.Rejected:
+                            response.SendResponse(DavStatusCode.Forbidden, "Not allowed to obtain properties with infinite depth.");
+                            return true;
+                        case InfiniteDepthMode.Assume0:
+                            depth = 0;
+                            break;
+                        case InfiniteDepthMode.Assume1:
+                            depth = 1;
+                            break;
+                    }
                 }
 
                 // Add all the entries

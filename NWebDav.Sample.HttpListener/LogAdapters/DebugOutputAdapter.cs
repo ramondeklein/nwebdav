@@ -26,17 +26,17 @@ namespace NWebDav.Sample.HttpListener.LogAdapters
                  return Parent.LogLevels.Contains(logLevel);
             }
 
-            public void Log(LogLevel logLevel, string message, Exception exception)
+            public void Log(LogLevel logLevel, Func<string> messageFunc, Exception exception = null)
             {
                 if (IsLogEnabled(logLevel))
                 {
-                    Debug.WriteLine($"{logLevel.ToString().ToUpper()}:{Type.FullName} - {message}");
-                    if (exception != null) 
+                    Debug.WriteLine($"{logLevel.ToString().ToUpper()}:{Type.FullName} - {messageFunc()}");
+                    if (exception != null)
                     {
                         Debug.WriteLine($"- Exception: {exception.Message}");
                         Debug.WriteLine($"- StackTrace: {exception.StackTrace}");
                     }
-                }                    
+                }
             }
         }
 

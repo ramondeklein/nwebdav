@@ -7,7 +7,7 @@ namespace NWebDav.Server.Logging
         private class Logger : ILogger
         {
             public bool IsLogEnabled(LogLevel logLevel) => false;
-            public void Log(LogLevel logLevel, string message, Exception exception)
+            public void Log(LogLevel logLevel, Func<string> messageFunc, Exception exception)
             {
             }
         }

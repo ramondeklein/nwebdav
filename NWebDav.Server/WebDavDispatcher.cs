@@ -44,7 +44,7 @@ namespace NWebDav.Server
             var logRequest = $"{request.HttpMethod}:{request.Url}:{request.RemoteEndPoint?.Address}";
 
             // Log the request
-            s_log.Log(LogLevel.Info, $"{logRequest} - Start processing");
+            s_log.Log(LogLevel.Info, () => $"{logRequest} - Start processing");
 
             try
             {
@@ -64,7 +64,7 @@ namespace NWebDav.Server
                     if (requestHandler == null)
                     {
                         // Log warning
-                        s_log.Log(LogLevel.Warning, $"{logRequest} - Not implemented.");
+                        s_log.Log(LogLevel.Warning, () => $"{logRequest} - Not implemented.");
 
                         // This request is not implemented
                         httpContext.Response.SendResponse(DavStatusCode.NotImplemented);
@@ -74,7 +74,7 @@ namespace NWebDav.Server
                 catch (Exception exc)
                 {
                     // Log error
-                    s_log.Log(LogLevel.Error, $"Unexpected exception while trying to obtain the request handler (method={request.HttpMethod}, url={request.Url}, source={request.RemoteEndPoint}", exc);
+                    s_log.Log(LogLevel.Error, () => $"Unexpected exception while trying to obtain the request handler (method={request.HttpMethod}, url={request.Url}, source={request.RemoteEndPoint}", exc);
 
                     // Abort
                     return;
@@ -86,12 +86,12 @@ namespace NWebDav.Server
                     if (await requestHandler.HandleRequestAsync(httpContext, _store).ConfigureAwait(false))
                     {
                         // Log processing duration
-                        s_log.Log(LogLevel.Info, $"{logRequest} - Finished processing ({sw.ElapsedMilliseconds}ms, HTTP result: {httpContext.Response.Status})");
+                        s_log.Log(LogLevel.Info, () => $"{logRequest} - Finished processing ({sw.ElapsedMilliseconds}ms, HTTP result: {httpContext.Response.Status})");
                     }
                     else
                     {
                         // Log warning
-                        s_log.Log(LogLevel.Warning, $"{logRequest} - Not processed.");
+                        s_log.Log(LogLevel.Warning, () => $"{logRequest} - Not processed.");
 
                         // Set status code to bad request
                         httpContext.Response.SendResponse(DavStatusCode.NotImplemented);
@@ -100,7 +100,7 @@ namespace NWebDav.Server
                 catch (Exception exc)
                 {
                     // Log what's going wrong
-                    s_log.Log(LogLevel.Error, $"Unexpected exception while handling request (method={request.HttpMethod}, url={request.Url}, source={request.RemoteEndPoint}", exc);
+                    s_log.Log(LogLevel.Error, () => $"Unexpected exception while handling request (method={request.HttpMethod}, url={request.Url}, source={request.RemoteEndPoint}", exc);
 
                     try
                     {
