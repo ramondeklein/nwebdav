@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>NWebDav.Server</id>
-    <version>0.1.15.0</version>
+    <version>0.1.16.0</version>
     <title>NWebDav server library</title>
     <authors>Ramon de Klein &lt;mail@ramondeklein.nl&gt;</authors>
     <description>NWebDav.Server is a flexible WebDAV server library that can be used to expose files or other data using WebDAV.</description>
