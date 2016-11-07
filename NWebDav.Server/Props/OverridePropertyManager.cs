@@ -35,23 +35,23 @@ namespace NWebDav.Server.Props
 
         public IList<PropertyInfo> Properties { get; }
 
-        public Task<object> GetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName name, bool skipExpensive = false)
+        public async Task<object> GetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName name, bool skipExpensive = false)
         {
             // Find the property
             DavProperty<TEntry> property;
             if (!_properties.TryGetValue(name, out property))
-                return _basePropertyManager.GetPropertyAsync(httpContext, _converter((TEntry)item), name, skipExpensive);
+                return await _basePropertyManager.GetPropertyAsync(httpContext, _converter((TEntry)item), name, skipExpensive);
 
             // Check if the property has a getter
             if (property.GetterAsync == null)
-                return _basePropertyManager.GetPropertyAsync(httpContext, _converter((TEntry)item), name, skipExpensive);
+                return await _basePropertyManager.GetPropertyAsync(httpContext, _converter((TEntry)item), name, skipExpensive);
 
-            // Skip expsensive properties
+            // Skip expensive properties
             if (skipExpensive && property.IsExpensive)
                 return Task.FromResult((object)null);
 
             // Obtain the value
-            return property.GetterAsync(httpContext, (TEntry)item);
+            return await property.GetterAsync(httpContext, (TEntry)item);
         }
 
         public Task<DavStatusCode> SetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName name, object value)
