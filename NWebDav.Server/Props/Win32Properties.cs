@@ -19,10 +19,12 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class Win32CreationTime<TEntry> : DavRfc1123Date<TEntry> where TEntry : IStoreItem
     {
+        public static readonly XName PropertyName = WebDavNamespaces.Win32Ns + "Win32CreationTime";
+
         /// <summary>
         /// Name of the property.
         /// </summary>
-        public override XName Name => WebDavNamespaces.Win32Ns + "Win32CreationTime";
+        public override XName Name => PropertyName;
     }
 
     /// <summary>
@@ -38,10 +40,12 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class Win32LastAccessTime<TEntry> : DavRfc1123Date<TEntry> where TEntry : IStoreItem
     {
+        public static readonly XName PropertyName = WebDavNamespaces.Win32Ns + "Win32LastAccessTime";
+
         /// <summary>
         /// Name of the property.
         /// </summary>
-        public override XName Name => WebDavNamespaces.Win32Ns + "Win32LastAccessTime";
+        public override XName Name => PropertyName;
     }
 
     /// <summary>
@@ -57,10 +61,12 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class Win32LastModifiedTime<TEntry> : DavRfc1123Date<TEntry> where TEntry : IStoreItem
     {
+        public static readonly XName PropertyName = WebDavNamespaces.Win32Ns + "Win32LastModifiedTime";
+
         /// <summary>
         /// Name of the property.
         /// </summary>
-        public override XName Name => WebDavNamespaces.Win32Ns + "Win32LastModifiedTime";
+        public override XName Name => PropertyName;
     }
 
     /// <summary>
@@ -106,6 +112,8 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class Win32FileAttributes<TEntry> : DavTypedProperty<TEntry, FileAttributes> where TEntry : IStoreItem
     {
+        public static readonly XName PropertyName = WebDavNamespaces.Win32Ns + "Win32FileAttributes";
+
         private class FileAttributesConverter : IConverter
         {
             public object ToXml(IHttpContext httpContext, FileAttributes value) => ((int)value).ToString("X8");
@@ -117,7 +125,7 @@ namespace NWebDav.Server.Props
         /// <summary>
         /// Name of the property.
         /// </summary>
-        public override XName Name => WebDavNamespaces.Win32Ns + "Win32FileAttributes";
+        public override XName Name => PropertyName;
 
         /// <summary>
         /// Converter that is used to convert the actual value into the XML

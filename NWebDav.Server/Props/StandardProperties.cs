@@ -20,10 +20,12 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavCreationDate<TEntry> : DavIso8601Date<TEntry> where TEntry : IStoreItem
     {
+        public static readonly XName PropertyName = WebDavNamespaces.DavNs + "creationdate";
+
         /// <summary>
         /// Name of the property.
         /// </summary>
-        public override XName Name => WebDavNamespaces.DavNs + "creationdate";
+        public override XName Name => PropertyName;
     }
 
     /// <summary>
@@ -40,10 +42,12 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavDisplayName<TEntry> : DavString<TEntry> where TEntry : IStoreItem
     {
+        public static readonly XName PropertyName = WebDavNamespaces.DavNs + "displayname";
+
         /// <summary>
         /// Name of the property.
         /// </summary>
-        public override XName Name => WebDavNamespaces.DavNs + "displayname";
+        public override XName Name => PropertyName;
     }
 
     /// <summary>
@@ -61,10 +65,12 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavGetContentLanguage<TEntry> : DavString<TEntry> where TEntry : IStoreItem
     {
+        public static readonly XName PropertyName = WebDavNamespaces.DavNs + "getcontentlanguage";
+
         /// <summary>
         /// Name of the property.
         /// </summary>
-        public override XName Name => WebDavNamespaces.DavNs + "getcontentlanguage";
+        public override XName Name => PropertyName;
     }
 
     /// <summary>
@@ -80,10 +86,12 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavGetContentLength<TEntry> : DavInt64<TEntry> where TEntry : IStoreItem
     {
+        public static readonly XName PropertyName = WebDavNamespaces.DavNs + "getcontentlength";
+
         /// <summary>
         /// Name of the property.
         /// </summary>
-        public override XName Name => WebDavNamespaces.DavNs + "getcontentlength";
+        public override XName Name => PropertyName;
     }
 
     /// <summary>
@@ -101,10 +109,12 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavGetContentType<TEntry> : DavString<TEntry> where TEntry : IStoreItem
     {
+        public static readonly XName PropertyName = WebDavNamespaces.DavNs + "getcontenttype";
+
         /// <summary>
         /// Name of the property.
         /// </summary>
-        public override XName Name => WebDavNamespaces.DavNs + "getcontenttype";
+        public override XName Name => PropertyName;
     }
 
     /// <summary>
@@ -120,10 +130,12 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavGetEtag<TEntry> : DavString<TEntry> where TEntry : IStoreItem
     {
+        public static readonly XName PropertyName = WebDavNamespaces.DavNs + "getetag";
+
         /// <summary>
         /// Name of the property.
         /// </summary>
-        public override XName Name => WebDavNamespaces.DavNs + "getetag";
+        public override XName Name => PropertyName;
     }
 
     /// <summary>
@@ -149,10 +161,12 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavGetLastModified<TEntry> : DavRfc1123Date<TEntry> where TEntry : IStoreItem
     {
+        public static readonly XName PropertyName = WebDavNamespaces.DavNs + "getlastmodified";
+     
         /// <summary>
         /// Name of the property.
         /// </summary>
-        public override XName Name => WebDavNamespaces.DavNs + "getlastmodified";
+        public override XName Name => PropertyName;
     }
 
     /// <summary>
@@ -170,10 +184,12 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavLockDiscovery<TEntry> : DavXElementArray<TEntry> where TEntry : IStoreItem
     {
+        public static readonly XName PropertyName = WebDavNamespaces.DavNs + "lockdiscovery";
+
         /// <summary>
         /// Name of the property.
         /// </summary>
-        public override XName Name => WebDavNamespaces.DavNs + "lockdiscovery";
+        public override XName Name => PropertyName;
     }
 
     /// <summary>
@@ -188,10 +204,12 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavGetResourceType<TEntry> : DavXElement<TEntry> where TEntry : IStoreItem
     {
+        public static readonly XName PropertyName = WebDavNamespaces.DavNs + "resourcetype";
+
         /// <summary>
         /// Name of the property.
         /// </summary>
-        public override XName Name => WebDavNamespaces.DavNs + "resourcetype";
+        public override XName Name => PropertyName;
     }
 
     /// <summary>
@@ -217,10 +235,12 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavSource<TEntry> : DavXElement<TEntry> where TEntry : IStoreItem
     {
+        public static readonly XName PropertyName = WebDavNamespaces.DavNs + "source";
+
         /// <summary>
         /// Name of the property.
         /// </summary>
-        public override XName Name => WebDavNamespaces.DavNs + "source";
+        public override XName Name => PropertyName;
     }
 
     /// <summary>
@@ -245,9 +265,11 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavSupportedLock<TEntry> : DavXElementArray<TEntry> where TEntry : IStoreItem
     {
+        public static readonly XName PropertyName = WebDavNamespaces.DavNs + "supportedlock";
+
         /// <summary>
         /// Name of the property.
         /// </summary>
-        public override XName Name => WebDavNamespaces.DavNs + "supportedlock";
+        public override XName Name => PropertyName;
     }
 }
