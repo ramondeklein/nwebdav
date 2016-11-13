@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>NWebDav.Server.AspNet</id>
+    <version>0.1.16.0</version>
+    <title>NWebDav server library for ASP.NET</title>
+    <authors>Ramon de Klein &lt;mail@ramondeklein.nl&gt;</authors>
+    <description>NWebDav.Server.AspNet is a flexible WebDAV server library that can be used to expose files or other data using WebDAV.</description>
+    <licenseUrl>http://www.gnu.org/licenses/lgpl.html</licenseUrl>
+    <projectUrl>https://github.com/ramondeklein/nwebdav</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <copyright>Copyright 2016 Ramon de Klein &lt;mail@ramondeklein.nl&gt;</copyright>
+    <tags>C# .NET WebDAV Server ASP.NET</tags>
+    <dependencies>
+      <dependency id="NWebDav.Server" version="0.1.16.0" />
+    </dependencies>
+    <language>en-US</language>
+  </metadata>
+  <files>
+    <file src="bin\Release\net45\NWebDav.Server.AspNet.*" target="lib\net45" />
+  </files>
+</package>
