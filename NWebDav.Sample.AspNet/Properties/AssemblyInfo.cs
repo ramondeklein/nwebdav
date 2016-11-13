@@ -3,8 +3,8 @@
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("NWebDav.Server.HttpListener")]
-[assembly: AssemblyDescription("WebDAV server library (HttpListener)")]
+[assembly: AssemblyTitle("NWebDav.Sample.AspNet")]
+[assembly: AssemblyDescription("WebDAV server sample application (using ASP.NET)")]
 [assembly: AssemblyInformationalVersion("0.1.17.0 (alpha)")]
 #if DEBUG
 [assembly: AssemblyConfiguration("DEBUG")]

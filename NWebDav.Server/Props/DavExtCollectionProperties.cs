@@ -27,10 +27,12 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavExtCollectionChildCount<TEntry> : DavInt32<TEntry> where TEntry : IStoreItem
     {
+        public static readonly XName PropertyName = WebDavNamespaces.DavNs + "childcount";
+
         /// <summary>
         /// Name of the property.
         /// </summary>
-        public override XName Name => WebDavNamespaces.DavNs + "childcount";
+        public override XName Name => PropertyName;
     }
 
     /// <summary>
@@ -58,10 +60,12 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavExtCollectionDefaultDocument<TEntry> : DavString<TEntry> where TEntry : IStoreItem
     {
+        public static readonly XName PropertyName = WebDavNamespaces.DavNs + "defaultdocument";
+
         /// <summary>
         /// Name of the property.
         /// </summary>
-        public override XName Name => WebDavNamespaces.DavNs + "defaultdocument";
+        public override XName Name => PropertyName;
     }
 
     /// <summary>
@@ -87,10 +91,12 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavExtCollectionId<TEntry> : DavUri<TEntry> where TEntry : IStoreItem
     {
+        public static readonly XName PropertyName = WebDavNamespaces.DavNs + "id";
+
         /// <summary>
         /// Name of the property.
         /// </summary>
-        public override XName Name => WebDavNamespaces.DavNs + "id";
+        public override XName Name => PropertyName;
     }
 
     /// <summary>
@@ -115,10 +121,12 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavExtCollectionIsFolder<TEntry> : DavBoolean<TEntry> where TEntry : IStoreItem
     {
+        public static readonly XName PropertyName = WebDavNamespaces.DavNs + "isfolder";
+
         /// <summary>
         /// Name of the property.
         /// </summary>
-        public override XName Name => WebDavNamespaces.DavNs + "isfolder";
+        public override XName Name => PropertyName;
     }
 
     /// <summary>
@@ -152,10 +160,12 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavExtCollectionIsHidden<TEntry> : DavBoolean<TEntry> where TEntry : IStoreItem
     {
+        public static readonly XName PropertyName = WebDavNamespaces.DavNs + "ishidden";
+
         /// <summary>
         /// Name of the property.
         /// </summary>
-        public override XName Name => WebDavNamespaces.DavNs + "ishidden";
+        public override XName Name => PropertyName;
     }
 
     /// <summary>
@@ -194,10 +204,12 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavExtCollectionIsStructuredDocument<TEntry> : DavBoolean<TEntry> where TEntry : IStoreItem
     {
+        public static readonly XName PropertyName = WebDavNamespaces.DavNs + "isstructureddocument";
+
         /// <summary>
         /// Name of the property.
         /// </summary>
-        public override XName Name => WebDavNamespaces.DavNs + "isstructureddocument";
+        public override XName Name => PropertyName;
     }
 
     /// <summary>
@@ -229,10 +241,12 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavExtCollectionHasSubs<TEntry> : DavBoolean<TEntry> where TEntry : IStoreItem
     {
+        public static readonly XName PropertyName = WebDavNamespaces.DavNs + "hassubs";
+
         /// <summary>
         /// Name of the property.
         /// </summary>
-        public override XName Name => WebDavNamespaces.DavNs + "hassubs";
+        public override XName Name => PropertyName;
     }
 
     /// <summary>
@@ -279,10 +293,12 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavExtCollectionNoSubs<TEntry> : DavBoolean<TEntry> where TEntry : IStoreItem
     {
+        public static readonly XName PropertyName = WebDavNamespaces.DavNs + "nosubs";
+
         /// <summary>
         /// Name of the property.
         /// </summary>
-        public override XName Name => WebDavNamespaces.DavNs + "nosubs";
+        public override XName Name => PropertyName;
     }
 
     /// <summary>
@@ -306,10 +322,12 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavExtCollectionObjectCount<TEntry> : DavInt32<TEntry> where TEntry : IStoreItem
     {
+        public static readonly XName PropertyName = WebDavNamespaces.DavNs + "objectcount";
+
         /// <summary>
         /// Name of the property.
         /// </summary>
-        public override XName Name => WebDavNamespaces.DavNs + "objectcount";
+        public override XName Name => PropertyName;
     }
 
     /// <summary>
@@ -338,10 +356,12 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavExtCollectionReserved<TEntry> : DavBoolean<TEntry> where TEntry : IStoreItem
     {
+        public static readonly XName PropertyName = WebDavNamespaces.DavNs + "reserved";
+
         /// <summary>
         /// Name of the property.
         /// </summary>
-        public override XName Name => WebDavNamespaces.DavNs + "reserved";
+        public override XName Name => PropertyName;
     }
 
     /// <summary>
@@ -367,9 +387,11 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavExtCollectionVisibleCount<TEntry> : DavInt32<TEntry> where TEntry : IStoreItem
     {
+        public static readonly XName PropertyName = WebDavNamespaces.DavNs + "visiblecount";
+
         /// <summary>
         /// Name of the property.
         /// </summary>
-        public override XName Name => WebDavNamespaces.DavNs + "visiblecount";
+        public override XName Name => PropertyName;
     }
 }

@@ -31,7 +31,7 @@ namespace NWebDav.Server.Props
         /// </summary>
         public IList<PropertyInfo> Properties { get; }
 
-        public async Task<object> GetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName name, bool skipExpensive = false)
+        public Task<object> GetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName name, bool skipExpensive = false)
         {
             // Find the property
             DavProperty<TEntry> property;
@@ -47,22 +47,22 @@ namespace NWebDav.Server.Props
                 return Task.FromResult((object)null);
 
             // Obtain the value
-            return await property.GetterAsync(httpContext, (TEntry)item).ConfigureAwait(false);
+            return property.GetterAsync(httpContext, (TEntry)item);
         }
 
-        public async Task<DavStatusCode> SetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName name, object value)
+        public Task<DavStatusCode> SetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName name, object value)
         {
             // Find the property
             DavProperty<TEntry> property;
             if (!_properties.TryGetValue(name, out property))
-                return DavStatusCode.NotFound;
+                return Task.FromResult(DavStatusCode.NotFound);
 
             // Check if the property has a setter
             if (property.SetterAsync == null)
-                return DavStatusCode.Conflict;
+                return Task.FromResult(DavStatusCode.Conflict);
 
             // Set the value
-            return await property.SetterAsync(httpContext, (TEntry)item, value).ConfigureAwait(false);
+            return property.SetterAsync(httpContext, (TEntry)item, value);
         }
     }
 }

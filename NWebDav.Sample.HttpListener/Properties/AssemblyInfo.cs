@@ -3,9 +3,9 @@
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("NWebDav.App")]
-[assembly: AssemblyDescription("WebDAV server sample application")]
-[assembly: AssemblyInformationalVersion("0.1.15.0 (alpha)")]
+[assembly: AssemblyTitle("NWebDav.Sample.HttpListener")]
+[assembly: AssemblyDescription("WebDAV server sample application (using HttpListener)")]
+[assembly: AssemblyInformationalVersion("0.1.17.0 (alpha)")]
 #if DEBUG
 [assembly: AssemblyConfiguration("DEBUG")]
 #else
@@ -25,5 +25,5 @@
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.1.15.0")]
-[assembly: AssemblyFileVersion("0.1.15.0")]
+[assembly: AssemblyVersion("0.1.17.0")]
+[assembly: AssemblyFileVersion("0.1.17.0")]

@@ -1,0 +1,18 @@
+{
+  "version": "0.1.10-*",
+
+  "buildOptions": {
+    "emitEntryPoint": false
+  },
+
+  "frameworks": {
+    "net45": {
+      "frameworkAssemblies": {
+        "System.Web": "4.0.0.0"
+      }
+    }
+  },
+  "dependencies": {
+    "NWebDav.Server": "0.1.*"
+  }
+}
