@@ -15,6 +15,7 @@ namespace NWebDav.Server.Stores
             if (directory == null)
                 throw new ArgumentNullException(nameof(directory));
 
+            IsWritable = isWritable;
             BaseDirectory = directory;
             LockingManager = lockingManager ?? new InMemoryLockingManager();
         }
