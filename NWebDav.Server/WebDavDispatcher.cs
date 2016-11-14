@@ -41,7 +41,7 @@ namespace NWebDav.Server
             // Determine the request log-string
             var request = httpContext.Request;
             var response = httpContext.Response;
-            var logRequest = $"{request.HttpMethod}:{request.Url}:{request.RemoteEndPoint?.Address}";
+            var logRequest = $"{request.HttpMethod}:{request.Url}:{request.RemoteEndPoint}";
 
             // Log the request
             s_log.Log(LogLevel.Info, () => $"{logRequest} - Start processing");
