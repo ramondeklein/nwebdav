@@ -33,6 +33,6 @@ namespace NWebDav.Server.Http
         /// to the requester. After the context is closed, it cannot be accessed
         /// anymore.
         /// </remarks>
-        void Close();
+        Task CloseAsync();
     }
 }

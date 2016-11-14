@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Net;
-
+using System.Threading.Tasks;
 using NWebDav.Server.Http;
 
 namespace NWebDav.Server.HttpListener
@@ -23,10 +23,13 @@ namespace NWebDav.Server.HttpListener
         public IHttpResponse Response { get; }
         public abstract IHttpSession Session { get; }
 
-        public void Close()
+        public Task CloseAsync()
         {
             // Close the response
             _response.Close();
+
+            // Command completed synchronous
+            return Task.FromResult(true);
         }
     }
 }

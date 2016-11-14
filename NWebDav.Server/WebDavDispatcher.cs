@@ -122,7 +122,7 @@ namespace NWebDav.Server
             finally
             {
                 // Always close the context
-                httpContext.Close();
+                await httpContext.CloseAsync().ConfigureAwait(false);
             }
         }
     }
