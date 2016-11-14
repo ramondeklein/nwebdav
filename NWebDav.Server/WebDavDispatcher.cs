@@ -11,6 +11,18 @@ using NWebDav.Server.Stores;
 
 namespace NWebDav.Server
 {
+    /// <summary>
+    /// Default implementation of the <seealso cref="IWebDavDispatcher"/>
+    /// interface to handle the dispatching of WebDAV requests.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The default implementation uses <seealso cref="IRequestHandlerFactory"/>
+    /// to create request handlers and invokes the handler for each request. It
+    /// also adds some logging to each call and it takes care of closing the
+    /// HTTP context after the request has been processed.
+    /// </para>
+    /// </remarks>
     public class WebDavDispatcher : IWebDavDispatcher
     {
         private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(WebDavDispatcher));
@@ -21,10 +33,27 @@ namespace NWebDav.Server
 
         static WebDavDispatcher()
         {
+            // Determine the server name for the Server header. The format of
+            // this header should have a fixed layout.
+            // (see https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.38)
             var assemblyVersion = typeof(WebDavDispatcher).GetTypeInfo().Assembly.GetName().Version;
             s_serverName = $"NWebDav/{assemblyVersion}";
         }
 
+        /// <summary>
+        /// Create an instance of the default WebDavDispatcher implementation.
+        /// </summary>
+        /// <param name="store">
+        /// Store that should be used to obtain the collections and/or
+        /// documents.
+        /// </param>
+        /// <param name="requestHandlerFactory">
+        /// Optional request handler factory that is used to find the proper
+        /// <see cref="IRequestHandler"/> for the current WebDAV request. This
+        /// is an optional parameter (default <see langword="null"/>). If no
+        /// value is specified (or <see langword="null"/>) then the default
+        /// implementation (<see cref="RequestHandlerFactory"/>) is used.
+        /// </param>
         public WebDavDispatcher(IStore store, IRequestHandlerFactory requestHandlerFactory = null)
         {
             // Make sure a store resolver is specified
@@ -36,6 +65,15 @@ namespace NWebDav.Server
             _requestHandlerFactory = requestHandlerFactory ?? new RequestHandlerFactory();
         }
 
+        /// <summary>
+        /// Dispatch the WebDAV request based on the given HTTP context.
+        /// </summary>
+        /// <param name="httpContext">
+        /// HTTP context for this request.
+        /// </param>
+        /// <returns>
+        /// A task that represents the request dispatching operation.
+        /// </returns>
         public async Task DispatchRequestAsync(IHttpContext httpContext)
         {
             // Determine the request log-string
@@ -48,7 +86,9 @@ namespace NWebDav.Server
 
             try
             {
-                // Set the Server header of the response
+                // Set the Server header of the response message. This has no
+                // functional use, but it can be used to diagnose problems by
+                // determining the actual WebDAV server and version.
                 response.SetHeaderValue("Server", s_serverName);
 
                 // Start the stopwatch

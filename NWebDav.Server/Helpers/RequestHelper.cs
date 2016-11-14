@@ -35,7 +35,7 @@ namespace NWebDav.Server.Helpers
             if (slashOffset == -1)
                 return null;
 
-            // Seperate name from path
+            // Separate name from path
             return new SplitUri
             {
                 CollectionUri = new Uri(uri.Substring(0, slashOffset)),

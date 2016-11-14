@@ -27,18 +27,28 @@ namespace NWebDav.Server.Http
         /// Gets the current HTTP request message.
         /// </summary>
         /// <value>HTTP request.</value>
+        /// <remarks>
+        /// Each HTTP context should have a valid request.
+        /// </remarks>
         IHttpRequest Request { get; }
 
         /// <summary>
         /// Gets the current HTTP response message.
         /// </summary>
         /// <value>HTTP response.</value>
+        /// <remarks>
+        /// Each HTTP context should have a valid response.
+        /// </remarks>
         IHttpResponse Response { get; }
 
         /// <summary>
         /// Gets the session belonging to the current request.
         /// </summary>
-        /// <value>Session.</value>
+        /// <value>Session associated with this HTTP request.</value>
+        /// <remarks>
+        /// If sessions and/or authorization is not used, then it is allowed to
+        /// set the <see cref="Session"/> to <see langword="null"/>.
+        /// </remarks>
         IHttpSession Session { get; }
 
         /// <summary>
@@ -47,7 +57,7 @@ namespace NWebDav.Server.Http
         /// <remarks>
         /// <para>
         /// Each request will have its own HTTP context and the
-        /// <seealso cref="WebDavDispatcher"/> dispatching the request will
+        /// <seealso cref="IWebDavDispatcher"/> dispatching the request should
         /// make sure the context is closed at the end of the request. When
         /// this method completes the response should have been sent or it
         /// should be ready, so the underlying HTTP infrastructure can send
