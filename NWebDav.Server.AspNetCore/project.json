@@ -3,6 +3,16 @@
   "buildOptions": {
     "emitEntryPoint": false
   },
+
+  "configurations": {
+    "Release": {
+      "buildOptions": {
+        "xmlDoc": true,
+        "optimize": true
+      }
+    }
+  },
+
   "frameworks": {
     "netstandard1.6": {
       "dependencies": {
@@ -13,6 +23,7 @@
       }
     }
   },
+
   "dependencies": {
     "Microsoft.AspNetCore.Hosting": "1.0.0",
     "NWebDav.Server": "0.1.*"

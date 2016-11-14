@@ -8,7 +8,8 @@
   "configurations": {
     "Release": {
       "buildOptions": {
-        "xmlDoc": true
+        "xmlDoc": true,
+        "optimize": true
       }
     }
   },
