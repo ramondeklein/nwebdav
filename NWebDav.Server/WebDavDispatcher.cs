@@ -76,9 +76,21 @@ namespace NWebDav.Server
         /// </returns>
         public async Task DispatchRequestAsync(IHttpContext httpContext)
         {
-            // Determine the request log-string
+            // Make sure a HTTP context is specified
+            if (httpContext == null)
+                throw new ArgumentNullException(nameof(httpContext));
+
+            // Make sure the HTTP context has a request
             var request = httpContext.Request;
+            if (request == null)
+                throw new ArgumentException("The HTTP context doesn't have a request.", nameof(httpContext));
+
+            // Make sure the HTTP context has a response
             var response = httpContext.Response;
+            if (response == null)
+                throw new ArgumentException("The HTTP context doesn't have a response.", nameof(httpContext));
+
+            // Determine the request log-string
             var logRequest = $"{request.HttpMethod}:{request.Url}:{request.RemoteEndPoint}";
 
             // Log the request
