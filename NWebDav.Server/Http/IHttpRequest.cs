@@ -50,16 +50,15 @@ namespace NWebDav.Server.Http
         /// <remarks>
         /// <para>
         /// The remote endpoint is only used for logging by the internal
-        /// NWebDAV cod. Not all HTTP frameworks provide the remote endpoint to this information 
-        /// and it might have been changed by (reverse) proxies, so don't rely on this
-        /// information.
+        /// NWebDAV code. Not all HTTP frameworks provide the remote endpoint
+        /// and it might have been changed by (reverse) proxies, so don't rely
+        /// on this information for any other use then logging.
         /// </para>
         /// <para>
         /// If you are implementing this interface for your own HTTP framework
-        /// and you can't get the remote IP address and/or port, then use
-        /// <see cref="IPAddress.Any"/> for the IP address and <c>0</c> for the
-        /// port. Don't throw an <see cref="NotSupportedException"/> (or any
-        /// other exception), because this will cause the request to fail.
+        /// and you can't get the remote endpoint, then don't throw a
+        /// <see cref="NotSupportedException"/> (or any other exception),
+        /// because this will cause the request to fail.
         /// </para>
         /// </remarks>
         string RemoteEndPoint { get; }
