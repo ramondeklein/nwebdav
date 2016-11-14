@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;

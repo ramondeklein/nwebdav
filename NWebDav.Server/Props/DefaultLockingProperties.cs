@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 
 using NWebDav.Server.Locking;
 using NWebDav.Server.Stores;

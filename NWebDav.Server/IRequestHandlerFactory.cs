@@ -1,5 +1,4 @@
-﻿using System;
-using NWebDav.Server.Http;
+﻿using NWebDav.Server.Http;
 
 namespace NWebDav.Server
 {
