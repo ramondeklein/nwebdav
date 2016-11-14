@@ -6,10 +6,10 @@ namespace NWebDav.Server.Helpers
 {
     public static class DavStatusCodeHelper
     {
-        public static string GetStatusDescription<TEnum>(TEnum value, string defaultValue = null) where TEnum : struct
+        public static string GetStatusDescription(DavStatusCode value, string defaultValue = null)
         {
             // Obtain the member information
-            var memberInfo = typeof(TEnum).GetMember(value.ToString()).FirstOrDefault();
+            var memberInfo = typeof(DavStatusCode).GetMember(value.ToString()).FirstOrDefault();
             if (memberInfo == null)
                 return defaultValue;
 
