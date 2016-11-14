@@ -5,6 +5,14 @@
     "emitEntryPoint": false
   },
 
+  "configurations": {
+    "Release": {
+      "buildOptions": {
+        "xmlDoc": true
+      }
+    }
+  },
+
   "frameworks": {
     "net45": {
       "frameworkAssemblies": {
@@ -24,10 +32,10 @@
         "System.Reflection.Extensions": "4.0.1",
         "System.Reflection.TypeExtensions": "4.1.0",
         "System.Runtime.Extensions": "4.1.0",
-	"System.Security.Cryptography.Algorithms": "4.2.0",
+	      "System.Security.Cryptography.Algorithms": "4.2.0",
         "System.Security.Principal": "4.0.1",
         "System.Text.RegularExpressions": "4.1.0",
-	"System.Threading": "4.0.11",
+	      "System.Threading": "4.0.11",
         "System.Xml.XDocument": "4.0.11",
         "System.Xml.XmlSerializer": "4.0.11"
       }

@@ -5,6 +5,14 @@
     "emitEntryPoint": false
   },
 
+  "configurations": {
+    "Release": {
+      "buildOptions": {
+        "xmlDoc": true
+      }
+    }
+  },
+
   "frameworks": {
     "net45": {
       "frameworkAssemblies": {
