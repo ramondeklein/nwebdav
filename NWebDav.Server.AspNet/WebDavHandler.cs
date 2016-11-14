@@ -6,9 +6,9 @@ namespace NWebDav.Server.AspNet
 {
     public class WebDavHandler : IHttpAsyncHandler
     {
-        private readonly WebDavDispatcher _webDavDispatcher;
+        private readonly IWebDavDispatcher _webDavDispatcher;
 
-        public WebDavHandler(WebDavDispatcher webDavDispatcher)
+        public WebDavHandler(IWebDavDispatcher webDavDispatcher)
         {
             _webDavDispatcher = webDavDispatcher;
         }

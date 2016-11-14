@@ -12,7 +12,7 @@ namespace NWebDav.Sample.AspNet
         {
         }
 
-        private static WebDavDispatcher GetWebDavDispatcher()
+        private static IWebDavDispatcher GetWebDavDispatcher()
         {
             // Create a request handler factory that uses basic authentication
             var requestHandlerFactory = new RequestHandlerFactory();
