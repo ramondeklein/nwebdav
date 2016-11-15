@@ -10,6 +10,15 @@ using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Handlers
 {
+    /// <summary>
+    /// Implementation of the PROPPATCH method.
+    /// </summary>
+    /// <remarks>
+    /// The specification of the WebDAV PROPFIND method can be found in the
+    /// <see href="http://www.webdav.org/specs/rfc2518.html#METHOD_PROPPATCH">
+    /// WebDAV specification
+    /// </see>.
+    /// </remarks>
     public class PropPatchHandler : IRequestHandler
     {
         private class PropSetCollection : List<PropSetCollection.PropSet>
@@ -28,7 +37,7 @@ namespace NWebDav.Server.Handlers
 
                 public XElement GetXmlResponse()
                 {
-                    var statusText = $"HTTP/1.1 {(int)Result} {DavStatusCodeHelper.GetStatusDescription(Result)}";
+                    var statusText = $"HTTP/1.1 {(int)Result} {Result.GetStatusDescription()}";
                     return new XElement(WebDavNamespaces.DavNs + "propstat",
                         new XElement(WebDavNamespaces.DavNs + "prop", new XElement(Name)),
                         new XElement(WebDavNamespaces.DavNs + "status", statusText));
@@ -90,6 +99,19 @@ namespace NWebDav.Server.Handlers
             }
         }
 
+        /// <summary>
+        /// Handle a PROPPATCH request.
+        /// </summary>
+        /// <param name="httpContext">
+        /// The HTTP context of the request.
+        /// </param>
+        /// <param name="store">
+        /// Store that is used to access the collections and items.
+        /// </param>
+        /// <returns>
+        /// A task that represents the asynchronous PROPPATCH operation. The task
+        /// will always return <see langword="true"/> upon completion.
+        /// </returns>
         public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)
         {
             // Obtain request and response
@@ -100,7 +122,7 @@ namespace NWebDav.Server.Handlers
             var item = await store.GetItemAsync(request.Url, httpContext).ConfigureAwait(false);
             if (item == null)
             {
-                response.SendResponse(DavStatusCode.NotFound);
+                response.SetStatus(DavStatusCode.NotFound);
                 return true;
             }
 
@@ -113,7 +135,7 @@ namespace NWebDav.Server.Handlers
             }
             catch (Exception)
             {
-                response.SendResponse(DavStatusCode.BadRequest);
+                response.SetStatus(DavStatusCode.BadRequest);
                 return true;
             }
 

@@ -4,15 +4,15 @@ using System.IO;
 
 namespace NWebDav.Server.Helpers
 {
-    // This class is derived from Kristian Hellang <kristian@hellang.com>
-    // The original can be found at https://github.com/khellang/MimeTypes
+    /// <summary>
+    /// Helper class to determine the MIME type based on the file extension.
+    /// </summary>
+    /// <remarks>
+    /// This class is derived from <see href="https://github.com/khellang/MimeTypes"/>
+    /// by <see href="mailto:kristian@hellang.com">Kristian Hellang (kristian@hellang.com)</see>.
+    /// </remarks>
     public static class MimeTypeHelper
     {
-        /// <summary>
-        /// The fallback MIME-type. Defaults to <c>application/octet-stream</c>.
-        /// </summary>
-        public static string FallbackMimeType { get; } = "application/octet-stream";
-
         private static readonly IDictionary<string, string> s_typeMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { "123", "application/vnd.lotus-1-2-3" },
@@ -995,6 +995,11 @@ namespace NWebDav.Server.Helpers
             { "zirz", "application/vnd.zul" },
             { "zmm", "application/vnd.handheld-entertainment+xml" },
         };
+
+        /// <summary>
+        /// The fallback MIME-type (efaults to <c>application/octet-stream</c>).
+        /// </summary>
+        public static string FallbackMimeType { get; } = "application/octet-stream";
 
         /// <summary>
         /// Gets the MIME-type for the given file name,

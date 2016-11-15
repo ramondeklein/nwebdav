@@ -8,8 +8,30 @@ using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Handlers
 {
+    /// <summary>
+    /// Implementation of the COPY method.
+    /// </summary>
+    /// <remarks>
+    /// The specification of the WebDAV COPY method can be found in the
+    /// <see href="http://www.webdav.org/specs/rfc2518.html#METHOD_COPY">
+    /// WebDAV specification
+    /// </see>.
+    /// </remarks>
     public class CopyHandler : IRequestHandler
     {
+        /// <summary>
+        /// Handle a COPY request.
+        /// </summary>
+        /// <param name="httpContext">
+        /// The HTTP context of the request.
+        /// </param>
+        /// <param name="store">
+        /// Store that is used to access the collections and items.
+        /// </param>
+        /// <returns>
+        /// A task that represents the asynchronous COPY operation. The task
+        /// will always return <see langword="true"/> upon completion.
+        /// </returns>
         public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)
         {
             // Obtain request and response
@@ -21,7 +43,7 @@ namespace NWebDav.Server.Handlers
             if (destinationUri == null)
             {
                 // Bad request
-                response.SendResponse(DavStatusCode.BadRequest, "Destination header is missing.");
+                response.SetStatus(DavStatusCode.BadRequest, "Destination header is missing.");
                 return true;
             }
 
@@ -29,7 +51,7 @@ namespace NWebDav.Server.Handlers
             if (request.Url.AbsoluteUri.Equals(destinationUri.AbsoluteUri, StringComparison.CurrentCultureIgnoreCase))
             {
                 // Forbidden
-                response.SendResponse(DavStatusCode.Forbidden, "Source and destination cannot be the same.");
+                response.SetStatus(DavStatusCode.Forbidden, "Source and destination cannot be the same.");
                 return true;
             }
 
@@ -44,7 +66,7 @@ namespace NWebDav.Server.Handlers
             if (destinationCollection == null)
             {
                 // Source not found
-                response.SendResponse(DavStatusCode.Conflict, "Destination cannot be found or is not a collection.");
+                response.SetStatus(DavStatusCode.Conflict, "Destination cannot be found or is not a collection.");
                 return true;
             }
 
@@ -53,7 +75,7 @@ namespace NWebDav.Server.Handlers
             if (sourceItem == null)
             {
                 // Source not found
-                response.SendResponse(DavStatusCode.NotFound, "Source cannot be found.");
+                response.SetStatus(DavStatusCode.NotFound, "Source cannot be found.");
                 return true;
             }
 
@@ -78,7 +100,7 @@ namespace NWebDav.Server.Handlers
             else
             {
                 // Set the response
-                response.SendResponse(DavStatusCode.Ok);
+                response.SetStatus(DavStatusCode.Ok);
             }
 
             return true;

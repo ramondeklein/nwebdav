@@ -20,7 +20,8 @@ namespace NWebDav.Server
     /// status. It will be sent with the response if the underlying HTTP server
     /// allows custom HTTP return codes. Clients should parse the numeric
     /// status code, because it's not guaranteed that the textual version is
-    /// returned.
+    /// returned. If the human readable version is required, then it can be
+    /// obtained using the <see cref="DavStatusCodeHelper"/> helper class.
     /// </para>
     /// <para>
     /// The HTTP status codes are documented on

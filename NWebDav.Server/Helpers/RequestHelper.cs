@@ -10,44 +10,80 @@ using NWebDav.Server.Logging;
 
 namespace NWebDav.Server.Helpers
 {
+    /// <summary>
+    /// Splitted URI consisting of a collection URI and a name string.
+    /// </summary>
     public class SplitUri
     {
+        /// <summary>
+        /// Collection URI that holds the collection/document.
+        /// </summary>
         public Uri CollectionUri { get; set; }
+
+        /// <summary>
+        /// Name of the collection/document within its container collection.
+        /// </summary>
         public string Name { get; set; }
     }
 
+    /// <summary>
+    /// Range
+    /// </summary>
     public class Range
     {
+        /// <summary>
+        /// Optional start value.
+        /// </summary>
         public long? Start { get; set; }
+
+        /// <summary>
+        /// Optional end value.
+        /// </summary>
         public long? End { get; set; }
+
+        /// <summary>
+        /// Optional conditional date/time.
+        /// </summary>
         public DateTime If {get; set; }
     }
 
+    /// <summary>
+    /// Helper methods for <see cref="IHttpRequest"/> objects.
+    /// </summary>
     public static class RequestHelper
     {
         private static readonly Regex s_rangeRegex = new Regex("bytes\\=(?<start>[0-9]*)-(?<end>[0-9]*)");
-        private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(RequestHelper));
 
-        public static SplitUri SplitUri(string uri)
+        /// <summary>
+        /// Split an URI into a collection and name part.
+        /// </summary>
+        /// <param name="uri">URI that should be splitted.</param>
+        /// <returns>
+        /// Splitted URI in a collection URI and a name string.
+        /// </returns>
+        public static SplitUri SplitUri(Uri uri)
         {
             // Determine the offset of the name
-            var slashOffset = uri.LastIndexOf('/');
+            var slashOffset = uri.AbsoluteUri.LastIndexOf('/');
             if (slashOffset == -1)
                 return null;
 
             // Separate name from path
             return new SplitUri
             {
-                CollectionUri = new Uri(uri.Substring(0, slashOffset)),
-                Name = Uri.UnescapeDataString(uri.Substring(slashOffset + 1))
+                CollectionUri = new Uri(uri.AbsoluteUri.Substring(0, slashOffset)),
+                Name = Uri.UnescapeDataString(uri.AbsoluteUri.Substring(slashOffset + 1))
             };
         }
 
-        public static SplitUri SplitUri(Uri uri)
-        {
-            return SplitUri(uri.AbsoluteUri);
-        }
-
+        /// <summary>
+        /// Obtain the destination uri from the request.
+        /// </summary>
+        /// <param name="request">HTTP request.</param>
+        /// <returns>
+        /// Destination for this HTTP request (or <see langword="null"/> if no
+        /// destination is specified).
+        /// </returns>
         public static Uri GetDestinationUri(this IHttpRequest request)
         {
             // Obtain the destination
@@ -55,10 +91,21 @@ namespace NWebDav.Server.Helpers
             if (destinationHeader == null)
                 return null;
 
-            // Return the splitted Uri
+            // Return the destination URI
             return new Uri(destinationHeader);
         }
 
+        /// <summary>
+        /// Obtain the depth value from the request.
+        /// </summary>
+        /// <param name="request">HTTP request.</param>
+        /// <returns>
+        /// Depth of the HTTP request (<c>int.MaxValue</c> if infinity).
+        /// </returns>
+        /// <remarks>
+        /// If the Depth header is not set, then the specification specifies
+        /// that it should be interpreted as infinity.
+        /// </remarks>
         public static int GetDepth(this IHttpRequest request)
         {
             // Obtain the depth header (no header means infinity)
@@ -75,6 +122,19 @@ namespace NWebDav.Server.Helpers
             return depth;
         }
 
+        /// <summary>
+        /// Obtain the overwrite value from the request.
+        /// </summary>
+        /// <param name="request">HTTP request.</param>
+        /// <returns>
+        /// Flag indicating whether or not to overwrite the destination
+        /// if it already exists.
+        /// </returns>
+        /// <remarks>
+        /// If the Overwrite header is not set, then the specification
+        /// specifies that it should be interpreted as 
+        /// <see langwordk="true"/>.
+        /// </remarks>
         public static bool GetOverwrite(this IHttpRequest request)
         {
             // Get the Overwrite header
@@ -84,6 +144,17 @@ namespace NWebDav.Server.Helpers
             return overwriteHeader.ToUpperInvariant() == "T";
         }
 
+        /// <summary>
+        /// Obtain the list of timeout values from the request.
+        /// </summary>
+        /// <param name="request">HTTP request.</param>
+        /// <returns>
+        /// List of timeout values in seconds (<c>-1</c> if infinite).
+        /// </returns>
+        /// <remarks>
+        /// If the Timeout header is not set, then <see langword="null"/> is
+        /// returned.
+        /// </remarks>
         public static IList<int> GetTimeouts(this IHttpRequest request)
         {
             // Get the value of the timeout header as a string
@@ -109,6 +180,13 @@ namespace NWebDav.Server.Helpers
             return timeoutHeader.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(parseTimeout).Where(t => t != 0).ToArray();
         }
 
+        /// <summary>
+        /// Obtain the lock-token URI from the request.
+        /// </summary>
+        /// <param name="request">HTTP request.</param>
+        /// <returns>
+        /// Lock token URI (<see langword="null"/> if not set).
+        /// </returns>
         public static Uri GetLockToken(this IHttpRequest request)
         {
             // Get the value of the lock-token header as a string
@@ -124,6 +202,13 @@ namespace NWebDav.Server.Helpers
             return new Uri(lockTokenHeader.Substring(1, lockTokenHeader.Length - 2), UriKind.Absolute);
         }
 
+        /// <summary>
+        /// Obtain the if-lock-token URI from the request.
+        /// </summary>
+        /// <param name="request">HTTP request.</param>
+        /// <returns>
+        /// If lock token URI (<see langword="null"/> if not set).
+        /// </returns>
         public static Uri GetIfLockToken(this IHttpRequest request)
         {
             // Get the value of the lock-token header as a string
@@ -139,6 +224,13 @@ namespace NWebDav.Server.Helpers
             return new Uri(lockTokenHeader.Substring(2, lockTokenHeader.Length - 4), UriKind.Absolute);
         }
 
+        /// <summary>
+        /// Obtain the range value from the request.
+        /// </summary>
+        /// <param name="request">HTTP request.</param>
+        /// <returns>
+        /// Range value (start/end) with an option if condition.
+        /// </returns>
         public static Range GetRange(this IHttpRequest request)
         {
             // Get the value of the range header as a string
@@ -179,13 +271,21 @@ namespace NWebDav.Server.Helpers
             return range;
         }
 
+        /// <summary>
+        /// Load an XML document from the HTTP request body.
+        /// </summary>
+        /// <param name="request">HTTP request.</param>
+        /// <returns>
+        /// XML document that represents the body content (or 
+        /// <see langword="null"/> if no body content is specified).
+        /// </returns>
         public static XDocument LoadXmlDocument(this IHttpRequest request)
         {
             // If there is no input stream, then there is no XML document
             if (request.Stream == null || request.Stream == Stream.Null)
                 return null;
 
-            // If there is no data,
+            // Return null if no content has been specified
             var contentLengthString = request.GetHeaderValue("Content-Length");
             if (contentLengthString != null)
             {
@@ -193,6 +293,10 @@ namespace NWebDav.Server.Helpers
                 if (!int.TryParse(contentLengthString, out contentLength) || contentLength == 0)
                     return null;
             }
+
+            // Return null if no stream is available
+            if (request.Stream == null || request.Stream == Stream.Null)
+                return null;
 
             // Obtain an XML document from the stream
             var xDocument = XDocument.Load(request.Stream);

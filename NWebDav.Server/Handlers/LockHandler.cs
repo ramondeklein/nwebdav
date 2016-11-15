@@ -11,8 +11,30 @@ using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Handlers
 {
+    /// <summary>
+    /// Implementation of the LOCK method.
+    /// </summary>
+    /// <remarks>
+    /// The specification of the WebDAV LOCK method can be found in the
+    /// <see href="http://www.webdav.org/specs/rfc2518.html#METHOD_LOCK">
+    /// WebDAV specification
+    /// </see>.
+    /// </remarks>
     public class LockHandler : IRequestHandler
     {
+        /// <summary>
+        /// Handle a LOCK request.
+        /// </summary>
+        /// <param name="httpContext">
+        /// The HTTP context of the request.
+        /// </param>
+        /// <param name="store">
+        /// Store that is used to access the collections and items.
+        /// </param>
+        /// <returns>
+        /// A task that represents the asynchronous LOCK operation. The task
+        /// will always return <see langword="true"/> upon completion.
+        /// </returns>
         public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)
         {
             // Obtain request and response
@@ -28,7 +50,7 @@ namespace NWebDav.Server.Handlers
             if (item == null)
             {
                 // Set status to not found
-                response.SendResponse(DavStatusCode.PreconditionFailed);
+                response.SetStatus(DavStatusCode.PreconditionFailed);
                 return true;
             }
 
@@ -37,7 +59,7 @@ namespace NWebDav.Server.Handlers
             if (lockingManager == null)
             {
                 // Set status to not found
-                response.SendResponse(DavStatusCode.PreconditionFailed);
+                response.SetStatus(DavStatusCode.PreconditionFailed);
                 return true;
             }
 
@@ -94,7 +116,7 @@ namespace NWebDav.Server.Handlers
                 }
                 catch (Exception)
                 {
-                    response.SendResponse(DavStatusCode.BadRequest);
+                    response.SetStatus(DavStatusCode.BadRequest);
                     return true;
                 }
 
@@ -106,7 +128,7 @@ namespace NWebDav.Server.Handlers
             if (lockResult.Result != DavStatusCode.Ok)
             {
                 // Set status to not found
-                response.SendResponse(lockResult.Result);
+                response.SetStatus(lockResult.Result);
                 return true;
             }
 

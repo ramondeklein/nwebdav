@@ -46,7 +46,7 @@ namespace NWebDav.Server.Props
             if (property.GetterAsync == null)
                 return _basePropertyManager.GetPropertyAsync(httpContext, _converter((TEntry)item), name, skipExpensive);
 
-            // Skip expsensive properties
+            // Skip expensive properties
             if (skipExpensive && property.IsExpensive)
                 return Task.FromResult((object)null);
 

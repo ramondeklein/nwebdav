@@ -12,13 +12,16 @@ namespace NWebDav.Server.Http
     /// it should contain the request, response and the session information.
     /// </para>
     /// <para>
-    /// The HTTP context is passed to all handlers and should contain the all
-    /// information. Although the internal NWebDAV code will serialize access
-    /// to th IHttpContext (and its underlying request, response and session),
-    /// the context should be accessible from an arbitrary thread and not rely
-    /// internally on the synchronization context (i.e. a call to a static
-    /// property that returns the thread's current HTTP context might result
-    /// in a <c>null</c> or invalid HTTP context.
+    /// The HTTP context will typically be created after receiving the HTTP
+    /// message from the HTTP listener. It is passed to the
+    /// <see cref="IWebDavDispatcher">WebDAV dispatcher</see>, so it can be
+    /// processed. The dispatcher passes it to the appropriate handler.
+    /// Although the internal NWebDAV code will serialize access to the
+    /// context (and its underlying request, response and session), it should
+    /// be accessible from an arbitrary thread and not rely internally on the
+    /// synchronization context (i.e. a call to a static property that returns
+    /// the thread's current HTTP context might result in a <c>null</c> or
+    /// invalid HTTP context.
     /// </para>
     /// </remarks>
     public interface IHttpContext
@@ -47,7 +50,7 @@ namespace NWebDav.Server.Http
         /// <value>Session associated with this HTTP request.</value>
         /// <remarks>
         /// If sessions and/or authorization is not used, then it is allowed to
-        /// set the <see cref="Session"/> to <see langword="null"/>.
+        /// set this property to <see langword="null"/>.
         /// </remarks>
         IHttpSession Session { get; }
 

@@ -3,7 +3,7 @@ using System.IO;
 namespace NWebDav.Server.Http
 {
     /// <summary>
-    /// Interface representing the HTTP response message.
+    /// HTTP response message interface.
     /// </summary>
     public interface IHttpResponse
     {

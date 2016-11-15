@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 
-using NWebDav.Server.Locking;
 using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Props
@@ -10,8 +9,9 @@ namespace NWebDav.Server.Props
     /// </summary>
     /// <remarks>
     /// This property implementation calls the
-    /// <see cref="NWebDav.Server.Locking.ILockingManager.GetActiveLockInfo"/> of the item's
-    /// <see cref="IStoreItem.LockingManager"/> to determine the active locks.
+    /// <see cref="NWebDav.Server.Locking.ILockingManager.GetActiveLockInfo"/>
+    /// of the item's <see cref="IStoreItem.LockingManager"/> to determine the
+    /// active locks.
     /// </remarks>
     /// <typeparam name="TEntry">
     /// Store item or collection to which this DAV property applies.
@@ -20,9 +20,9 @@ namespace NWebDav.Server.Props
     {
         /// <summary>
         /// Create an instance of the <see cref="DavLockDiscovery{TEntry}"/>
-        /// property that implementes the property using the
-        /// <see cref="ILockingManager.GetActiveLockInfo"/> method of the
-        /// item's locking manager.
+        /// property that implements the property using the
+        /// <see cref="NWebDav.Server.Locking.ILockingManager.GetActiveLockInfo"/> 
+        /// method of the item's locking manager.
         /// </summary>
         public DavLockDiscoveryDefault()
         {
@@ -35,9 +35,9 @@ namespace NWebDav.Server.Props
     /// </summary>
     /// <remarks>
     /// This property implementation calls the
-    /// <see cref="NWebDav.Server.Locking.ILockingManager.GetSupportedLocks"/> of the item's
-    /// <see cref="IStoreItem.LockingManager"/> to determine the supported
-    /// locks.
+    /// <see cref="NWebDav.Server.Locking.ILockingManager.GetSupportedLocks"/>
+    /// of the item's <see cref="IStoreItem.LockingManager"/> to determine the
+    /// supported locks.
     /// </remarks>
     /// <typeparam name="TEntry">
     /// Store item or collection to which this DAV property applies.
@@ -46,9 +46,9 @@ namespace NWebDav.Server.Props
     {
         /// <summary>
         /// Create an instance of the <see cref="DavSupportedLock{TEntry}"/>
-        /// property that implementes the property using the
-        /// <see cref="ILockingManager.GetSupportedLocks"/> method of the
-        /// item's locking manager.
+        /// property that implements the property using the
+        /// <see cref="NWebDav.Server.Locking.ILockingManager.GetSupportedLocks"/>
+        /// method of the item's locking manager.
         /// </summary>
         public DavSupportedLockDefault()
         {

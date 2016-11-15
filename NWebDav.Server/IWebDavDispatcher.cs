@@ -9,12 +9,13 @@ namespace NWebDav.Server
     /// </summary>
     /// <remarks>
     /// The WebDAV dispatcher handles the processing of a WebDAV request. The
-    /// library provides a default implementations (<seealso cref="WebDavDispatcher"/>)
+    /// library provides a default implementations (<see cref="WebDavDispatcher"/>)
     /// that dispatches WebDAV request based on the <see cref="IRequestHandler"/> and
     /// <see cref="IRequestHandlerFactory"/> interfaces. Although this implementation
     /// should suffice for most situations, it is possible to completely replace the
     /// request handling by using your own implementation.
     /// </remarks>
+    /// <seealso cref="WebDavDispatcher"/>
     public interface IWebDavDispatcher
     {
         /// <summary>

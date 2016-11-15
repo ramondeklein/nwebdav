@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Threading.Tasks;
 
-using NWebDav.Server.Handlers;
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Logging;
@@ -12,17 +11,16 @@ using NWebDav.Server.Stores;
 namespace NWebDav.Server
 {
     /// <summary>
-    /// Default implementation of the <seealso cref="IWebDavDispatcher"/>
-    /// interface to handle the dispatching of WebDAV requests.
+    /// Default implementation of the <see cref="IWebDavDispatcher"/>
+    /// interface to dispatch WebDAV requests.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// The default implementation uses <seealso cref="IRequestHandlerFactory"/>
+    /// The default implementation uses <see cref="IRequestHandlerFactory"/>
     /// to create request handlers and invokes the handler for each request. It
     /// also adds some logging to each call and it takes care of closing the
     /// HTTP context after the request has been processed.
-    /// </para>
     /// </remarks>
+    /// <seealso cref="IWebDavDispatcher"/>
     public class WebDavDispatcher : IWebDavDispatcher
     {
         private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(WebDavDispatcher));
@@ -119,7 +117,7 @@ namespace NWebDav.Server
                         s_log.Log(LogLevel.Warning, () => $"{logRequest} - Not implemented.");
 
                         // This request is not implemented
-                        httpContext.Response.SendResponse(DavStatusCode.NotImplemented);
+                        httpContext.Response.SetStatus(DavStatusCode.NotImplemented);
                         return;
                     }
                 }
@@ -146,7 +144,7 @@ namespace NWebDav.Server
                         s_log.Log(LogLevel.Warning, () => $"{logRequest} - Not processed.");
 
                         // Set status code to bad request
-                        httpContext.Response.SendResponse(DavStatusCode.NotImplemented);
+                        httpContext.Response.SetStatus(DavStatusCode.NotImplemented);
                     }
                 }
                 catch (Exception exc)
@@ -157,7 +155,7 @@ namespace NWebDav.Server
                     try
                     {
                         // Attempt to return 'InternalServerError' (if still possible)
-                        httpContext.Response.SendResponse(DavStatusCode.InternalServerError);
+                        httpContext.Response.SetStatus(DavStatusCode.InternalServerError);
                     }
                     catch
                     {
