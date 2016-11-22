@@ -9,10 +9,28 @@ using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Props
 {
+    /// <summary>
+    /// Property manager that handles all the properties for a specific store
+    /// item and collection. 
+    /// </summary>
+    /// <remarks>
+    /// The default property manager is used to define the root property
+    /// manager for a store.
+    /// </remarks>
+    /// <typeparam name="TEntry">
+    /// Store item or collection to which this DAV property applies.
+    /// </typeparam>
     public class PropertyManager<TEntry> : IPropertyManager where TEntry : IStoreItem
     {
         private readonly IDictionary<XName, DavProperty<TEntry>> _properties;
 
+        /// <summary>
+        /// Create an instance of the default property manager implementation.
+        /// </summary>
+        /// <param name="properties">
+        /// Set of WebDAV properties that are implemented by the property
+        /// manager for the store item/collection type.
+        /// </param>
         public PropertyManager(IEnumerable<DavProperty<TEntry>> properties)
         {
             // If properties are supported, then the properties should be set
@@ -31,11 +49,33 @@ namespace NWebDav.Server.Props
         /// </summary>
         public IList<PropertyInfo> Properties { get; }
 
-        public Task<object> GetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName name, bool skipExpensive = false)
+        /// <summary>
+        /// Get the value of the specified property for the given item.
+        /// </summary>
+        /// <param name="httpContext">
+        /// HTTP context of the current request.
+        /// </param>
+        /// <param name="item">
+        /// Store item/collection for which the property should be obtained.
+        /// </param>
+        /// <param name="propertyName">
+        /// Name of the property (including namespace).
+        /// </param>
+        /// <param name="skipExpensive">
+        /// Flag indicating whether to skip the property if it is too expensive
+        /// to compute.
+        /// </param>
+        /// <returns>
+        /// A task that represents the get property operation. The task will
+        /// return the property value or <see langword="null"/> if
+        /// <paramref name="skipExpensive"/> is set to <see langword="true"/>
+        /// and the parameter is expensive to compute.
+        /// </returns>
+        public Task<object> GetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName propertyName, bool skipExpensive = false)
         {
             // Find the property
             DavProperty<TEntry> property;
-            if (!_properties.TryGetValue(name, out property))
+            if (!_properties.TryGetValue(propertyName, out property))
                 return Task.FromResult((object)null);
 
             // Check if the property has a getter
@@ -50,11 +90,30 @@ namespace NWebDav.Server.Props
             return property.GetterAsync(httpContext, (TEntry)item);
         }
 
-        public Task<DavStatusCode> SetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName name, object value)
+        /// <summary>
+        /// Set the value of the specified property for the given item.
+        /// </summary>
+        /// <param name="httpContext">
+        /// HTTP context of the current request.
+        /// </param>
+        /// <param name="item">
+        /// Store item/collection for which the property should be obtained.
+        /// </param>
+        /// <param name="propertyName">
+        /// Name of the property (including namespace).
+        /// </param>
+        /// <param name="value">
+        /// New value of the property.
+        /// </param>
+        /// <returns>
+        /// A task that represents the set property operation. The task will
+        /// return the WebDAV statuscode of the set operation upon completion.
+        /// </returns>
+        public Task<DavStatusCode> SetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName propertyName, object value)
         {
             // Find the property
             DavProperty<TEntry> property;
-            if (!_properties.TryGetValue(name, out property))
+            if (!_properties.TryGetValue(propertyName, out property))
                 return Task.FromResult(DavStatusCode.NotFound);
 
             // Check if the property has a setter

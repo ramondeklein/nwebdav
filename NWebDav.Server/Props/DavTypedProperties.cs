@@ -44,9 +44,9 @@ namespace NWebDav.Server.Props
             /// Value that needs to be converted to XML output.
             /// </param>
             /// <returns>
-            /// The XML representation of the <see cref="value"/>. The XML
-            /// output should either be a <see cref="System.String"/> or an 
-            /// <see cref="System.Xml.Linq.XElement"/>.
+            /// The XML representation of the <paramref name="value"/>. The
+            /// XML output should either be a <see cref="System.String"/> or
+            /// an <see cref="System.Xml.Linq.XElement"/>.
             /// </returns>
             /// <remarks>
             /// The current HTTP context can be used to generate XML that is
@@ -354,11 +354,11 @@ namespace NWebDav.Server.Props
             public XElement FromXml(IHttpContext httpContext, object value) => (XElement)value;
         }
 
+        private static IConverter TypeConverter { get; } = new XElementConverter();
+
         /// <summary>
         /// Converter to map an XML number to/from a <see cref="XElement"/>.
         /// </summary>
-        private static IConverter TypeConverter { get; } = new XElementConverter();
-
         public override IConverter Converter => TypeConverter;
     }
 

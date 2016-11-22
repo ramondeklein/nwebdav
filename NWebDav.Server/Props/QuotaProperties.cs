@@ -60,6 +60,10 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavQuotaAvailableBytes<TEntry> : DavInt64<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property (static).
+        /// </summary>
+        // ReSharper disable once StaticMemberInGenericType
         public static readonly XName PropertyName = WebDavNamespaces.DavNs + "quota-available-bytes";
 
         /// <summary>
@@ -110,6 +114,10 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavQuotaUsedBytes<TEntry> : DavInt64<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property (static).
+        /// </summary>
+        // ReSharper disable once StaticMemberInGenericType
         public static readonly XName PropertyName = WebDavNamespaces.DavNs + "quota-used-bytes";
 
         /// <summary>

@@ -19,6 +19,10 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavCreationDate<TEntry> : DavIso8601Date<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property (static).
+        /// </summary>
+        // ReSharper disable once StaticMemberInGenericType
         public static readonly XName PropertyName = WebDavNamespaces.DavNs + "creationdate";
 
         /// <summary>
@@ -41,6 +45,10 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavDisplayName<TEntry> : DavString<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property (static).
+        /// </summary>
+        // ReSharper disable once StaticMemberInGenericType
         public static readonly XName PropertyName = WebDavNamespaces.DavNs + "displayname";
 
         /// <summary>
@@ -64,6 +72,10 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavGetContentLanguage<TEntry> : DavString<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property (static).
+        /// </summary>
+        // ReSharper disable once StaticMemberInGenericType
         public static readonly XName PropertyName = WebDavNamespaces.DavNs + "getcontentlanguage";
 
         /// <summary>
@@ -85,6 +97,10 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavGetContentLength<TEntry> : DavInt64<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property (static).
+        /// </summary>
+        // ReSharper disable once StaticMemberInGenericType
         public static readonly XName PropertyName = WebDavNamespaces.DavNs + "getcontentlength";
 
         /// <summary>
@@ -108,6 +124,10 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavGetContentType<TEntry> : DavString<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property (static).
+        /// </summary>
+        // ReSharper disable once StaticMemberInGenericType
         public static readonly XName PropertyName = WebDavNamespaces.DavNs + "getcontenttype";
 
         /// <summary>
@@ -129,6 +149,10 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavGetEtag<TEntry> : DavString<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property (static).
+        /// </summary>
+        // ReSharper disable once StaticMemberInGenericType
         public static readonly XName PropertyName = WebDavNamespaces.DavNs + "getetag";
 
         /// <summary>
@@ -160,6 +184,10 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavGetLastModified<TEntry> : DavRfc1123Date<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property (static).
+        /// </summary>
+        // ReSharper disable once StaticMemberInGenericType
         public static readonly XName PropertyName = WebDavNamespaces.DavNs + "getlastmodified";
      
         /// <summary>
@@ -183,6 +211,10 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavLockDiscovery<TEntry> : DavXElementArray<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property (static).
+        /// </summary>
+        // ReSharper disable once StaticMemberInGenericType
         public static readonly XName PropertyName = WebDavNamespaces.DavNs + "lockdiscovery";
 
         /// <summary>
@@ -203,6 +235,10 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavGetResourceType<TEntry> : DavXElement<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property (static).
+        /// </summary>
+        // ReSharper disable once StaticMemberInGenericType
         public static readonly XName PropertyName = WebDavNamespaces.DavNs + "resourcetype";
 
         /// <summary>
@@ -234,6 +270,10 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavSource<TEntry> : DavXElement<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property (static).
+        /// </summary>
+        // ReSharper disable once StaticMemberInGenericType
         public static readonly XName PropertyName = WebDavNamespaces.DavNs + "source";
 
         /// <summary>
@@ -264,6 +304,10 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavSupportedLock<TEntry> : DavXElementArray<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property (static).
+        /// </summary>
+        // ReSharper disable once StaticMemberInGenericType
         public static readonly XName PropertyName = WebDavNamespaces.DavNs + "supportedlock";
 
         /// <summary>
