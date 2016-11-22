@@ -52,6 +52,9 @@ namespace NWebDav.Server.Helpers
     /// </summary>
     public static class RequestHelper
     {
+#if DEBUG
+        private static readonly NWebDav.Server.Logging.ILogger s_log = NWebDav.Server.Logging.LoggerFactory.CreateLogger(typeof(ResponseHelper));
+#endif
         private static readonly Regex s_rangeRegex = new Regex("bytes\\=(?<start>[0-9]*)-(?<end>[0-9]*)");
 
         /// <summary>
