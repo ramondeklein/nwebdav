@@ -232,7 +232,7 @@ namespace NWebDav.Server.Handlers
                 {
                     propertyMode = PropertyMode.PropertyNames;
                 }
-                else if (xProp.Name == WebDavNamespaces.DavNs + "propall")
+                else if (xProp.Name == WebDavNamespaces.DavNs + "allprop")
                 {
                     propertyMode = PropertyMode.AllProperties;
                 }
