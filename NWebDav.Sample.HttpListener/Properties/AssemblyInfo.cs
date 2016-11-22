@@ -5,7 +5,7 @@
 // associated with an assembly.
 [assembly: AssemblyTitle("NWebDav.Sample.HttpListener")]
 [assembly: AssemblyDescription("WebDAV server sample application (using HttpListener)")]
-[assembly: AssemblyInformationalVersion("0.1.18.0 (alpha)")]
+[assembly: AssemblyInformationalVersion("0.1.18.0 (beta)")]
 #if DEBUG
 [assembly: AssemblyConfiguration("DEBUG")]
 #else
