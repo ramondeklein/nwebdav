@@ -5,7 +5,7 @@
 // associated with an assembly.
 [assembly: AssemblyTitle("NWebDav.Server")]
 [assembly: AssemblyDescription("WebDAV server library")]
-[assembly: AssemblyInformationalVersion("0.1.18.0 (beta)")]
+[assembly: AssemblyInformationalVersion("0.1.19.0 (beta)")]
 #if DEBUG
 [assembly: AssemblyConfiguration("DEBUG")]
 #else
@@ -25,5 +25,5 @@
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.1.18.0")]
-[assembly: AssemblyFileVersion("0.1.18.0")]
+[assembly: AssemblyVersion("0.1.19.0")]
+[assembly: AssemblyFileVersion("0.1.19.0")]
