@@ -10,6 +10,23 @@ using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Props
 {
+    /// <summary>
+    /// Abstract base class representing a single DAV property with a specific
+    /// CLR type.
+    /// </summary>
+    /// <remarks>
+    /// A dedicated converter should be implemented to convert the property 
+    /// value to/from an XML value. This class supports both synchronous and
+    /// asynchronous accessor methods. To improve scalability, it is
+    /// recommended to use the asynchronous methods for properties that require
+    /// some time to get/set.
+    /// </remarks>
+    /// <typeparam name="TEntry">
+    /// Store item or collection to which this DAV property applies.
+    /// </typeparam>
+    /// <typeparam name="TType">
+    /// CLR type of the property.
+    /// </typeparam>
     public abstract class DavTypedProperty<TEntry, TType> : DavProperty<TEntry> where TEntry : IStoreItem
     {
         /// <summary>
@@ -27,9 +44,9 @@ namespace NWebDav.Server.Props
             /// Value that needs to be converted to XML output.
             /// </param>
             /// <returns>
-            /// The XML representation of the <see cref="value"/>. The XML
-            /// output should either be a <see cref="System.String"/> or an 
-            /// <see cref="System.Xml.Linq.XElement"/>.
+            /// The XML representation of the <paramref name="value"/>. The
+            /// XML output should either be a <see cref="System.String"/> or
+            /// an <see cref="System.Xml.Linq.XElement"/>.
             /// </returns>
             /// <remarks>
             /// The current HTTP context can be used to generate XML that is
@@ -63,6 +80,17 @@ namespace NWebDav.Server.Props
         private Func<IHttpContext, TEntry, Task<TType>> _getterAsync;
         private Func<IHttpContext, TEntry, TType, Task<DavStatusCode>> _setterAsync;
 
+        /// <summary>
+        /// Converter to convert property values from/to XML for this type.
+        /// </summary>
+        /// <remarks>
+        /// This property should be set from the derived typed property implementation.
+        /// </remarks>
+        public abstract IConverter Converter { get; }
+
+        /// <summary>
+        /// Synchronous getter to obtain the property value.
+        /// </summary>
         public Func<IHttpContext, TEntry, TType> Getter
         {
             get { return _getter; }
@@ -77,6 +105,9 @@ namespace NWebDav.Server.Props
             }
         }
 
+        /// <summary>
+        /// Synchronous setter to set the property value.
+        /// </summary>
         public Func<IHttpContext, TEntry, TType, DavStatusCode> Setter
         {
             get { return _setter; }
@@ -91,6 +122,9 @@ namespace NWebDav.Server.Props
             }
         }
 
+        /// <summary>
+        /// Asynchronous getter to obtain the property value.
+        /// </summary>
         public new Func<IHttpContext, TEntry, Task<TType>> GetterAsync
         {
             get { return _getterAsync; }
@@ -105,6 +139,9 @@ namespace NWebDav.Server.Props
             }
         }
 
+        /// <summary>
+        /// Asynchronous setter to set the property value.
+        /// </summary>
         public new Func<IHttpContext, TEntry, TType, Task<DavStatusCode>> SetterAsync
         {
             get { return _setterAsync; }
@@ -118,10 +155,15 @@ namespace NWebDav.Server.Props
                 };
             }
         }
-
-        public abstract IConverter Converter { get; }
     }
 
+    /// <summary>
+    /// Abstract base class representing a single DAV property using an
+    /// RFC1123 date type (mapped to <see cref="DateTime"/>).
+    /// </summary>
+    /// <typeparam name="TEntry">
+    /// Store item or collection to which this DAV property applies.
+    /// </typeparam>
     public abstract class DavRfc1123Date<TEntry> : DavTypedProperty<TEntry, DateTime> where TEntry : IStoreItem
     {
         private class Rfc1123DateConverter : IConverter
@@ -132,9 +174,19 @@ namespace NWebDav.Server.Props
 
         private static IConverter TypeConverter { get; } = new Rfc1123DateConverter();
 
+        /// <summary>
+        /// Converter to map RFC1123 dates to/from a <see cref="DateTime"/>.
+        /// </summary>
         public override IConverter Converter => TypeConverter;
     }
 
+    /// <summary>
+    /// Abstract base class representing a single DAV property using an
+    /// ISO 8601 date type (mapped to <see cref="DateTime"/>).
+    /// </summary>
+    /// <typeparam name="TEntry">
+    /// Store item or collection to which this DAV property applies.
+    /// </typeparam>
     public abstract class DavIso8601Date<TEntry> : DavTypedProperty<TEntry, DateTime> where TEntry : IStoreItem
     {
         private class Iso8601DateConverter : IConverter
@@ -166,9 +218,19 @@ namespace NWebDav.Server.Props
 
         private static IConverter TypeConverter { get; } = new Iso8601DateConverter();
 
+        /// <summary>
+        /// Converter to map ISO 8601 dates to/from a <see cref="DateTime"/>.
+        /// </summary>
         public override IConverter Converter => TypeConverter;
     }
 
+    /// <summary>
+    /// Abstract base class representing a single DAV property using a
+    /// <see cref="bool"/> type.
+    /// </summary>
+    /// <typeparam name="TEntry">
+    /// Store item or collection to which this DAV property applies.
+    /// </typeparam>
     public abstract class DavBoolean<TEntry> : DavTypedProperty<TEntry, Boolean> where TEntry : IStoreItem
     {
         private class BooleanConverter : IConverter
@@ -179,9 +241,19 @@ namespace NWebDav.Server.Props
 
         private static IConverter TypeConverter { get; } = new BooleanConverter();
 
+        /// <summary>
+        /// Converter to map an XML boolean to/from a <see cref="bool"/>.
+        /// </summary>
         public override IConverter Converter => TypeConverter;
     }
 
+    /// <summary>
+    /// Abstract base class representing a single DAV property using a
+    /// <see cref="string"/> type.
+    /// </summary>
+    /// <typeparam name="TEntry">
+    /// Store item or collection to which this DAV property applies.
+    /// </typeparam>
     public abstract class DavString<TEntry> : DavTypedProperty<TEntry, string> where TEntry : IStoreItem
     {
         private class StringConverter : IConverter
@@ -192,9 +264,19 @@ namespace NWebDav.Server.Props
 
         private static IConverter TypeConverter { get; } = new StringConverter();
 
+        /// <summary>
+        /// Converter to map an XML string to/from a <see cref="string"/>.
+        /// </summary>
         public override IConverter Converter => TypeConverter;
     }
 
+    /// <summary>
+    /// Abstract base class representing a single DAV property using an
+    /// <see cref="int"/> type.
+    /// </summary>
+    /// <typeparam name="TEntry">
+    /// Store item or collection to which this DAV property applies.
+    /// </typeparam>
     public abstract class DavInt32<TEntry> : DavTypedProperty<TEntry, Int32> where TEntry : IStoreItem
     {
         private class Int32Converter : IConverter
@@ -205,9 +287,19 @@ namespace NWebDav.Server.Props
 
         private static IConverter TypeConverter { get; } = new Int32Converter();
 
+        /// <summary>
+        /// Converter to map an XML number to/from a <see cref="int"/>.
+        /// </summary>
         public override IConverter Converter => TypeConverter;
     }
 
+    /// <summary>
+    /// Abstract base class representing a single DAV property using a
+    /// <see cref="long"/> type.
+    /// </summary>
+    /// <typeparam name="TEntry">
+    /// Store item or collection to which this DAV property applies.
+    /// </typeparam>
     public abstract class DavInt64<TEntry> : DavTypedProperty<TEntry, Int64> where TEntry : IStoreItem
     {
         private class Int64Converter : IConverter
@@ -218,9 +310,19 @@ namespace NWebDav.Server.Props
 
         private static IConverter TypeConverter { get; } = new Int64Converter();
 
+        /// <summary>
+        /// Converter to map an XML number to/from a <see cref="long"/>.
+        /// </summary>
         public override IConverter Converter => TypeConverter;
     }
 
+    /// <summary>
+    /// Abstract base class representing a single DAV property using an
+    /// <see cref="XElement"/> array.
+    /// </summary>
+    /// <typeparam name="TEntry">
+    /// Store item or collection to which this DAV property applies.
+    /// </typeparam>
     public abstract class DavXElementArray<TEntry> : DavTypedProperty<TEntry, IEnumerable<XElement>> where TEntry : IStoreItem
     {
         private class XElementArrayConverter : IConverter
@@ -231,9 +333,19 @@ namespace NWebDav.Server.Props
 
         private static IConverter TypeConverter { get; } = new XElementArrayConverter();
 
+        /// <summary>
+        /// Converter to map an XML number to/from an <see cref="XElement"/> array.
+        /// </summary>
         public override IConverter Converter => TypeConverter;
     }
 
+    /// <summary>
+    /// Abstract base class representing a single DAV property using an
+    /// <see cref="XElement"/> type.
+    /// </summary>
+    /// <typeparam name="TEntry">
+    /// Store item or collection to which this DAV property applies.
+    /// </typeparam>
     public abstract class DavXElement<TEntry> : DavTypedProperty<TEntry, XElement> where TEntry : IStoreItem
     {
         private class XElementConverter : IConverter
@@ -244,9 +356,19 @@ namespace NWebDav.Server.Props
 
         private static IConverter TypeConverter { get; } = new XElementConverter();
 
+        /// <summary>
+        /// Converter to map an XML number to/from a <see cref="XElement"/>.
+        /// </summary>
         public override IConverter Converter => TypeConverter;
     }
 
+    /// <summary>
+    /// Abstract base class representing a single DAV property using an
+    /// <see cref="Uri"/> type.
+    /// </summary>
+    /// <typeparam name="TEntry">
+    /// Store item or collection to which this DAV property applies.
+    /// </typeparam>
     public abstract class DavUri<TEntry> : DavTypedProperty<TEntry, Uri> where TEntry : IStoreItem
     {
         private class UriConverter : IConverter
@@ -257,7 +379,9 @@ namespace NWebDav.Server.Props
 
         private static IConverter TypeConverter { get; } = new UriConverter();
 
+        /// <summary>
+        /// Converter to map an XML string to/from a <see cref="Uri"/>.
+        /// </summary>
         public override IConverter Converter => TypeConverter;
     }
-
 }

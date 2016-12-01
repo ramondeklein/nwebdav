@@ -23,7 +23,7 @@ namespace NWebDav.Server.AspNetCore
 
             public string HttpMethod => _request.Method;
             public Uri Url => new Uri($"{_request.Scheme}://{_request.Host}{_request.Path}");
-            public IPEndPoint RemoteEndPoint => new IPEndPoint(_request.HttpContext.Connection.RemoteIpAddress, _request.HttpContext.Connection.RemotePort);
+            public string RemoteEndPoint => new IPEndPoint(_request.HttpContext.Connection.RemoteIpAddress, _request.HttpContext.Connection.RemotePort).ToString();
             public IEnumerable<string> Headers => _request.Headers.Keys;
             public string GetHeaderValue(string header) => _request.Headers[header].FirstOrDefault();
             public Stream Stream => _request.Body;

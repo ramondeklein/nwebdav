@@ -4,9 +4,9 @@ namespace NWebDav.Server.AspNet
 {
     public class WebDavHandlerFactory : IHttpHandlerFactory
     {
-        private readonly WebDavDispatcher _webDavDispatcher;
+        private readonly IWebDavDispatcher _webDavDispatcher;
 
-        public WebDavHandlerFactory(WebDavDispatcher webDavDispatcher)
+        public WebDavHandlerFactory(IWebDavDispatcher webDavDispatcher)
         {
             _webDavDispatcher = webDavDispatcher;
 

@@ -18,7 +18,7 @@ namespace NWebDav.Server.HttpListener
 
         public string HttpMethod => _request.HttpMethod;
         public Uri Url => _request.Url;
-        public IPEndPoint RemoteEndPoint => _request.RemoteEndPoint;
+        public string RemoteEndPoint => _request.UserHostName;
         public IEnumerable<string> Headers => _request.Headers.AllKeys;
         public string GetHeaderValue(string header) => _request.Headers[header];
         public Stream Stream => _request.InputStream;

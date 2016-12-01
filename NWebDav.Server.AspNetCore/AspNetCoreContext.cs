@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
 using NWebDav.Server.Http;
@@ -23,9 +24,10 @@ namespace NWebDav.Server.AspNetCore
         public IHttpResponse Response { get; }
         public IHttpSession Session { get; }
 
-        public void Close()
+        public Task CloseAsync()
         {
             // Context is closed automatically
+            return Task.FromResult(true);
         }
     }
 }

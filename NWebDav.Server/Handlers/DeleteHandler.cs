@@ -8,8 +8,30 @@ using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Handlers
 {
+    /// <summary>
+    /// Implementation of the DELETE method.
+    /// </summary>
+    /// <remarks>
+    /// The specification of the WebDAV DELETE method can be found in the
+    /// <see href="http://www.webdav.org/specs/rfc2518.html#METHOD_DELETE">
+    /// WebDAV specification
+    /// </see>.
+    /// </remarks>
     public class DeleteHandler : IRequestHandler
     {
+        /// <summary>
+        /// Handle a DELETE request.
+        /// </summary>
+        /// <param name="httpContext">
+        /// The HTTP context of the request.
+        /// </param>
+        /// <param name="store">
+        /// Store that is used to access the collections and items.
+        /// </param>
+        /// <returns>
+        /// A task that represents the asynchronous DELETE operation. The task
+        /// will always return <see langword="true"/> upon completion.
+        /// </returns>
         public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)
         {
             // Obtain request and response
@@ -27,7 +49,7 @@ namespace NWebDav.Server.Handlers
             if (parentCollection == null)
             {
                 // Source not found
-                response.SendResponse(DavStatusCode.NotFound);
+                response.SetStatus(DavStatusCode.NotFound);
                 return true;
             }
 
@@ -36,7 +58,7 @@ namespace NWebDav.Server.Handlers
             if (deleteItem == null)
             {
                 // Source not found
-                response.SendResponse(DavStatusCode.NotFound);
+                response.SetStatus(DavStatusCode.NotFound);
                 return true;
             }
 
@@ -47,7 +69,7 @@ namespace NWebDav.Server.Handlers
                 var ifToken = request.GetIfLockToken();
                 if (!deleteItem.LockingManager.HasLock(deleteItem, ifToken))
                 {
-                    response.SendResponse(DavStatusCode.Locked);
+                    response.SetStatus(DavStatusCode.Locked);
                     return true;
                 }
 
@@ -68,7 +90,7 @@ namespace NWebDav.Server.Handlers
             else
             {
                 // Return the proper status
-                response.SendResponse(status);
+                response.SetStatus(status);
             }
 
 

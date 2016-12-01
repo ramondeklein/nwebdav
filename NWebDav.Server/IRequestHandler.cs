@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
@@ -17,7 +16,17 @@ namespace NWebDav.Server
     /// methods, because there is a lot of overlap between the two methods
     /// (i.e. GET and HEAD).
     /// </para>
+    /// <para>
+    /// It is possible to re-use request handlers, but care must be taken that
+    /// the handler is re-entrant, because it can be called multiple times in
+    /// parallel.
+    /// </para>
+    /// <para>
+    /// Request handlers are typically created via request handler factories
+    /// implementing the <see cref="IRequestHandlerFactory"/> interface.
+    /// </para>
     /// </remarks>
+    /// <seealso cref="IRequestHandlerFactory"/>
     public interface IRequestHandler
     {
         /// <summary>

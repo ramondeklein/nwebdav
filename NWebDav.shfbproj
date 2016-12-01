@@ -24,21 +24,22 @@
     <KeepLogFile>True</KeepLogFile>
     <DisableCodeBlockComponent>False</DisableCodeBlockComponent>
     <CleanIntermediates>True</CleanIntermediates>
-    <HelpFileVersion>0.1.5.0</HelpFileVersion>
+    <HelpFileVersion>1.0.0.0</HelpFileVersion>
     <MaximumGroupParts>2</MaximumGroupParts>
     <NamespaceGrouping>False</NamespaceGrouping>
     <SyntaxFilters>C#</SyntaxFilters>
     <SdkLinkTarget>Blank</SdkLinkTarget>
     <RootNamespaceContainer>False</RootNamespaceContainer>
     <PresentationStyle>VS2013</PresentationStyle>
-    <Preliminary>True</Preliminary>
+    <Preliminary>False</Preliminary>
     <NamingMethod>Guid</NamingMethod>
-    <HelpTitle>NWebDav</HelpTitle>
+    <HelpTitle>NWebDav - WebDAV server implementation for .NET</HelpTitle>
     <ContentPlacement>AboveNamespaces</ContentPlacement>
     <DocumentationSources>
-      <DocumentationSource sourceFile="NWebDav.Server\NWebDav.Server.csproj" subFolders="True" />
-<DocumentationSource sourceFile="NWebDav.Server.AspNetCore\NWebDav.Server.AspNetCore.csproj" subFolders="True" />
-<DocumentationSource sourceFile="NWebDav.Server.HttpListener\NWebDav.Server.HttpListener.csproj" subFolders="True" /></DocumentationSources>
+      <DocumentationSource sourceFile="NWebDav.Server\bin\Release\net45\NWebDav.Server.dll" />
+      <DocumentationSource sourceFile="NWebDav.Server\bin\Release\net45\NWebDav.Server.xml" />
+    </DocumentationSources>
+    <MissingTags>Summary, Parameter, Returns, AutoDocumentCtors, Namespace, TypeParameter</MissingTags>
   </PropertyGroup>
   <!-- There are no properties for these groups.  AnyCPU needs to appear in order for Visual Studio to perform
 			 the build.  The others are optional common platform types that may appear. -->

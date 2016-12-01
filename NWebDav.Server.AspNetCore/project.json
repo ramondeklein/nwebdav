@@ -1,20 +1,31 @@
 {
-  "version": "0.1.10-*",
+  "version": "0.1.19-*",
   "buildOptions": {
     "emitEntryPoint": false
   },
-  "frameworks": {
-    "netstandard1.6": {
-      "dependencies": {
-        "Microsoft.NETCore.Platforms": "1.0.1",
-        "System.Linq": "4.1.0",
-        "System.Net.Primitives": "4.0.11",
-        "System.Security.Claims": "4.0.1"
+
+  "configurations": {
+    "Release": {
+      "buildOptions": {
+        "xmlDoc": true,
+        "optimize": true
       }
     }
   },
+
+  "frameworks": {
+    "netstandard1.6": {
+      "dependencies": {
+        "Microsoft.NETCore.Platforms": "1.1.0",
+        "System.Linq": "4.3.0",
+        "System.Net.Primitives": "4.3.0",
+        "System.Security.Claims": "4.3.0"
+      }
+    }
+  },
+
   "dependencies": {
-    "Microsoft.AspNetCore.Hosting": "1.0.0",
+    "Microsoft.AspNetCore.Hosting": "1.1.0",
     "NWebDav.Server": "0.1.*"
   }
 }

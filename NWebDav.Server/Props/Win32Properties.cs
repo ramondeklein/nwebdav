@@ -19,6 +19,10 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class Win32CreationTime<TEntry> : DavRfc1123Date<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property (static).
+        /// </summary>
+        // ReSharper disable once StaticMemberInGenericType
         public static readonly XName PropertyName = WebDavNamespaces.Win32Ns + "Win32CreationTime";
 
         /// <summary>
@@ -40,6 +44,10 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class Win32LastAccessTime<TEntry> : DavRfc1123Date<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property (static).
+        /// </summary>
+        // ReSharper disable once StaticMemberInGenericType
         public static readonly XName PropertyName = WebDavNamespaces.Win32Ns + "Win32LastAccessTime";
 
         /// <summary>
@@ -61,6 +69,10 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class Win32LastModifiedTime<TEntry> : DavRfc1123Date<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property (static).
+        /// </summary>
+        // ReSharper disable once StaticMemberInGenericType
         public static readonly XName PropertyName = WebDavNamespaces.Win32Ns + "Win32LastModifiedTime";
 
         /// <summary>
@@ -112,8 +124,6 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class Win32FileAttributes<TEntry> : DavTypedProperty<TEntry, FileAttributes> where TEntry : IStoreItem
     {
-        public static readonly XName PropertyName = WebDavNamespaces.Win32Ns + "Win32FileAttributes";
-
         private class FileAttributesConverter : IConverter
         {
             public object ToXml(IHttpContext httpContext, FileAttributes value) => ((int)value).ToString("X8");
@@ -121,6 +131,12 @@ namespace NWebDav.Server.Props
         }
 
         private static IConverter TypeConverter { get; } = new FileAttributesConverter();
+
+        /// <summary>
+        /// Name of the property (static).
+        /// </summary>
+        // ReSharper disable once StaticMemberInGenericType
+        public static readonly XName PropertyName = WebDavNamespaces.Win32Ns + "Win32FileAttributes";
 
         /// <summary>
         /// Name of the property.

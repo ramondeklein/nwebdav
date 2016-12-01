@@ -1,18 +1,33 @@
-﻿using System;
-using NWebDav.Server.Http;
+﻿using NWebDav.Server.Http;
 
 namespace NWebDav.Server
 {
     /// <summary>
-    /// Factory responsible for returning the proper 
-    /// <see cref="IRequestHandler">request handler</see> to handle the
-    /// request.
+    /// Factory responsible for returning the proper
+    /// <see cref="IRequestHandler"/> instance to handle the request.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This interface is used by the <see cref="WebDavDispatcher"/> to create
+    /// the appropriate request handler. If the <see cref="WebDavDispatcher"/> 
+    /// is replaced by a custom implementation, then this factory might never
+    /// be used at all.
+    /// </para>
+    /// <para>
+    /// The NWebDAV library provides a default implementation
+    /// (<see cref="NWebDav.Server.Handlers.RequestHandlerFactory"/>) that
+    /// should be suitable for most situations. You can provide your own
+    /// implementation if you wish to change the default mapping or replace
+    /// a handler with your own.
+    /// </para>
+    /// </remarks>
+    /// <seealso cref="NWebDav.Server.IRequestHandler"/>
+    /// <seealso cref="NWebDav.Server.Handlers.RequestHandlerFactory"/>
     public interface IRequestHandlerFactory
     {
         /// <summary>
-        /// Obtain the <see cref="IRequestHandler">request handler</see> that
-        /// can process the specified request.
+        /// Obtain the <seealso cref="IRequestHandler">request handler</seealso>
+        /// that can process the specified request.
         /// </summary>
         /// <param name="httpContext">
         /// The HTTP context specifies the entire HTTP context for this
@@ -31,7 +46,8 @@ namespace NWebDav.Server
         /// <para>
         /// Request handlers may either be created for each request or they can
         /// be reused. Multiple requests might be processed at the same time,
-        /// so if a request handler is reused, then it must be thread-safe.
+        /// so if a request handler is reused, then it must be thread-safe and
+        /// re-entrant.
         /// </para>
         /// <para>
         /// If <see langword="null"/> is returned, then the status code
@@ -39,7 +55,6 @@ namespace NWebDav.Server
         /// requester.
         /// </para>
         /// </remarks>
-        /// <seealso cref="IRequestHandler"/>
         IRequestHandler GetRequestHandler(IHttpContext httpContext);
     }
 }

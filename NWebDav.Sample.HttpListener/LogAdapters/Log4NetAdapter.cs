@@ -38,19 +38,24 @@ namespace NWebDav.Sample.HttpListener.LogAdapters
                 switch (logLevel)
                 {
                     case LogLevel.Debug:
-                        _log.Debug(messageFunc(), exception);
+                        if (_log.IsDebugEnabled)
+                            _log.Debug(messageFunc(), exception);
                         break;
                     case LogLevel.Info:
-                        _log.Info(messageFunc(), exception);
+                        if (_log.IsInfoEnabled)
+                            _log.Info(messageFunc(), exception);
                         break;
                     case LogLevel.Warning:
-                        _log.Warn(messageFunc(), exception);
+                        if (_log.IsWarnEnabled)
+                            _log.Warn(messageFunc(), exception);
                         break;
                     case LogLevel.Error:
-                        _log.Error(messageFunc(), exception);
+                        if (_log.IsErrorEnabled)
+                            _log.Error(messageFunc(), exception);
                         break;
                     case LogLevel.Fatal:
-                        _log.Fatal(messageFunc(), exception);
+                        if (_log.IsFatalEnabled)
+                            _log.Fatal(messageFunc(), exception);
                         break;
                     default:
                         throw new ArgumentException($"Log level '{logLevel}' is not supported.", nameof(logLevel));

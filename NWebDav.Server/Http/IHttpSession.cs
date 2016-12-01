@@ -6,8 +6,6 @@ namespace NWebDav.Server.Http
     /// <summary>
     /// HTTP session interface.
     /// </summary>
-    /// <remarks>
-    /// The HTTP session is used with (authenticated) HTTP requests that are
     public interface IHttpSession
     {
         /// <summary>

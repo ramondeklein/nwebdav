@@ -7,12 +7,12 @@ using NWebDav.Server.Helpers;
 
 namespace NWebDav.Server.Handlers
 {
-    public class UriResultCollection
+    internal class UriResultCollection
     {
         private struct UriResult
         {
-            public Uri Uri { get; }
-            public DavStatusCode Result { get; }
+            private Uri Uri { get; }
+            private DavStatusCode Result { get; }
 
             public UriResult(Uri uri, DavStatusCode result)
             {

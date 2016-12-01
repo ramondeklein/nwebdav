@@ -1,5 +1,4 @@
-﻿using System;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 
 using NWebDav.Server.Stores;
 
@@ -27,6 +26,10 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavExtCollectionChildCount<TEntry> : DavInt32<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property (static).
+        /// </summary>
+        // ReSharper disable once StaticMemberInGenericType
         public static readonly XName PropertyName = WebDavNamespaces.DavNs + "childcount";
 
         /// <summary>
@@ -60,6 +63,10 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavExtCollectionDefaultDocument<TEntry> : DavString<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property (static).
+        /// </summary>
+        // ReSharper disable once StaticMemberInGenericType
         public static readonly XName PropertyName = WebDavNamespaces.DavNs + "defaultdocument";
 
         /// <summary>
@@ -91,6 +98,10 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavExtCollectionId<TEntry> : DavUri<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property (static).
+        /// </summary>
+        // ReSharper disable once StaticMemberInGenericType
         public static readonly XName PropertyName = WebDavNamespaces.DavNs + "id";
 
         /// <summary>
@@ -121,6 +132,10 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavExtCollectionIsFolder<TEntry> : DavBoolean<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property (static).
+        /// </summary>
+        // ReSharper disable once StaticMemberInGenericType
         public static readonly XName PropertyName = WebDavNamespaces.DavNs + "isfolder";
 
         /// <summary>
@@ -160,6 +175,10 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavExtCollectionIsHidden<TEntry> : DavBoolean<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property (static).
+        /// </summary>
+        // ReSharper disable once StaticMemberInGenericType
         public static readonly XName PropertyName = WebDavNamespaces.DavNs + "ishidden";
 
         /// <summary>
@@ -204,6 +223,10 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavExtCollectionIsStructuredDocument<TEntry> : DavBoolean<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property (static).
+        /// </summary>
+        // ReSharper disable once StaticMemberInGenericType
         public static readonly XName PropertyName = WebDavNamespaces.DavNs + "isstructureddocument";
 
         /// <summary>
@@ -241,6 +264,10 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavExtCollectionHasSubs<TEntry> : DavBoolean<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property (static).
+        /// </summary>
+        // ReSharper disable once StaticMemberInGenericType
         public static readonly XName PropertyName = WebDavNamespaces.DavNs + "hassubs";
 
         /// <summary>
@@ -293,6 +320,10 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavExtCollectionNoSubs<TEntry> : DavBoolean<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property (static).
+        /// </summary>
+        // ReSharper disable once StaticMemberInGenericType
         public static readonly XName PropertyName = WebDavNamespaces.DavNs + "nosubs";
 
         /// <summary>
@@ -322,6 +353,10 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavExtCollectionObjectCount<TEntry> : DavInt32<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property (static).
+        /// </summary>
+        // ReSharper disable once StaticMemberInGenericType
         public static readonly XName PropertyName = WebDavNamespaces.DavNs + "objectcount";
 
         /// <summary>
@@ -356,6 +391,10 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavExtCollectionReserved<TEntry> : DavBoolean<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property (static).
+        /// </summary>
+        // ReSharper disable once StaticMemberInGenericType
         public static readonly XName PropertyName = WebDavNamespaces.DavNs + "reserved";
 
         /// <summary>
@@ -387,6 +426,10 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public class DavExtCollectionVisibleCount<TEntry> : DavInt32<TEntry> where TEntry : IStoreItem
     {
+        /// <summary>
+        /// Name of the property (static).
+        /// </summary>
+        // ReSharper disable once StaticMemberInGenericType
         public static readonly XName PropertyName = WebDavNamespaces.DavNs + "visiblecount";
 
         /// <summary>

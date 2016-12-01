@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -12,6 +11,15 @@ using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Handlers
 {
+    /// <summary>
+    /// Implementation of the PROPFIND method.
+    /// </summary>
+    /// <remarks>
+    /// The specification of the WebDAV PROPFIND method can be found in the
+    /// <see href="http://www.webdav.org/specs/rfc2518.html#METHOD_PROPFIND">
+    /// WebDAV specification
+    /// </see>.
+    /// </remarks>
     public class PropFindHandler : IRequestHandler
     {
         private struct PropertyEntry
@@ -27,7 +35,7 @@ namespace NWebDav.Server.Handlers
         }
 
         [Flags]
-        public enum PropertyMode
+        private enum PropertyMode
         {
             None = 0,
             PropertyNames = 1,
@@ -35,6 +43,19 @@ namespace NWebDav.Server.Handlers
             SelectedProperties = 4
         }
 
+        /// <summary>
+        /// Handle a PROPFIND request.
+        /// </summary>
+        /// <param name="httpContext">
+        /// The HTTP context of the request.
+        /// </param>
+        /// <param name="store">
+        /// Store that is used to access the collections and items.
+        /// </param>
+        /// <returns>
+        /// A task that represents the asynchronous PROPFIND operation. The task
+        /// will always return <see langword="true"/> upon completion.
+        /// </returns>
         public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)
         {
             // Obtain request and response
@@ -52,7 +73,7 @@ namespace NWebDav.Server.Handlers
             var topEntry = await store.GetItemAsync(request.Url, httpContext).ConfigureAwait(false);
             if (topEntry == null)
             {
-                response.SendResponse(DavStatusCode.NotFound);
+                response.SetStatus(DavStatusCode.NotFound);
                 return true;
             }
 
@@ -69,7 +90,7 @@ namespace NWebDav.Server.Handlers
                     switch (topCollection.InfiniteDepthMode)
                     {
                         case InfiniteDepthMode.Rejected:
-                            response.SendResponse(DavStatusCode.Forbidden, "Not allowed to obtain properties with infinite depth.");
+                            response.SetStatus(DavStatusCode.Forbidden, "Not allowed to obtain properties with infinite depth.");
                             return true;
                         case InfiniteDepthMode.Assume0:
                             depth = 0;
@@ -211,7 +232,7 @@ namespace NWebDav.Server.Handlers
                 {
                     propertyMode = PropertyMode.PropertyNames;
                 }
-                else if (xProp.Name == WebDavNamespaces.DavNs + "propall")
+                else if (xProp.Name == WebDavNamespaces.DavNs + "allprop")
                 {
                     propertyMode = PropertyMode.AllProperties;
                 }

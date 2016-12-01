@@ -1,8 +1,17 @@
 {
-  "version": "0.1.10-*",
+  "version": "0.1.19-*",
 
   "buildOptions": {
     "emitEntryPoint": false
+  },
+
+  "configurations": {
+    "Release": {
+      "buildOptions": {
+        "xmlDoc": true,
+        "optimize": true
+      }
+    }
   },
 
   "frameworks": {

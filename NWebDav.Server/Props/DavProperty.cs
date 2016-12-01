@@ -15,6 +15,9 @@ namespace NWebDav.Server.Props
     /// Although it is possible to derive directly from this class, it is more
     /// convenient to derive from the typed classes.
     /// </remarks>
+    /// <typeparam name="TEntry">
+    /// Store item or collection to which this DAV property applies.
+    /// </typeparam>
     [DebuggerDisplay("{Name}")]
     public abstract class DavProperty<TEntry> where TEntry : IStoreItem
     {

@@ -9,8 +9,31 @@ using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Handlers
 {
+    /// <summary>
+    /// Implementation of the GET and HEAD method.
+    /// </summary>
+    /// <remarks>
+    /// The specification of the WebDAV GET and HEAD methods for collections
+    /// can be found in the
+    /// <see href="http://www.webdav.org/specs/rfc2518.html#rfc.section.8.4">
+    /// WebDAV specification
+    /// </see>.
+    /// </remarks>
     public class GetAndHeadHandler : IRequestHandler
     {
+        /// <summary>
+        /// Handle a GET or HEAD request.
+        /// </summary>
+        /// <param name="httpContext">
+        /// The HTTP context of the request.
+        /// </param>
+        /// <param name="store">
+        /// Store that is used to access the collections and items.
+        /// </param>
+        /// <returns>
+        /// A task that represents the asynchronous GET or HEAD operation. The
+        /// task will always return <see langword="true"/> upon completion.
+        /// </returns>
         public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)
         {
             // Obtain request and response
@@ -28,7 +51,7 @@ namespace NWebDav.Server.Handlers
             if (entry == null)
             {
                 // Set status to not found
-                response.SendResponse(DavStatusCode.NotFound);
+                response.SetStatus(DavStatusCode.NotFound);
                 return true;
             }
 
@@ -63,7 +86,7 @@ namespace NWebDav.Server.Handlers
                 if (stream != null && stream != Stream.Null)
                 {
                     // Set the response
-                    response.SendResponse(DavStatusCode.Ok);
+                    response.SetStatus(DavStatusCode.Ok);
 
                     // Set the expected content length
                     try
@@ -98,7 +121,7 @@ namespace NWebDav.Server.Handlers
 
                                 // Set status to partial result if not all data can be sent
                                 if (length < stream.Length)
-                                    response.SendResponse(DavStatusCode.PartialContent);
+                                    response.SetStatus(DavStatusCode.PartialContent);
                             }
 
                             // Set the header, so the client knows how much data is required
@@ -117,7 +140,7 @@ namespace NWebDav.Server.Handlers
                 else
                 {
                     // Set the response
-                    response.SendResponse(DavStatusCode.NoContent);
+                    response.SetStatus(DavStatusCode.NoContent);
                 }
             }
             return true;

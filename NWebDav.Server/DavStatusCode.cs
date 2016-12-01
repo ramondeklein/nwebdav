@@ -1,5 +1,4 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 
 using NWebDav.Server.Helpers;
 
@@ -18,10 +17,11 @@ namespace NWebDav.Server
     /// <para>
     /// Each <see cref="DavStatusCode"/> is annotated with a
     /// <see cref="DavStatusCodeAttribute"/> containing the human readable
-    /// status. It will be sent with the the response if the underlying HTTP
-    /// server allows custom HTTP return codes. Clients should parse the
-    /// numeric status code, because it's not garuanteed that the textual
-    /// version is returned.
+    /// status. It will be sent with the response if the underlying HTTP server
+    /// allows custom HTTP return codes. Clients should parse the numeric
+    /// status code, because it's not guaranteed that the textual version is
+    /// returned. If the human readable version is required, then it can be
+    /// obtained using the <see cref="DavStatusCodeHelper"/> helper class.
     /// </para>
     /// <para>
     /// The HTTP status codes are documented on
@@ -119,8 +119,8 @@ namespace NWebDav.Server
         /// <summary>
         /// <para>
         /// The server has fulfilled the request but does not need to return an
-        /// entity-body, and might want to return updated metainformation. The
-        /// response MAY include new or updated metainformation in the form of
+        /// entity-body, and might want to return updated meta information. The
+        /// response MAY include new or updated meta information in the form of
         /// entity-headers, which if present SHOULD be associated with the
         /// requested variant.
         /// </para>
@@ -129,7 +129,7 @@ namespace NWebDav.Server
         /// view from that which caused the request to be sent. This response
         /// is primarily intended to allow input for actions to take place
         /// without causing a change to the user agent's active document view,
-        /// although any new or updated metainformation SHOULD be applied to
+        /// although any new or updated meta information SHOULD be applied to
         /// the document currently in the user agent's active view.
         /// </para>
         /// <para>
@@ -161,7 +161,7 @@ namespace NWebDav.Server
         /// <para>
         /// The default 207 (Multi-Status) response body is a text/xml or
         /// application/xml HTTP entity that contains a single XML element
-        /// called multistatus, which contains a set of XML elements called
+        /// called multi-status, which contains a set of XML elements called
         /// response which contain 200, 300, 400, and 500 series status codes
         /// generated during the method invocation. 100 series status codes
         /// should not be recorded in a response XML element.
@@ -293,7 +293,7 @@ namespace NWebDav.Server
         /// The precondition given in one or more of the request-header fields
         /// evaluated to false when it was tested on the server. This response
         /// code allows the client to place preconditions on the current
-        /// resource metainformation (header field data) and thus prevent the
+        /// resource meta information (header field data) and thus prevent the
         /// requested method from being applied to a resource other than the
         /// one intended.
         /// </para>

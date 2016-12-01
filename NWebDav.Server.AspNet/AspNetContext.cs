@@ -1,4 +1,5 @@
-﻿using System.Web;
+﻿using System.Threading.Tasks;
+using System.Web;
 using NWebDav.Server.Http;
 
 namespace NWebDav.Server.AspNet
@@ -21,9 +22,10 @@ namespace NWebDav.Server.AspNet
         public IHttpResponse Response => _response;
         public IHttpSession Session => _session;
 
-        public void Close()
+        public Task CloseAsync()
         {
-            // NOP
+            // NOP, so can be a synchronous call
+            return Task.FromResult(true);
         }
     }
 }

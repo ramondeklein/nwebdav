@@ -3,7 +3,7 @@
 namespace NWebDav.Server.Helpers
 {
     [AttributeUsage(AttributeTargets.Field)]
-    public class DavStatusCodeAttribute : Attribute
+    internal class DavStatusCodeAttribute : Attribute
     {
         public string Description { get; }
 

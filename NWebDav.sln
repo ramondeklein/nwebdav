@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NWebDav.Sample.AspNet", "NW
 	EndProjectSection
 >>>>>>> master
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelpTest", "HelpTest\HelpTest.csproj", "{9DD916D2-B977-4E34-8296-7B3A6FA2E964}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,10 @@ Global
 		{EE8FEE91-7EA2-4B78-8C22-797A684B3995}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EE8FEE91-7EA2-4B78-8C22-797A684B3995}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EE8FEE91-7EA2-4B78-8C22-797A684B3995}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9DD916D2-B977-4E34-8296-7B3A6FA2E964}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9DD916D2-B977-4E34-8296-7B3A6FA2E964}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9DD916D2-B977-4E34-8296-7B3A6FA2E964}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9DD916D2-B977-4E34-8296-7B3A6FA2E964}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

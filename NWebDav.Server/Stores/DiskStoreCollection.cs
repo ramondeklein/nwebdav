@@ -17,6 +17,7 @@ namespace NWebDav.Server.Stores
     public sealed class DiskStoreCollection : IDiskStoreCollection
     {
         private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(DiskStoreCollection));
+        private static readonly XElement s_xDavCollection = new XElement(WebDavNamespaces.DavNs + "collection");
         private readonly DirectoryInfo _directoryInfo;
 
         public DiskStoreCollection(ILockingManager lockingManager, DirectoryInfo directoryInfo, bool isWritable)
@@ -53,7 +54,7 @@ namespace NWebDav.Server.Stores
             },
             new DavGetResourceType<DiskStoreCollection>
             {
-                Getter = (context, collection) => new XElement(WebDavNamespaces.DavNs + "collection")
+                Getter = (context, collection) => s_xDavCollection
             },
 
             // Default locking property handling via the LockingManager
