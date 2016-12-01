@@ -14,7 +14,7 @@ namespace NWebDav.Server.Logging
         /// </summary>
         public static ILoggerFactory Factory { get; set; }
 
-        internal static ILogger CreateLogger(Type type)
+        public static ILogger CreateLogger(Type type)
         {
             var factory = Factory ?? s_defaultLoggerFactory;
             return factory.CreateLogger(type);

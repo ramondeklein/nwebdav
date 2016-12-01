@@ -1,12 +1,12 @@
 {
-  "version": "0.1.10-*",
+  "version": "0.1.19-*",
 
   "buildOptions": {
     "emitEntryPoint": false
   },
 
   "dependencies": {
-    "NWebDav.Server": "0.1.10-*",
+    "NWebDav.Server": "0.1.*",
     "WindowsAzure.Storage": "7.2.1"
   },
 

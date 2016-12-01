@@ -201,7 +201,7 @@ namespace NWebDav.Extension.Azure
             throw new NotImplementedException();
         }
 
-        public bool AllowInfiniteDepthProperties => false;
+        public InfiniteDepthMode InfiniteDepthMode => InfiniteDepthMode.Rejected;
 
         public override int GetHashCode()
         {
