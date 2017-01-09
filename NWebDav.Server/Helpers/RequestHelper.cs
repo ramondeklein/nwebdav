@@ -94,16 +94,9 @@ namespace NWebDav.Server.Helpers
             if (destinationHeader == null)
                 return null;
 
-            // Determine the destination
-            var destinationUri = new Uri(destinationHeader);
-
-            // Some clients specify a relative URI, so we'll need to make it absolute
-            if (!destinationUri.IsAbsoluteUri)
-                destinationUri = new Uri(request.Url, destinationHeader);
-
-            // Return the destination Uri
-            return destinationUri;
-        }
+            // Create the destination URI
+            return destinationHeader.StartsWith("/") ? new Uri(request.Url, destinationHeader) : new Uri(destinationHeader);
+        }        
 
         /// <summary>
         /// Obtain the depth value from the request.
