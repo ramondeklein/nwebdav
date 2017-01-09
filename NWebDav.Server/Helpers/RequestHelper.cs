@@ -90,13 +90,18 @@ namespace NWebDav.Server.Helpers
         public static Uri GetDestinationUri(this IHttpRequest request)
         {
             // Obtain the destination
-            var destinationHeader = request.GetHeaderValue("Destination");
+            string destinationHeader = request.GetHeaderValue("Destination");
+            
             if (destinationHeader == null)
                 return null;
 
-            // Return the destination URI
-            return new Uri(destinationHeader);
-        }
+            // Create the destination URI
+            var uri = destinationHeader.StartsWith("/")
+                ? new Uri(request.Url, destinationHeader)
+                : new Uri(destinationHeader);
+
+            return uri;
+        }        
 
         /// <summary>
         /// Obtain the depth value from the request.
