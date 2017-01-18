@@ -1,13 +1,18 @@
 ﻿using System;
 using NWebDav.Server;
 using NWebDav.Server.AspNet;
-using NWebDav.Server.Handlers;
+using NWebDav.Server.Logging;
 using NWebDav.Server.Stores;
 
 namespace NWebDav.Sample.AspNet
 {
     public class DiskWebDavHandlerFactory : WebDavHandlerFactory
     {
+        static DiskWebDavHandlerFactory()
+        {
+            LoggerFactory.Factory = new DebugOutputAdapter();
+        }
+
         public DiskWebDavHandlerFactory() : base(GetWebDavDispatcher())
         {
         }
