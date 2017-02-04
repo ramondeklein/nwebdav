@@ -208,7 +208,7 @@ namespace NWebDav.Server.Handlers
             }
         }
 
-        private PropertyMode GetRequestedProperties(IHttpRequest request, IList<XName> properties)
+        private static PropertyMode GetRequestedProperties(IHttpRequest request, ICollection<XName> properties)
         {
             // Create an XML document from the stream
             var xDocument = request.LoadXmlDocument();

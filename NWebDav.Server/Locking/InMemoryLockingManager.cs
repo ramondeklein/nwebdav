@@ -287,12 +287,12 @@ namespace NWebDav.Server.Locking
 
         #region Private helper methods
 
-        private ActiveLock GetActiveLockInfo(ItemLockInfo itemLockInfo)
+        private static ActiveLock GetActiveLockInfo(ItemLockInfo itemLockInfo)
         {
             return new ActiveLock(itemLockInfo.Type, itemLockInfo.Scope, itemLockInfo.Recursive ? int.MaxValue : 0, itemLockInfo.Owner, itemLockInfo.Timeout, new Uri($"{TokenScheme}:{itemLockInfo.Token:D}"), itemLockInfo.LockRootUri);
         }
 
-        private Guid? GetTokenFromLockToken(Uri lockTokenUri)
+        private static Guid? GetTokenFromLockToken(Uri lockTokenUri)
         {
             // We should always use opaquetokens
             if (lockTokenUri.Scheme != TokenScheme)
