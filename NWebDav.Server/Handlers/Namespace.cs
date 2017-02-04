@@ -5,7 +5,7 @@
     /// </summary>
     /// <seealso cref="IRequestHandler"/>
     [System.Runtime.CompilerServices.CompilerGenerated]
-    class NamespaceDoc
+    internal static class NamespaceDoc
     {
     }
 }

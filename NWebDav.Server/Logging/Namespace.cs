@@ -4,7 +4,7 @@
     /// This namespace defines all the logging related classes.
     /// </summary>
     [System.Runtime.CompilerServices.CompilerGenerated]
-    class NamespaceDoc
+    internal static class NamespaceDoc
     {
     }
 }

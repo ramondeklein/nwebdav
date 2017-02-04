@@ -5,7 +5,7 @@
     /// library.
     /// </summary>
     [System.Runtime.CompilerServices.CompilerGenerated]
-    class NamespaceDoc
+    internal static class NamespaceDoc
     {
     }
 }

@@ -12,7 +12,7 @@
     /// <see cref="System.Net.HttpListener"/> and the Kestrel webserver.
     /// </remarks>
     [System.Runtime.CompilerServices.CompilerGenerated]
-    class NamespaceDoc
+    internal static class NamespaceDoc
     {
     }
 }
