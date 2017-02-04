@@ -55,7 +55,7 @@ namespace NWebDav.Server.Stores
         private string GetPathFromUri(Uri uri)
         {
             // Determine the path
-            var requestedPath = uri.LocalPath.Substring(1).Replace('/', Path.DirectorySeparatorChar);
+            var requestedPath = (uri.LocalPath + uri.Fragment).Substring(1).Replace('/', Path.DirectorySeparatorChar);
 
             // Determine the full path
             var fullPath = Path.GetFullPath(Path.Combine(BaseDirectory, requestedPath));
