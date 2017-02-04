@@ -19,6 +19,25 @@ namespace NWebDav.Server.Stores
             Result = result;
             Item = item;
         }
+
+        public static bool operator!=(StoreItemResult left, StoreItemResult right)
+        {
+            return !(left == right);
+        }
+
+        public static bool operator==(StoreItemResult left, StoreItemResult right)
+        {
+            return left.Result == right.Result && (left.Item == null && right.Item == null || left.Item != null && left.Item.Equals(right.Item));
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is StoreItemResult))
+                return false;
+            return this == (StoreItemResult)obj;
+        }
+
+        public override int GetHashCode() => Result.GetHashCode() ^ (Item?.GetHashCode() ?? 0);
     }
 
     public struct StoreCollectionResult
@@ -31,6 +50,25 @@ namespace NWebDav.Server.Stores
             Result = result;
             Collection = collection;
         }
+
+        public static bool operator !=(StoreCollectionResult left, StoreCollectionResult right)
+        {
+            return !(left == right);
+        }
+
+        public static bool operator ==(StoreCollectionResult left, StoreCollectionResult right)
+        {
+            return left.Result == right.Result && (left.Collection == null && right.Collection == null || left.Collection != null && left.Collection.Equals(right.Collection));
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is StoreCollectionResult))
+                return false;
+            return this == (StoreCollectionResult)obj;
+        }
+
+        public override int GetHashCode() => Result.GetHashCode() ^ (Collection?.GetHashCode() ?? 0);
     }
 
     public interface IStore
