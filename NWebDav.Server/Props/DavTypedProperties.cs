@@ -169,7 +169,7 @@ namespace NWebDav.Server.Props
         private class Rfc1123DateConverter : IConverter
         {
             public object ToXml(IHttpContext httpContext, DateTime value) => value.ToString("R");
-            public DateTime FromXml(IHttpContext httpContext, object value) => DateTime.Parse((string)value);
+            public DateTime FromXml(IHttpContext httpContext, object value) => DateTime.Parse((string)value, CultureInfo.InvariantCulture);
         }
 
         private static IConverter TypeConverter { get; } = new Rfc1123DateConverter();

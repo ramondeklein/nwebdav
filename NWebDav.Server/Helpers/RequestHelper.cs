@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -263,7 +264,7 @@ namespace NWebDav.Server.Helpers
                 // then we need to return the entire file, so we will act as if no
                 // range was specified at all.
                 DateTime dt;
-                if (!DateTime.TryParse(ifRangeHeader, out dt))
+                if (!DateTime.TryParse(ifRangeHeader, CultureInfo.InvariantCulture, DateTimeStyles.None, out dt))
                     return null;
 
                 // Use the date for the 'If'
