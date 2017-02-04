@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
+using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
@@ -14,6 +16,10 @@
 [assembly: AssemblyCompany("Ramon de Klein <mail@ramondeklein.nl>")]
 [assembly: AssemblyProduct("NWebDav")]
 [assembly: AssemblyCopyright("Copyright (C) 2016 Ramon de Klein")]
+
+// Assembly is CLS compliant and types are not visible by COM (unless set explicitly)
+[assembly: CLSCompliant(true)]
+[assembly: ComVisible(false)]
 
 // Version information for an assembly consists of the following four values:
 //
