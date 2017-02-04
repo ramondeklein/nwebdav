@@ -17,8 +17,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyProduct("NWebDav")]
 [assembly: AssemblyCopyright("Copyright (C) 2016 Ramon de Klein")]
 
-// Assembly is CLS compliant and types are not visible by COM (unless set explicitly)
-[assembly: CLSCompliant(true)]
+// Assembly isn't CLS compliant (due to HttpContext) and types are not visible by COM (unless set explicitly)
+[assembly: CLSCompliant(false)]
 [assembly: ComVisible(false)]
 
 // Version information for an assembly consists of the following four values:
