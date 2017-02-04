@@ -147,13 +147,13 @@ namespace NWebDav.Server.Handlers
                         if ((propertyMode & PropertyMode.AllProperties) != 0)
                         {
                             foreach (var propertyName in propertyManager.Properties.Where(p => !p.IsExpensive).Select(p => p.Name))
-                                await AddPropertyAsync(httpContext, xProp, xPropStatErrors, propertyManager, entry.Entry, propertyName, addedProperties).ConfigureAwait(false);
+                                await AddPropertyAsync(httpContext, xProp, propertyManager, entry.Entry, propertyName, addedProperties).ConfigureAwait(false);
                         }
 
                         if ((propertyMode & PropertyMode.SelectedProperties) != 0)
                         {
                             foreach (var propertyName in propertyList)
-                                await AddPropertyAsync(httpContext, xProp, xPropStatErrors, propertyManager, entry.Entry, propertyName, addedProperties).ConfigureAwait(false);
+                                await AddPropertyAsync(httpContext, xProp, propertyManager, entry.Entry, propertyName, addedProperties).ConfigureAwait(false);
                         }
 
                         // Add the values (if any)
@@ -180,7 +180,7 @@ namespace NWebDav.Server.Handlers
             return true;
         }
 
-        private async Task AddPropertyAsync(IHttpContext httpContext, XElement xPropStatValues, XElement xPropStatErrors, IPropertyManager propertyManager, IStoreItem item, XName propertyName, IList<XName> addedProperties)
+        private async Task AddPropertyAsync(IHttpContext httpContext, XElement xPropStatValues, IPropertyManager propertyManager, IStoreItem item, XName propertyName, IList<XName> addedProperties)
         {
             if (!addedProperties.Contains(propertyName))
             {
