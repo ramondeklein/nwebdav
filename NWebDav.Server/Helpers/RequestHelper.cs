@@ -67,16 +67,21 @@ namespace NWebDav.Server.Helpers
         /// </returns>
         public static SplitUri SplitUri(Uri uri)
         {
+            // Strip a trailing slash
+            var trimmedUri = uri.AbsoluteUri;
+            if (trimmedUri.EndsWith("/"))
+                trimmedUri = trimmedUri.Substring(0, trimmedUri.Length - 1);
+
             // Determine the offset of the name
-            var slashOffset = uri.AbsoluteUri.LastIndexOf('/');
+            var slashOffset = trimmedUri.LastIndexOf('/');
             if (slashOffset == -1)
                 return null;
 
             // Separate name from path
             return new SplitUri
             {
-                CollectionUri = new Uri(uri.AbsoluteUri.Substring(0, slashOffset)),
-                Name = Uri.UnescapeDataString(uri.AbsoluteUri.Substring(slashOffset + 1))
+                CollectionUri = new Uri(trimmedUri.Substring(0, slashOffset)),
+                Name = Uri.UnescapeDataString(trimmedUri.Substring(slashOffset + 1))
             };
         }
 
