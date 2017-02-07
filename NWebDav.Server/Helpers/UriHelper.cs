@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace NWebDav.Server.Helpers
 {
@@ -11,6 +12,13 @@ namespace NWebDav.Server.Helpers
             if (uriText.EndsWith("/"))
                 return new Uri(baseUri, escapedPath);
             return new Uri($"{uriText}/{escapedPath}", UriKind.Absolute);
+        }
+
+        public static string ToEncodedString(Uri entryUri)
+        {
+            var path = entryUri.LocalPath + entryUri.Fragment;
+            var encodedPath = string.Join("/", path.Split('/').Select(Uri.EscapeDataString));
+            return $"{entryUri.Scheme}://{entryUri.Authority}{encodedPath}";
         }
     }
 }

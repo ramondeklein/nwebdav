@@ -91,7 +91,7 @@ namespace NWebDav.Server.Handlers
 
             public XElement GetXmlMultiStatus(Uri uri)
             {
-                var xResponse = new XElement(WebDavNamespaces.DavNs + "response", new XElement(WebDavNamespaces.DavNs + "href", uri));
+                var xResponse = new XElement(WebDavNamespaces.DavNs + "response", new XElement(WebDavNamespaces.DavNs + "href", UriHelper.ToEncodedString(uri)));
                 var xMultiStatus = new XElement(WebDavNamespaces.DavNs + "multistatus", xResponse);
                 foreach (var result in PropertySetters.Where(ps => ps.Result != DavStatusCode.Ok))
                     xResponse.Add(result.GetXmlResponse());

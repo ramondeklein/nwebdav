@@ -119,7 +119,7 @@ namespace NWebDav.Server.Handlers
             {
                 // Create the property
                 var xResponse = new XElement(WebDavNamespaces.DavNs + "response",
-                    new XElement(WebDavNamespaces.DavNs + "href", entry.Uri.AbsoluteUri));
+                    new XElement(WebDavNamespaces.DavNs + "href", UriHelper.ToEncodedString(entry.Uri)));
 
                 // Create tags for property values
                 var xPropStatValues = new XElement(WebDavNamespaces.DavNs + "propstat");
