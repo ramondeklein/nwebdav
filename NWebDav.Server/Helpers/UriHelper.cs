@@ -17,5 +17,10 @@ namespace NWebDav.Server.Helpers
         {
             return entryUri.AbsoluteUri.Replace("#","%23");
         }
+
+        public static string GetDecodedPath(Uri uri)
+        {
+            return uri.LocalPath + Uri.UnescapeDataString(uri.Fragment);
+        }
     }
 }

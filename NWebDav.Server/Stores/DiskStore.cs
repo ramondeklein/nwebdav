@@ -2,7 +2,7 @@
 using System.IO;
 using System.Security;
 using System.Threading.Tasks;
-
+using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Locking;
 
@@ -55,7 +55,7 @@ namespace NWebDav.Server.Stores
         private string GetPathFromUri(Uri uri)
         {
             // Determine the path
-            var requestedPath = (uri.LocalPath + uri.Fragment).Substring(1).Replace('/', Path.DirectorySeparatorChar);
+            var requestedPath = UriHelper.GetDecodedPath(uri).Substring(1).Replace('/', Path.DirectorySeparatorChar);
 
             // Determine the full path
             var fullPath = Path.GetFullPath(Path.Combine(BaseDirectory, requestedPath));
