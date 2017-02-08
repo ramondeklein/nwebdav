@@ -5,7 +5,7 @@
 // associated with an assembly.
 [assembly: AssemblyTitle("NWebDav.Sample.Kestrel")]
 [assembly: AssemblyDescription("WebDAV server sample application (using Kestrel)")]
-[assembly: AssemblyInformationalVersion("0.1.22.0 (alpha)")]
+[assembly: AssemblyInformationalVersion("0.1.23.0 (alpha)")]
 #if DEBUG
 [assembly: AssemblyConfiguration("DEBUG")]
 #else
@@ -25,5 +25,5 @@
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.1.22.0")]
-[assembly: AssemblyFileVersion("0.1.22.0")]
+[assembly: AssemblyVersion("0.1.23.0")]
+[assembly: AssemblyFileVersion("0.1.23.0")]
