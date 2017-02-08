@@ -9,7 +9,7 @@
     <licenseUrl>http://www.gnu.org/licenses/lgpl.html</licenseUrl>
     <projectUrl>https://github.com/ramondeklein/nwebdav</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <copyright>Copyright 2016 Ramon de Klein &lt;mail@ramondeklein.nl&gt;</copyright>
+    <copyright>Copyright 2016-2017 Ramon de Klein &lt;mail@ramondeklein.nl&gt;</copyright>
     <tags>C# .NET WebDAV Server</tags>
     <language>en-US</language>
   </metadata>

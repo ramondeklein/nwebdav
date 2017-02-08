@@ -15,7 +15,7 @@ using System.Runtime.InteropServices;
 #endif
 [assembly: AssemblyCompany("Ramon de Klein <mail@ramondeklein.nl>")]
 [assembly: AssemblyProduct("NWebDav")]
-[assembly: AssemblyCopyright("Copyright (C) 2016 Ramon de Klein")]
+[assembly: AssemblyCopyright("Copyright (C) 2016-2017 Ramon de Klein")]
 
 // Assembly isn't CLS compliant (due to HttpContext) and types are not visible by COM (unless set explicitly)
 [assembly: CLSCompliant(false)]

@@ -13,7 +13,7 @@
 #endif
 [assembly: AssemblyCompany("Ramon de Klein <mail@ramondeklein.nl>")]
 [assembly: AssemblyProduct("NWebDav")]
-[assembly: AssemblyCopyright("Copyright (C) 2016 Ramon de Klein")]
+[assembly: AssemblyCopyright("Copyright (C) 2016-2017 Ramon de Klein")]
 
 // Version information for an assembly consists of the following four values:
 //
