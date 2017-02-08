@@ -15,7 +15,7 @@ namespace NWebDav.Server.Helpers
 
         public static string ToEncodedString(Uri entryUri)
         {
-            return $"{entryUri.Scheme}://{entryUri.Authority}{entryUri.LocalPath}{entryUri.Fragment}".Replace("#","%23");
+            return entryUri.AbsoluteUri.Replace("#","%23");
         }
     }
 }
