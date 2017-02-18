@@ -15,7 +15,11 @@ namespace NWebDav.Server.Helpers
 
         public static string ToEncodedString(Uri entryUri)
         {
-            return entryUri.AbsoluteUri.Replace("#","%23");
+            return entryUri
+                .AbsoluteUri
+                .Replace("#", "%23")
+                .Replace("[", "%5B")
+                .Replace("]", "%5D");
         }
 
         public static string GetDecodedPath(Uri uri)
