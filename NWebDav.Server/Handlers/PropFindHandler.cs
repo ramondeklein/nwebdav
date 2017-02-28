@@ -183,21 +183,14 @@ namespace NWebDav.Server.Handlers
                 addedProperties.Add(propertyName);
                 try
                 {
+                    // Check if the property is supported
                     if (propertyManager.Properties.Any(p => p.Name == propertyName))
                     {
                         var value = await propertyManager.GetPropertyAsync(httpContext, item, propertyName).ConfigureAwait(false);
-                        if (value is XElement)
-                        {
-                            xPropStatValues.Add(new XElement(WebDavNamespaces.DavNs + "prop", new XElement(propertyName, (XElement) value)));
-                        }
-                        else if (value is IEnumerable<XElement>)
-                        {
-                            xPropStatValues.Add(new XElement(WebDavNamespaces.DavNs + "prop", new XElement(propertyName, ((IEnumerable<XElement>) value).Cast<object>().ToArray())));
-                        }
-                        else
-                        {
-                            xPropStatValues.Add(new XElement(WebDavNamespaces.DavNs + "prop", new XElement(propertyName, value)));
-                        }
+                        if (value is IEnumerable<XElement>)
+                            value = ((IEnumerable<XElement>) value).Cast<object>().ToArray();
+
+                        xPropStatValues.Add(new XElement(WebDavNamespaces.DavNs + "prop", new XElement(propertyName, value)));
                     }
                     else
                     {
