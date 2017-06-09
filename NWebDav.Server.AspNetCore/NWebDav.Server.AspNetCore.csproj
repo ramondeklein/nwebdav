@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <VersionPrefix>0.1.24</VersionPrefix>
+    <VersionPrefix>0.1.25</VersionPrefix>
     <TargetFramework>netstandard1.6</TargetFramework>
     <AssemblyName>NWebDav.Server.AspNetCore</AssemblyName>
     <Title>NWebDav server library for AspNetCore's HttpContext</Title>
