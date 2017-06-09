@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <VersionPrefix>0.1.24</VersionPrefix>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <DebugType>portable</DebugType>
+    <AssemblyName>NWebDav.Sample.Kestrel</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <PackageId>NWebDav.Sample.Kestrel</PackageId>
+    <RuntimeFrameworkVersion>1.1.1</RuntimeFrameworkVersion>
+    <Description>WebDAV server sample application (using Kestrel).</Description>
+    <Product>NWebDav</Product>
+    <Company></Company>
+    <Authors>Ramon de Klein &lt;mail@ramondeklein.nl&gt;</Authors>
+    <Copyright>Copyright (C) 2016-2017 Ramon de Klein</Copyright>
+    <PackageProjectUrl>https://github.com/ramondeklein/nwebdav</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/ramondeklein/nwebdav.git</RepositoryUrl>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NWebDav.Server\NWebDav.Server.csproj" />
+    <ProjectReference Include="..\NWebDav.Server.AspNetCore\NWebDav.Server.AspNetCore.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="1.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="1.1.1" />
+    <PackageReference Include="System.Linq" Version="4.3.0" />
+    <PackageReference Include="System.Net.Primitives" Version="4.3.0" />
+    <PackageReference Include="System.Security.Principal" Version="4.3.0" />
+  </ItemGroup>
+
+</Project>

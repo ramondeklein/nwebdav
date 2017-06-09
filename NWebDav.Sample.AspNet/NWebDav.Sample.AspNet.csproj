@@ -43,13 +43,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="NWebDav.Server, Version=0.1.16.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\NWebDav.Server\bin\Debug\net45\NWebDav.Server.dll</HintPath>
-    </Reference>
-    <Reference Include="NWebDav.Server.AspNet">
-      <HintPath>..\NWebDav.Server.AspNet\bin\Debug\net45\NWebDav.Server.AspNet.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Web" />
   </ItemGroup>
@@ -67,7 +60,16 @@
       <DependentUpon>Web.config</DependentUpon>
     </Content>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\NWebDav.Server.AspNet\NWebDav.Server.AspNet.csproj">
+      <Project>{b291f9da-3968-4e28-9038-96340ea827f1}</Project>
+      <Name>NWebDav.Server.AspNet</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NWebDav.Server\NWebDav.Server.csproj">
+      <Project>{6f982556-e0c2-46e9-a90c-7477b3ed19cc}</Project>
+      <Name>NWebDav.Server</Name>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

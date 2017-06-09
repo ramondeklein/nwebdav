@@ -1,24 +1,24 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Files", "Files", "{942BBBEF-03F3-4CDC-80B5-09F975CDC9DC}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NWebDav.Server", "NWebDav.Server\NWebDav.Server.xproj", "{6F982556-E0C2-46E9-A90C-7477B3ED19CC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NWebDav.Server", "NWebDav.Server\NWebDav.Server.csproj", "{6F982556-E0C2-46E9-A90C-7477B3ED19CC}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NWebDav.Server.AspNetCore", "NWebDav.Server.AspNetCore\NWebDav.Server.AspNetCore.xproj", "{E019A37C-1E03-4650-B3B6-12F44B8BBA82}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NWebDav.Server.AspNetCore", "NWebDav.Server.AspNetCore\NWebDav.Server.AspNetCore.csproj", "{E019A37C-1E03-4650-B3B6-12F44B8BBA82}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NWebDav.Server.HttpListener", "NWebDav.Server.HttpListener\NWebDav.Server.HttpListener.xproj", "{4D1752DA-C75B-4B24-8D8C-87DB713DBB2E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NWebDav.Server.HttpListener", "NWebDav.Server.HttpListener\NWebDav.Server.HttpListener.csproj", "{4D1752DA-C75B-4B24-8D8C-87DB713DBB2E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NWebDav.Sample.HttpListener", "NWebDav.Sample.HttpListener\NWebDav.Sample.HttpListener.xproj", "{F7271AB3-E0B3-415A-934D-5CD24585AEE2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NWebDav.Sample.HttpListener", "NWebDav.Sample.HttpListener\NWebDav.Sample.HttpListener.csproj", "{F7271AB3-E0B3-415A-934D-5CD24585AEE2}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NWebDav.Sample.Kestrel", "NWebDav.Sample.Kestrel\NWebDav.Sample.Kestrel.xproj", "{31CB7C10-0A3F-4760-BDFD-5097046721A6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NWebDav.Sample.Kestrel", "NWebDav.Sample.Kestrel\NWebDav.Sample.Kestrel.csproj", "{31CB7C10-0A3F-4760-BDFD-5097046721A6}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NWebDav.Server.AspNet", "NWebDav.Server.AspNet\NWebDav.Server.AspNet.xproj", "{B291F9DA-3968-4E28-9038-96340EA827F1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NWebDav.Server.AspNet", "NWebDav.Server.AspNet\NWebDav.Server.AspNet.csproj", "{B291F9DA-3968-4E28-9038-96340EA827F1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NWebDav.Sample.AspNet", "NWebDav.Sample.AspNet\NWebDav.Sample.AspNet.csproj", "{EE8FEE91-7EA2-4B78-8C22-797A684B3995}"
 	ProjectSection(ProjectDependencies) = postProject
