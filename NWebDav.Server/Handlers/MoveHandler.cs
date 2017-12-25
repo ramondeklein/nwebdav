@@ -113,7 +113,7 @@ namespace NWebDav.Server.Handlers
 
             // Obtain the actual item
             var moveCollection = await sourceCollection.GetItemAsync(sourceName, httpContext).ConfigureAwait(false) as IStoreCollection;
-            if (moveCollection != null)
+            if (moveCollection != null && !moveCollection.SupportsFastMove(destinationCollection, destinationName, overwrite, httpContext))
             {
                 // Create a new collection
                 var newCollectionResult = await destinationCollection.CreateCollectionAsync(destinationName, overwrite, httpContext).ConfigureAwait(false);

@@ -275,6 +275,12 @@ namespace NWebDav.Server.Stores
             return new StoreItemResult(result.Result, result.Collection);
         }
 
+        public bool SupportsFastMove(IStoreCollection destination, string destinationName, bool overwrite, IHttpContext httpContext)
+        {
+            // We can only move disk-store collections
+            return destination is DiskStoreCollection;
+        }
+
         public async Task<StoreItemResult> MoveItemAsync(string sourceName, IStoreCollection destinationCollection, string destinationName, bool overwrite, IHttpContext httpContext)
         {
             // Return error
@@ -286,62 +292,73 @@ namespace NWebDav.Server.Stores
             if (item == null)
                 return new StoreItemResult(DavStatusCode.NotFound);
 
-            // Check if the item is actually a file
-            var diskStoreItem = item as DiskStoreItem;
-            if (diskStoreItem != null)
+            // If the destination collection is a directory too, then we can simply move the file
+            if (destinationCollection is DiskStoreCollection destinationDiskStoreCollection)
             {
-                // If the destination collection is a directory too, then we can simply move the file
-                var destinationDiskStoreCollection = destinationCollection as DiskStoreCollection;
-                if (destinationDiskStoreCollection != null)
+                // Return error
+                if (!destinationDiskStoreCollection.IsWritable)
+                    return new StoreItemResult(DavStatusCode.PreconditionFailed);
+
+                // Determine source and destination paths
+                var sourcePath = Path.Combine(_directoryInfo.FullName, sourceName);
+                var destinationPath = Path.Combine(destinationDiskStoreCollection._directoryInfo.FullName, destinationName);
+
+                // Check if the file already exists
+                DavStatusCode result;
+                if (File.Exists(destinationPath))
                 {
-                    // Return error
-                    if (!destinationDiskStoreCollection.IsWritable)
-                        return new StoreItemResult(DavStatusCode.PreconditionFailed);
+                    // Remove the file if it already exists (if allowed)
+                    if (!overwrite)
+                        return new StoreItemResult(DavStatusCode.Forbidden);
 
-                    // Determine source and destination paths
-                    var sourcePath = Path.Combine(_directoryInfo.FullName, sourceName);
-                    var destinationPath = Path.Combine(destinationDiskStoreCollection._directoryInfo.FullName, destinationName);
+                    // The file will be overwritten
+                    File.Delete(destinationPath);
+                    result = DavStatusCode.NoContent;
+                }
+                else if (Directory.Exists(destinationPath))
+                {
+                    // Remove the directory if it already exists (if allowed)
+                    if (!overwrite)
+                        return new StoreItemResult(DavStatusCode.Forbidden);
 
-                    // Check if the file already exists
-                    DavStatusCode result;
-                    if (File.Exists(destinationPath))
-                    {
-                        // Remove the file if it already exists (if allowed)
-                        if (!overwrite)
-                            return new StoreItemResult(DavStatusCode.Forbidden);
-
-                        // The file will be overwritten
-                        File.Delete(destinationPath);
-                        result = DavStatusCode.NoContent;
-                    }
-                    else
-                    {
-                        // The file will be "created"
-                        result = DavStatusCode.Created;
-                    }
-
-                    // Move the file
-                    File.Move(sourcePath, destinationPath);
-                    return new StoreItemResult(result, new DiskStoreItem(LockingManager, new FileInfo(destinationPath), IsWritable));
+                    // The file will be overwritten
+                    Directory.Delete(destinationPath, true);
+                    result = DavStatusCode.NoContent;
                 }
                 else
                 {
-                    // Attempt to copy the item to the destination collection
-                    var result = await item.CopyAsync(destinationCollection, destinationName, overwrite, httpContext).ConfigureAwait(false);
-                    if (result.Result == DavStatusCode.Created || result.Result == DavStatusCode.NoContent)
-                        await DeleteItemAsync(sourceName, httpContext).ConfigureAwait(false);
+                    // The file will be "created"
+                    result = DavStatusCode.Created;
+                }
 
-                    // Return the result
-                    return result;
+                switch (item)
+                {
+                    case DiskStoreItem _:
+                        // Move the file
+                        File.Move(sourcePath, destinationPath);
+                        return new StoreItemResult(result, new DiskStoreItem(LockingManager, new FileInfo(destinationPath), IsWritable));
+
+                    case DiskStoreCollection _:
+                        // Move the directory
+                        Directory.Move(sourcePath, destinationPath);
+                        return new StoreItemResult(result, new DiskStoreCollection(LockingManager, new DirectoryInfo(destinationPath), IsWritable));
+
+                    default:
+                        // Invalid item
+                        Debug.Fail($"Invalid item {item.GetType()} inside the {nameof(DiskStoreCollection)}.");
+                        return new StoreItemResult(DavStatusCode.InternalServerError);
                 }
             }
+            else
+            {
+                // Attempt to copy the item to the destination collection
+                var result = await item.CopyAsync(destinationCollection, destinationName, overwrite, httpContext).ConfigureAwait(false);
+                if (result.Result == DavStatusCode.Created || result.Result == DavStatusCode.NoContent)
+                    await DeleteItemAsync(sourceName, httpContext).ConfigureAwait(false);
 
-            // If it's not a plain item, then it's a collection
-            Debug.Assert(item is DiskStoreCollection);
-
-            // Collections will never be moved, but always be created
-            // (we always move the individual items to make sure locking is checked properly)
-            throw new InvalidOperationException("Collections should never be moved directly.");
+                // Return the result
+                return result;
+            }
         }
 
         public Task<DavStatusCode> DeleteItemAsync(string name, IHttpContext httpContext)
