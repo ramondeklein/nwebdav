@@ -271,7 +271,7 @@ namespace NWebDav.Server.Stores
         public async Task<StoreItemResult> CopyAsync(IStoreCollection destinationCollection, string name, bool overwrite, IHttpContext httpContext)
         {
             // Just create the folder itself
-            var result = await destinationCollection.CreateCollectionAsync(name, overwrite, httpContext);
+            var result = await destinationCollection.CreateCollectionAsync(name, overwrite, httpContext).ConfigureAwait(false);
             return new StoreItemResult(result.Result, result.Collection);
         }
 
@@ -282,7 +282,7 @@ namespace NWebDav.Server.Stores
                 return new StoreItemResult(DavStatusCode.PreconditionFailed);
 
             // Determine the object that is being moved
-            var item = await GetItemAsync(sourceName, httpContext);
+            var item = await GetItemAsync(sourceName, httpContext).ConfigureAwait(false);
             if (item == null)
                 return new StoreItemResult(DavStatusCode.NotFound);
 
@@ -327,9 +327,9 @@ namespace NWebDav.Server.Stores
                 else
                 {
                     // Attempt to copy the item to the destination collection
-                    var result = await item.CopyAsync(destinationCollection, destinationName, overwrite, httpContext);
+                    var result = await item.CopyAsync(destinationCollection, destinationName, overwrite, httpContext).ConfigureAwait(false);
                     if (result.Result == DavStatusCode.Created || result.Result == DavStatusCode.NoContent)
-                        await DeleteItemAsync(sourceName, httpContext);
+                        await DeleteItemAsync(sourceName, httpContext).ConfigureAwait(false);
 
                     // Return the result
                     return result;
