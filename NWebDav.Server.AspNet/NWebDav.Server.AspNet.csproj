@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <VersionPrefix>0.1.25</VersionPrefix>
+    <VersionPrefix>0.1.26</VersionPrefix>
     <TargetFramework>net45</TargetFramework>
     <AssemblyName>NWebDav.Server.AspNet</AssemblyName>
     <Title>NWebDav server library for ASP.NET</Title>
@@ -11,7 +11,7 @@
     <Product>NWebDav</Product>
     <Company></Company>
     <Authors>Ramon de Klein &lt;mail@ramondeklein.nl&gt;</Authors>
-    <Copyright>Copyright (C) 2016-2017 Ramon de Klein</Copyright>
+    <Copyright>Copyright (C) 2016-2018 Ramon de Klein</Copyright>
     <PackageProjectUrl>https://github.com/ramondeklein/nwebdav</PackageProjectUrl>
     <RepositoryUrl>https://github.com/ramondeklein/nwebdav.git</RepositoryUrl>
     <PackageTags>C# .NET WebDAV Server ASP.NET</PackageTags>
