@@ -81,15 +81,14 @@ namespace NWebDav.Server.Handlers
 
             // Check if the Overwrite header is set
             var overwrite = request.GetOverwrite();
-
-            if (overwrite == false)
+            if (!overwrite)
             {
-                // if overwrite is false and destination exist ==> Precondition Failed
-                var destFile = await destinationCollection.GetItemAsync(splitDestinationUri.Name, httpContext).ConfigureAwait(false);
-                if (destFile != null)
+                // If overwrite is false and destination exist ==> Precondition Failed
+                var destItem = await destinationCollection.GetItemAsync(splitDestinationUri.Name, httpContext).ConfigureAwait(false);
+                if (destItem != null)
                 {
-                    // Precondition Failed ==> ask user for overwrite
-                    response.SetStatus(DavStatusCode.PreconditionFailed, "Source and destination cannot be the same.");
+                    // Cannot overwrite destination item
+                    response.SetStatus(DavStatusCode.PreconditionFailed, "Cannot overwrite destination item.");
                     return true;
                 }
             }
