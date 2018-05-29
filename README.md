@@ -50,6 +50,9 @@ The following features are currently missing:
 
 The current version seems to work fine to serve files using WebDAV on both Windows and OS X.
 
+# Contact
+If you have any questions and/or problems, then you can submit an issue. For other remarks, you can also contact me via email at <mail@ramondeklein.nl>.
+
 # Donate
 I never intended to make any profit for this code, but I received a request to add a donation link. So if you think that you want to donate to this project, then you can use the following button to donate to me via PayPal (don't feel obliged to do so).
 
