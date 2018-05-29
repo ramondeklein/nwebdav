@@ -49,3 +49,8 @@ The following features are currently missing:
   and provide support for it.
 
 The current version seems to work fine to serve files using WebDAV on both Windows and OS X.
+
+# Donate
+I never intended to make any profit for this code, but I received a request to add a donation link. So if you think that you want to donate to this project, then you can use the following button to donate to me via PayPal (don't feel obliged to do so).
+
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=59LH5AHNQ8XZW)
