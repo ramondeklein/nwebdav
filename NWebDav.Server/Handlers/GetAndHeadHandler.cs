@@ -56,6 +56,9 @@ namespace NWebDav.Server.Handlers
                 return true;
             }
 
+            // ETag might be used for a conditioanl request
+            string etag = null;
+
             // Add non-expensive headers based on properties
             var propertyManager = entry.PropertyManager;
             if (propertyManager != null)
@@ -66,7 +69,7 @@ namespace NWebDav.Server.Handlers
                     response.SetHeaderValue("Last-Modified", lastModifiedUtc);
 
                 // Add ETag
-                var etag = (string)(await propertyManager.GetPropertyAsync(httpContext, entry, DavGetEtag<IStoreItem>.PropertyName, true).ConfigureAwait(false));
+                etag = (string)(await propertyManager.GetPropertyAsync(httpContext, entry, DavGetEtag<IStoreItem>.PropertyName, true).ConfigureAwait(false));
                 if (etag != null)
                     response.SetHeaderValue("Etag", etag);
 
@@ -135,6 +138,14 @@ namespace NWebDav.Server.Handlers
                         // If the content length is not supported, then we just skip it
                     }
 
+                    // Do not return the actual item data if ETag matches
+                    if (etag != null && request.GetHeaderValue("If-None-Match") == etag)
+                    {
+                        response.SetHeaderValue("Content-Length", "0");
+                        response.SetStatus(DavStatusCode.NotModified);
+                        return true;
+                    }
+
                     // HEAD method doesn't require the actual item data
                     if (!head)
                         await CopyToAsync(stream, response.Stream, range?.Start ?? 0, range?.End).ConfigureAwait(false);
@@ -156,7 +167,7 @@ namespace NWebDav.Server.Handlers
                 // We prefer seeking instead of draining data
                 if (!src.CanSeek)
                     throw new IOException("Cannot use range, because the source stream isn't seekable");
-                
+
                 src.Seek(start, SeekOrigin.Begin);
             }
 
@@ -176,7 +187,7 @@ namespace NWebDav.Server.Handlers
                 // We're done, if we cannot read any data anymore
                 if (bytesRead == 0)
                     return;
-                
+
                 // Write the data to the destination stream
                 await dest.WriteAsync(buffer, 0, bytesRead).ConfigureAwait(false);
 

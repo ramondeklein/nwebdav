@@ -175,6 +175,17 @@ namespace NWebDav.Server
 
         /// <summary>
         /// <para>
+        /// The 304 (Not Modified) status code indicates that a conditional GET
+        /// or HEAD request has been received and would have resulted in a 200
+        /// (OK) response if it were not for the fact that the condition
+        /// evaluated to false.
+        /// </para>
+        /// </summary>
+        [DavStatusCode("Not Modified")]
+        NotModified = HttpStatusCode.NotModified,
+
+        /// <summary>
+        /// <para>
         /// The request could not be understood by the server due to malformed
         /// syntax. The client SHOULD NOT repeat the request without
         /// modifications.
