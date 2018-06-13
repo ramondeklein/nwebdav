@@ -1009,11 +1009,11 @@ namespace NWebDav.Server.Helpers
         /// <returns>The MIME-type for the given file name.</returns>
         public static string GetMimeType(string fileName)
         {
-            var extension = Path.GetExtension(fileName).Replace(".", string.Empty);
+            var extension = Path.GetExtension(fileName);
             if (!string.IsNullOrEmpty(extension))
             {
                 string mimeType;
-                if (s_typeMap.TryGetValue(extension, out mimeType))
+                if (s_typeMap.TryGetValue(extension.Substring(1).ToLowerInvariant(), out mimeType))
                     return mimeType;
             }
 
