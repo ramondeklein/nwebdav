@@ -1013,7 +1013,7 @@ namespace NWebDav.Server.Helpers
             if (!string.IsNullOrEmpty(extension))
             {
                 string mimeType;
-                if (s_typeMap.TryGetValue(extension, out mimeType))
+                if (s_typeMap.TryGetValue(extension.Substring(1).ToLowerInvariant(), out mimeType))
                     return mimeType;
             }
 
