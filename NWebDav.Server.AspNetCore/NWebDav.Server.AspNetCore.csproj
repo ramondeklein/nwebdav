@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <VersionPrefix>0.1.27</VersionPrefix>
+    <VersionPrefix>0.1.28</VersionPrefix>
     <TargetFramework>netstandard1.6</TargetFramework>
     <AssemblyName>NWebDav.Server.AspNetCore</AssemblyName>
     <Title>NWebDav server library for AspNetCore's HttpContext</Title>
@@ -16,11 +16,15 @@
     <RepositoryUrl>https://github.com/ramondeklein/nwebdav.git</RepositoryUrl>
     <PackageTags>C# .NET WebDAV Server AspNetCore HttpContext</PackageTags>
     <PackageLicenseUrl>https://www.gnu.org/licenses/lgpl.html</PackageLicenseUrl>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PrivateRepositoryUrl>https://github.com/ramondeklein/nwebdav</PrivateRepositoryUrl>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbeddEmbedAllSources>true</EmbeddEmbedAllSources>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,6 +37,10 @@
     <PackageReference Include="System.Linq" Version="4.3.0" />
     <PackageReference Include="System.Net.Primitives" Version="4.3.0" />
     <PackageReference Include="System.Security.Claims" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta-62925-02" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
