@@ -19,11 +19,11 @@
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugType>portable</DebugType>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PrivateRepositoryUrl>https://github.com/ramondeklein/nwebdav</PrivateRepositoryUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <EmbeddEmbedAllSources>true</EmbeddEmbedAllSources>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
 
