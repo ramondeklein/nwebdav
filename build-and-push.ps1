@@ -1,6 +1,6 @@
-$version = '0.1.29'
+$version = '0.1.30'
 $apiKey = Get-Content nuget.apikey
-$folders = @("NWebDAV.Server", "NWebDAV.Server.AspNet", "NWebDav.Server.AspNetCore", "NWebDAV.Server.HttpListener")
+$folders = @("NWebDav.Server", "NWebDav.Server.AspNet", "NWebDav.Server.AspNetCore", "NWebDav.Server.HttpListener")
 ForEach ($folder in $folders) {
 	Push-Location $folder
 	& dotnet build -c Release
