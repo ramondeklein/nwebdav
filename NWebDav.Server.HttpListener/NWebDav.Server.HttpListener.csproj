@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <VersionPrefix>0.1.30</VersionPrefix>
+    <VersionPrefix>0.1.31</VersionPrefix>
     <TargetFramework>net45</TargetFramework>
     <AssemblyName>NWebDav.Server.HttpListener</AssemblyName>
     <OutputType>Library</OutputType>

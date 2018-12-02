@@ -1,4 +1,4 @@
-$version = '0.1.30'
+$version = '0.1.31'
 $apiKey = Get-Content nuget.apikey
 $folders = @("NWebDav.Server", "NWebDav.Server.AspNet", "NWebDav.Server.AspNetCore", "NWebDav.Server.HttpListener")
 ForEach ($folder in $folders) {
