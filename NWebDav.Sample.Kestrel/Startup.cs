@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Logging;
 
 using NWebDav.Server;
-using NWebDav.Server.Handlers;
 using NWebDav.Server.Stores;
 using NWebDav.Server.AspNetCore;
 

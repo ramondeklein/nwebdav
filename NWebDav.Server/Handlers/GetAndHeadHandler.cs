@@ -106,7 +106,7 @@ namespace NWebDav.Server.Handlers
                             var length = stream.Length;
 
                             // Check if an 'If-Range' was specified
-                            if (range?.If != null)
+                            if (range?.If != null && propertyManager != null)
                             {
                                 var lastModifiedText = (string)await propertyManager.GetPropertyAsync(httpContext, entry, DavGetLastModified<IStoreItem>.PropertyName, true).ConfigureAwait(false);
                                 var lastModified = DateTime.Parse(lastModifiedText, CultureInfo.InvariantCulture);
@@ -172,7 +172,7 @@ namespace NWebDav.Server.Handlers
             }
 
             // Determine the number of bytes to read
-            var bytesToRead = end.HasValue ? end.Value - start + 1 : long.MaxValue;
+            var bytesToRead = end - start + 1 ?? long.MaxValue;
 
             // Read in 64KB blocks
             var buffer = new byte[64 * 1024];

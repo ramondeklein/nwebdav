@@ -24,21 +24,21 @@ namespace NWebDav.Server.AspNet
                         break;
 
                     default:
-                _httpResponse.Headers.Set(header, value);
+                        _httpResponse.Headers.Set(header, value);
                         break;
                 }
             }
 
             public int Status
             {
-                get { return _httpResponse.StatusCode; }
-                set { _httpResponse.StatusCode = value; }
+                get => _httpResponse.StatusCode;
+                set => _httpResponse.StatusCode = value;
             }
 
             public string StatusDescription
             {
-                get { return _httpResponse.StatusDescription; }
-                set { _httpResponse.StatusDescription = value; }
+                get => _httpResponse.StatusDescription;
+                set => _httpResponse.StatusDescription = value;
             }
 
             public Stream Stream => _httpResponse.OutputStream;

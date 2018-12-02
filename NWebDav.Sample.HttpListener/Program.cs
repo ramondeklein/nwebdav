@@ -4,7 +4,6 @@ using System.Net;
 using System.Threading;
 using System.Xml;
 using NWebDav.Server;
-using NWebDav.Server.Handlers;
 using NWebDav.Server.Http;
 using NWebDav.Server.HttpListener;
 using NWebDav.Server.Logging;

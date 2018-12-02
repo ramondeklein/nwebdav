@@ -157,8 +157,7 @@ namespace NWebDav.Server.Stores
             {
                 // If the destination is also a disk-store, then we can use the FileCopy API
                 // (it's probably a bit more efficient than copying in C#)
-                var diskCollection = destination as DiskStoreCollection;
-                if (diskCollection != null)
+                if (destination is DiskStoreCollection diskCollection)
                 {
                     // Check if the collection is writable
                     if (!diskCollection.IsWritable)
@@ -211,8 +210,7 @@ namespace NWebDav.Server.Stores
 
         public override bool Equals(object obj)
         {
-            var storeItem = obj as DiskStoreItem;
-            if (storeItem == null)
+            if (!(obj is DiskStoreItem storeItem))
                 return false;
             return storeItem._fileInfo.FullName.Equals(_fileInfo.FullName, StringComparison.CurrentCultureIgnoreCase);
         }

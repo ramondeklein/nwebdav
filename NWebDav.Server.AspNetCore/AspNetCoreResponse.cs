@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 
 using Microsoft.AspNetCore.Http;
 
@@ -21,8 +20,8 @@ namespace NWebDav.Server.AspNetCore
 
             public int Status 
             { 
-                get { return _response.StatusCode; }
-                set { _response.StatusCode = value; }
+                get => _response.StatusCode;
+                set => _response.StatusCode = value;
             }
 
             // Status Description isn't send to the requester

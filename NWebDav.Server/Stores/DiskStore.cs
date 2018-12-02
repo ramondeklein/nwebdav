@@ -12,16 +12,13 @@ namespace NWebDav.Server.Stores
     {
         public DiskStore(string directory, bool isWritable = true, ILockingManager lockingManager = null)
         {
-            if (directory == null)
-                throw new ArgumentNullException(nameof(directory));
-
+            BaseDirectory = directory ?? throw new ArgumentNullException(nameof(directory));
             IsWritable = isWritable;
-            BaseDirectory = directory;
             LockingManager = lockingManager ?? new InMemoryLockingManager();
         }
 
-        public bool IsWritable { get; }
         public string BaseDirectory { get; }
+        public bool IsWritable { get; }
         public ILockingManager LockingManager { get; }
 
         public Task<IStoreItem> GetItemAsync(Uri uri, IHttpContext httpContext)

@@ -54,12 +54,8 @@ namespace NWebDav.Server
         /// </param>
         public WebDavDispatcher(IStore store, IRequestHandlerFactory requestHandlerFactory = null)
         {
-            // Make sure a store resolver is specified
-            if (store == null)
-                throw new ArgumentNullException(nameof(store));
-
             // Save store resolver and request handler factory
-            _store = store;
+            _store = store ?? throw new ArgumentNullException(nameof(store));
             _requestHandlerFactory = requestHandlerFactory ?? new RequestHandlerFactory();
         }
 
@@ -166,6 +162,7 @@ namespace NWebDav.Server
                 finally
                 {
                     // Check if we need to dispose the request handler
+                    // ReSharper disable once SuspiciousTypeConversion.Global
                     (requestHandler as IDisposable)?.Dispose();
                 }
             }

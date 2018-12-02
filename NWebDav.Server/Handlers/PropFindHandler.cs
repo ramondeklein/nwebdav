@@ -81,8 +81,7 @@ namespace NWebDav.Server.Handlers
             }
 
             // Check if the entry is a collection
-            var topCollection = topEntry as IStoreCollection;
-            if (topCollection != null)
+            if (topEntry is IStoreCollection topCollection)
             {
                 // Determine depth
                 var depth = request.GetDepth();
@@ -275,15 +274,14 @@ namespace NWebDav.Server.Handlers
             // Add the collection to the list
             entries.Add(new PropertyEntry(uri, collection));
 
-            // If we have enough depth, then add the childs
+            // If we have enough depth, then add the children
             if (depth > 0)
             {
                 // Add all child collections
                 foreach (var childEntry in await collection.GetItemsAsync(httpContext).ConfigureAwait(false))
                 {
                     var subUri = UriHelper.Combine(uri, childEntry.Name);
-                    var subCollection = childEntry as IStoreCollection;
-                    if (subCollection != null)
+                    if (childEntry is IStoreCollection subCollection)
                         await AddEntriesAsync(subCollection, depth - 1, httpContext, subUri, entries).ConfigureAwait(false);
                     else
                         entries.Add(new PropertyEntry(subUri, childEntry));

@@ -123,8 +123,8 @@ namespace NWebDav.Server.Handlers
             var subBaseUri = UriHelper.Combine(baseUri, destinationName);
 
             // Obtain the actual item
-            var moveCollection = await sourceCollection.GetItemAsync(sourceName, httpContext).ConfigureAwait(false) as IStoreCollection;
-            if (moveCollection != null && !moveCollection.SupportsFastMove(destinationCollection, destinationName, overwrite, httpContext))
+            var moveItem = await sourceCollection.GetItemAsync(sourceName, httpContext).ConfigureAwait(false);
+            if (moveItem is IStoreCollection moveCollection && !moveCollection.SupportsFastMove(destinationCollection, destinationName, overwrite, httpContext))
             {
                 // Create a new collection
                 var newCollectionResult = await destinationCollection.CreateCollectionAsync(destinationName, overwrite, httpContext).ConfigureAwait(false);
@@ -134,27 +134,21 @@ namespace NWebDav.Server.Handlers
                     return;
                 }
 
-                // Move all subitems
+                // Move all sub items
                 foreach (var entry in await moveCollection.GetItemsAsync(httpContext).ConfigureAwait(false))
                     await MoveAsync(moveCollection, entry.Name, newCollectionResult.Collection, entry.Name, overwrite, httpContext, subBaseUri, errors).ConfigureAwait(false);
 
                 // Delete the source collection
                 var deleteResult = await sourceCollection.DeleteItemAsync(sourceName, httpContext).ConfigureAwait(false);
                 if (deleteResult != DavStatusCode.Ok)
-                {
                     errors.AddResult(subBaseUri, newCollectionResult.Result);
-                    return;
-                }
             }
             else
             {
                 // Items should be moved directly
                 var result = await sourceCollection.MoveItemAsync(sourceName, destinationCollection, destinationName, overwrite, httpContext).ConfigureAwait(false);
                 if (result.Result != DavStatusCode.Created && result.Result != DavStatusCode.NoContent)
-                {
                     errors.AddResult(subBaseUri, result.Result);
-                    return;
-                }
             }
         }
     }

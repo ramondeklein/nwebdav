@@ -1,4 +1,4 @@
-﻿namespace NWebDav.Server
+﻿namespace NWebDav.Sample.Kestrel
 {
     /// <summary>
     /// Top-level namespace for the NWebDav.Server assembly.
