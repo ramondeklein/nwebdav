@@ -34,13 +34,13 @@ namespace NWebDav.Server.AspNetCore
 
             public void SetHeaderValue(string header, string value)
             {
-                switch (header)
+                switch (header.ToLowerInvariant())
                 {
-                    case "Content-Length":
+                    case "content-length":
                         _response.ContentLength = long.Parse(value);
                         break;
 
-                    case "Content-Type":
+                    case "content-type":
                         _response.ContentType = value;
                         break;
 
