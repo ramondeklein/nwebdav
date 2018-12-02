@@ -190,7 +190,15 @@ namespace NWebDav.Server.Handlers
                         if (value is IEnumerable<XElement>)
                             value = ((IEnumerable<XElement>) value).Cast<object>().ToArray();
 
-                        xPropStatValues.Add(new XElement(WebDavNamespaces.DavNs + "prop", new XElement(propertyName, value)));
+                        // Make sure we use the same 'prop' tag to add all properties
+                        var xProp = xPropStatValues.Element(WebDavNamespaces.DavNs + "prop");
+                        if (xProp == null)
+                        {
+                            xProp = new XElement(WebDavNamespaces.DavNs + "prop");
+                            xPropStatValues.Add(xProp);
+                        }
+
+                        xProp.Add(new XElement(propertyName, value));
                     }
                     else
                     {
