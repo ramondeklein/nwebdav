@@ -17,7 +17,16 @@ namespace NWebDav.Server.AspNet
 
             public void SetHeaderValue(string header, string value)
             {
+                switch (header.ToLowerInvariant())
+                {
+                    case "content-type":
+                        _httpResponse.ContentType = value;
+                        break;
+
+                    default:
                 _httpResponse.Headers.Set(header, value);
+                        break;
+                }
             }
 
             public int Status
