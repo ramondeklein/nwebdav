@@ -149,7 +149,7 @@ namespace NWebDav.Server.Handlers
                 response.SetHeaderValue("Lock-Token", $"<{lockResult.Lock.Value.LockToken.AbsoluteUri}>");
 
             // Stream the document
-            await response.SendResponseAsync(DavStatusCode.Ok, xDocument).ConfigureAwait(false);
+            await httpContext.SendResponseAsync(DavStatusCode.Ok, xDocument).ConfigureAwait(false);
             return true;
         }
     }

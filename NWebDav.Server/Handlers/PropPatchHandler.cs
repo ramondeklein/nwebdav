@@ -162,7 +162,7 @@ namespace NWebDav.Server.Handlers
             var xDocument = new XDocument(propSetCollection.GetXmlMultiStatus(request.Url));
 
             // Stream the document
-            await response.SendResponseAsync(DavStatusCode.MultiStatus, xDocument).ConfigureAwait(false);
+            await httpContext.SendResponseAsync(DavStatusCode.MultiStatus, xDocument).ConfigureAwait(false);
             return true;
         }
     }

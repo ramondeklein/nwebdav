@@ -148,7 +148,7 @@ namespace NWebDav.Server.Handlers
 
                     // HEAD method doesn't require the actual item data
                     if (!head)
-                        await CopyToAsync(stream, response.Stream, range?.Start ?? 0, range?.End).ConfigureAwait(false);
+                        await CopyToAsync(httpContext, stream, response.Stream, range?.Start ?? 0, range?.End).ConfigureAwait(false);
                 }
                 else
                 {
@@ -159,7 +159,7 @@ namespace NWebDav.Server.Handlers
             return true;
         }
 
-        private async Task CopyToAsync(Stream src, Stream dest, long start, long? end)
+        private async Task CopyToAsync(IHttpContext httpContext, Stream src, Stream dest, long start, long? end)
         {
             // Skip to the first offset
             if (start > 0)
@@ -182,14 +182,14 @@ namespace NWebDav.Server.Handlers
             {
                 // Read the requested bytes into memory
                 var requestedBytes = (int)Math.Min(bytesToRead, buffer.Length);
-                var bytesRead = await src.ReadAsync(buffer, 0, requestedBytes).ConfigureAwait(false);
+                var bytesRead = await src.ReadAsync(buffer, 0, requestedBytes, httpContext.RequestAborted).ConfigureAwait(false);
 
                 // We're done, if we cannot read any data anymore
                 if (bytesRead == 0)
                     return;
                 
                 // Write the data to the destination stream
-                await dest.WriteAsync(buffer, 0, bytesRead).ConfigureAwait(false);
+                await dest.WriteAsync(buffer, 0, bytesRead, httpContext.RequestAborted).ConfigureAwait(false);
 
                 // Decrement the number of bytes left to read
                 bytesToRead -= bytesRead;

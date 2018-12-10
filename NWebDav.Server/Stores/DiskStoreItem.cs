@@ -138,7 +138,7 @@ namespace NWebDav.Server.Stores
                 // Copy the information to the destination stream
                 using (var outputStream = _fileInfo.OpenWrite())
                 {
-                    await inputStream.CopyToAsync(outputStream).ConfigureAwait(false);
+                    await inputStream.CopyToAsync(outputStream, 81920, httpContext.RequestAborted).ConfigureAwait(false);
                 }
                 return DavStatusCode.Ok;
             }
