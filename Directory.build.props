@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <VersionPrefix>0.1.32</VersionPrefix>
+    <VersionPrefix>0.1.33</VersionPrefix>
     <Product>NWebDav</Product>
     <Company></Company>
     <Authors>Ramon de Klein &lt;mail@ramondeklein.nl&gt;</Authors>
