@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <VersionPrefix>0.1.32</VersionPrefix>
-    <TargetFramework>netstandard1.6</TargetFramework>
+    <TargetFrameworks>netstandard1.6;netstandard2.0</TargetFrameworks>
     <AssemblyName>NWebDav.Server.AspNetCore</AssemblyName>
     <Title>NWebDav server library for AspNetCore's HttpContext</Title>
     <OutputType>Library</OutputType>
@@ -37,6 +37,10 @@
     <PackageReference Include="System.Linq" Version="4.3.0" />
     <PackageReference Include="System.Net.Primitives" Version="4.3.0" />
     <PackageReference Include="System.Security.Claims" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup>
