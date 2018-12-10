@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
@@ -28,7 +29,7 @@ namespace NWebDav.Server.Handlers
         /// A task that represents the asynchronous OPTIONS operation. The task
         /// will always return <see langword="true"/> upon completion.
         /// </returns>
-        public Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)
+        public Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store, CancellationToken cancellationToken)
         {
             // Obtain response
             var response = httpContext.Response;

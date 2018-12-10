@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 using NWebDav.Server.Helpers;
@@ -35,7 +36,7 @@ namespace NWebDav.Server.Handlers
         /// A task that represents the asynchronous GET or HEAD operation. The
         /// task will always return <see langword="true"/> upon completion.
         /// </returns>
-        public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)
+        public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store, CancellationToken cancellationToken)
         {
             // Obtain request and response
             var request = httpContext.Request;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -32,7 +33,7 @@ namespace NWebDav.Server.Handlers
         /// A task that represents the asynchronous COPY operation. The task
         /// will always return <see langword="true"/> upon completion.
         /// </returns>
-        public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)
+        public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store, CancellationToken cancellationToken)
         {
             // Obtain request and response
             var request = httpContext.Request;
@@ -95,7 +96,7 @@ namespace NWebDav.Server.Handlers
                 var xDocument = new XDocument(errors.GetXmlMultiStatus());
 
                 // Stream the document
-                await response.SendResponseAsync(DavStatusCode.MultiStatus, xDocument).ConfigureAwait(false);
+                await response.SendResponseAsync(DavStatusCode.MultiStatus, xDocument, cancellationToken).ConfigureAwait(false);
             }
             else
             {

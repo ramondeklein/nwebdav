@@ -2,14 +2,14 @@
 using System.Net;
 using System.Security;
 using System.Security.Principal;
-
+using System.Threading;
 using NWebDav.Server.Http;
 
 namespace NWebDav.Server.HttpListener
 {
     public class HttpBasicContext : HttpBaseContext
     {
-        public HttpBasicContext(HttpListenerContext httpListenerContext, Func<HttpListenerBasicIdentity, IPrincipal> getPrincipal) : base(httpListenerContext.Request, httpListenerContext.Response)
+        public HttpBasicContext(HttpListenerContext httpListenerContext, Func<HttpListenerBasicIdentity, IPrincipal> getPrincipal, CancellationToken cancellationToken) : base(httpListenerContext.Request, httpListenerContext.Response, cancellationToken)
         {
             // Obtain the basic identity
             var basicIdentity = httpListenerContext.User?.Identity as HttpListenerBasicIdentity;
@@ -21,7 +21,7 @@ namespace NWebDav.Server.HttpListener
             Session = new HttpSession(principal);
         }
 
-        public HttpBasicContext(HttpListenerContext httpListenerContext, Func<HttpListenerBasicIdentity, bool> checkIdentity) : base(httpListenerContext.Request, httpListenerContext.Response)
+        public HttpBasicContext(HttpListenerContext httpListenerContext, Func<HttpListenerBasicIdentity, bool> checkIdentity, CancellationToken cancellationToken) : base(httpListenerContext.Request, httpListenerContext.Response, cancellationToken)
         {
             // Obtain the basic identity
             var basicIdentity = httpListenerContext.User?.Identity as HttpListenerBasicIdentity;

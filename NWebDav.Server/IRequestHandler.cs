@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
@@ -38,6 +39,9 @@ namespace NWebDav.Server
         /// <param name="store">
         /// Store that is used to access the collections and items.
         /// </param>
+        /// <param name="cancellationToken">
+        /// Cancellation token.
+        /// </param>
         /// <returns>
         /// A task that represents the asynchronous handle request operation.
         /// The task will return a boolean upon completion of the task that
@@ -47,6 +51,6 @@ namespace NWebDav.Server
         /// <see cref="DavStatusCode.NotImplemented"/> is returned to the
         /// requester.
         /// </returns>
-        Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store);
+        Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store, CancellationToken cancellationToken);
     }
 }

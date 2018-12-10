@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using NWebDav.Server.Http;
 
@@ -8,10 +9,10 @@ namespace NWebDav.Server.HttpListener
     {
         private readonly HttpListenerResponse _response;
 
-        protected HttpBaseContext(HttpListenerRequest request, HttpListenerResponse response)
+        protected HttpBaseContext(HttpListenerRequest request, HttpListenerResponse response, CancellationToken cancellationToken)
         {
             // Assign properties
-            Request = new HttpRequest(request);
+            Request = new HttpRequest(request, cancellationToken);
             Response = new HttpResponse(response);
 
             // Save response

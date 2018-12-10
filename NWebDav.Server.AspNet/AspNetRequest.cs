@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Web;
 using NWebDav.Server.Http;
 
@@ -12,9 +13,10 @@ namespace NWebDav.Server.AspNet
         {
             private readonly HttpRequest _httpRequest;
 
-            public AspNetRequest(HttpRequest httpRequest)
+            public AspNetRequest(HttpRequest httpRequest, CancellationToken cancellationToken)
             {
                 _httpRequest = httpRequest;
+                CancellationToken = cancellationToken;
             }
 
             public string GetHeaderValue(string header)
@@ -27,6 +29,7 @@ namespace NWebDav.Server.AspNet
             public string RemoteEndPoint => _httpRequest.UserHostName;
             public IEnumerable<string> Headers => _httpRequest.Headers.AllKeys;
             public Stream Stream => _httpRequest.InputStream;
+            public CancellationToken CancellationToken { get; }
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
@@ -8,14 +9,14 @@ namespace NWebDav.Server.AspNetCore
 {
     public partial class AspNetCoreContext : IHttpContext
     {
-        public AspNetCoreContext(HttpContext httpContext)
+        public AspNetCoreContext(HttpContext httpContext, CancellationToken cancellationToken)
         {
             // Make sure a valid HTTP context is specified
             if (httpContext == null)
                 throw new ArgumentNullException(nameof(httpContext));
 
             // Save request, response and session
-            Request = new AspNetCoreRequest(httpContext.Request);
+            Request = new AspNetCoreRequest(httpContext.Request, cancellationToken);
             Response = new AspNetCoreResponse(httpContext.Response);
             Session = new AspNetCoreSession(httpContext.User);
         }

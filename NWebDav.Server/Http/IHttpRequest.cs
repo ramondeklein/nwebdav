@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 namespace NWebDav.Server.Http
 {
@@ -105,5 +106,15 @@ namespace NWebDav.Server.Http
         /// </para>
         /// </remarks>
         Stream Stream { get; }
+
+        /// <summary>
+        /// Request's cancellation token
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// When the request is cancelled, then the cancellation token is set.
+        /// </para>
+        /// </remarks>
+        CancellationToken CancellationToken { get; }
     }
 }

@@ -1,5 +1,5 @@
 ﻿using System.Net;
-
+using System.Threading;
 using NWebDav.Server.Http;
 
 namespace NWebDav.Server.HttpListener
@@ -8,7 +8,7 @@ namespace NWebDav.Server.HttpListener
     {
         private static readonly IHttpSession s_nullSession = new HttpSession(null);
 
-        public HttpContext(HttpListenerContext httpListenerContext) : base(httpListenerContext.Request, httpListenerContext.Response)
+        public HttpContext(HttpListenerContext httpListenerContext, CancellationToken cancellationToken) : base(httpListenerContext.Request, httpListenerContext.Response, cancellationToken)
         {
         }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 
@@ -15,7 +16,7 @@ namespace NWebDav.Server.AspNet
 
         public void ProcessRequest(HttpContext context)
         {
-            ExecuteAsync(context).Wait();
+            ExecuteAsync(context, CancellationToken.None).Wait();
         }
 
         public bool IsReusable => true;
@@ -24,7 +25,7 @@ namespace NWebDav.Server.AspNet
         {
             // Dispatch the request. Note we don't use the ConfigureAwait(false), 
             // because we want to retain the HTTP context inside the controller.
-            var task = ExecuteAsync(context);
+            var task = ExecuteAsync(context, CancellationToken.None);
 
             var tcs = new TaskCompletionSource<bool>(extraData);
             task.ContinueWith(t =>
@@ -51,10 +52,10 @@ namespace NWebDav.Server.AspNet
                 throw new OperationCanceledException();
         }
 
-        private Task ExecuteAsync(HttpContext context)
+        private Task ExecuteAsync(HttpContext context, CancellationToken cancellationToken)
         {
             // Create the NWebDAV compatible context based on the ASP.NET context
-            var aspNetContext = new AspNetContext(context);
+            var aspNetContext = new AspNetContext(context, cancellationToken);
 
             // Dispatch the request. Note we don't use the ConfigureAwait(false), 
             // because we want to retain the HTTP context inside the controller.

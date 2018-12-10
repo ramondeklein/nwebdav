@@ -129,7 +129,7 @@ namespace NWebDav.Server
                 try
                 {
                     // Handle the request
-                    if (await requestHandler.HandleRequestAsync(httpContext, _store).ConfigureAwait(false))
+                    if (await requestHandler.HandleRequestAsync(httpContext, _store, httpContext.Request.CancellationToken).ConfigureAwait(false))
                     {
                         // Log processing duration
                         s_log.Log(LogLevel.Info, () => $"{logRequest} - Finished processing ({sw.ElapsedMilliseconds}ms, HTTP result: {httpContext.Response.Status})");

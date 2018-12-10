@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-
+using System.Threading;
 using Microsoft.AspNetCore.Http;
 
 using NWebDav.Server.Http;
@@ -16,9 +16,10 @@ namespace NWebDav.Server.AspNetCore
         {
             private readonly HttpRequest _request;
 
-            internal AspNetCoreRequest(HttpRequest request)
+            internal AspNetCoreRequest(HttpRequest request, CancellationToken cancellationToken)
             {
                 _request = request;
+                CancellationToken = cancellationToken;
             }
 
             public string HttpMethod => _request.Method;
@@ -27,6 +28,7 @@ namespace NWebDav.Server.AspNetCore
             public IEnumerable<string> Headers => _request.Headers.Keys;
             public string GetHeaderValue(string header) => _request.Headers[header].FirstOrDefault();
             public Stream Stream => _request.Body;
+            public CancellationToken CancellationToken { get; }
         }
     }
 }

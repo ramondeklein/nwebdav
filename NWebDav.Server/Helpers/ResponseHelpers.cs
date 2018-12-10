@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
@@ -57,10 +58,13 @@ namespace NWebDav.Server.Helpers
         /// <param name="xDocument">
         /// XML document that should be sent as the body of the message.
         /// </param>
+        /// <param name="cancellationToken">
+        /// Cancellation token.
+        /// </param>
         /// <returns>
         /// A task that represents the asynchronous response send.
         /// </returns>
-        public static async Task SendResponseAsync(this IHttpResponse response, DavStatusCode statusCode, XDocument xDocument)
+        public static async Task SendResponseAsync(this IHttpResponse response, DavStatusCode statusCode, XDocument xDocument, CancellationToken cancellationToken)
         {
             // Make sure an XML document is specified
             if (xDocument == null)
@@ -114,7 +118,7 @@ namespace NWebDav.Server.Helpers
 
                 // Reset stream and write the stream to the result
                 ms.Seek(0, SeekOrigin.Begin);
-                await ms.CopyToAsync(response.Stream).ConfigureAwait(false);
+                await ms.CopyToAsync(response.Stream, 81920, cancellationToken).ConfigureAwait(false);
             }
         }
     }

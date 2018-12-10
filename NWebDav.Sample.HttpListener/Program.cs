@@ -35,9 +35,9 @@ namespace NWebDav.Sample.HttpListener
                 // Determine the proper HTTP context
                 IHttpContext httpContext;
                 if (httpListenerContext.Request.IsAuthenticated)
-                    httpContext = new HttpBasicContext(httpListenerContext, checkIdentity: i => i.Name == webdavUsername && i.Password == webdavPassword);
+                    httpContext = new HttpBasicContext(httpListenerContext, i => i.Name == webdavUsername && i.Password == webdavPassword, cancellationToken);
                 else
-                    httpContext = new HttpContext(httpListenerContext);
+                    httpContext = new HttpContext(httpListenerContext, cancellationToken);
 
                 // Dispatch the request
                 await webDavDispatcher.DispatchRequestAsync(httpContext).ConfigureAwait(false);
