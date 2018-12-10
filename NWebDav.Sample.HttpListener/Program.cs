@@ -15,17 +15,6 @@ namespace NWebDav.Sample.HttpListener
 {
     internal class Program
     {
-        private static readonly log4net.ILog s_log;
-
-        static Program()
-        {
-            // Configure LOG4NET
-            log4net.Config.XmlConfigurator.Configure();
-
-            // Obtain the logger
-            s_log = log4net.LogManager.GetLogger(typeof(Program));
-        }
-
         private static async void DispatchHttpRequestsAsync(System.Net.HttpListener httpListener, CancellationToken cancellationToken)
         {
             // Create a request handler factory that uses basic authentication
@@ -58,7 +47,7 @@ namespace NWebDav.Sample.HttpListener
         private static void Main(string[] args)
         {
             // Use the Log4NET adapter for logging
-            LoggerFactory.Factory = new Log4NetAdapter();
+            LoggerFactory.Factory = new ConsoleAdapter();
 
             // Obtain the HTTP binding settings
             var webdavProtocol = ConfigurationManager.AppSettings["webdav.protocol"] ?? "http";
@@ -75,8 +64,8 @@ namespace NWebDav.Sample.HttpListener
                 if (webdavUseAuthentication)
                 {
                     // Check if HTTPS is enabled
-                    if (webdavProtocol != "https" && s_log.IsWarnEnabled)
-                        s_log.Warn("Most WebDAV clients cannot use authentication on a non-HTTPS connection");
+                    if (webdavProtocol != "https")
+                        Console.WriteLine("Most WebDAV clients cannot use authentication on a non-HTTPS connection");
 
                     // Set the authentication scheme and realm
                     httpListener.AuthenticationSchemes = AuthenticationSchemes.Basic;
