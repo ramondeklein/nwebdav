@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -38,14 +39,14 @@ namespace NWebDav.Server.Props
         /// to deal with compatibility of certain WebDAV clients (can be
         /// determined using the user agent).
         /// </remarks>
-        public Func<IHttpContext, TEntry, Task<object>> GetterAsync { get; set; }
+        public Func<IHttpContext, TEntry, CancellationToken, Task<object>> GetterAsync { get; set; }
 
         /// <summary>
         /// Gets or sets the delegate that is responsible to set the property
         /// value of a store item/collection.
         /// </summary>
         /// <returns>Delegate to set the property value.</returns>
-        public Func<IHttpContext, TEntry, object, Task<DavStatusCode>> SetterAsync { get; set; }
+        public Func<IHttpContext, TEntry, object, CancellationToken, Task<DavStatusCode>> SetterAsync { get; set; }
 
         /// <summary>
         /// Gets or sets the flag whether or not the property is expensive.

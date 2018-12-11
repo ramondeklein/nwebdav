@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -146,13 +147,13 @@ namespace NWebDav.Server.Stores
         public string FullPath => _directoryInfo.FullName;
 
         // Disk collections (a.k.a. directories don't have their own data)
-        public Task<Stream> GetReadableStreamAsync(IHttpContext httpContext) => Task.FromResult((Stream)null);
-        public Task<DavStatusCode> UploadFromStreamAsync(IHttpContext httpContext, Stream inputStream) => Task.FromResult(DavStatusCode.Conflict);
+        public Task<Stream> GetReadableStreamAsync(IHttpContext httpContext, CancellationToken cancellationToken) => Task.FromResult((Stream)null);
+        public Task<DavStatusCode> UploadFromStreamAsync(IHttpContext httpContext, Stream inputStream, CancellationToken cancellationToken) => Task.FromResult(DavStatusCode.Conflict);
 
         public IPropertyManager PropertyManager => DefaultPropertyManager;
         public ILockingManager LockingManager { get; }
 
-        public Task<IStoreItem> GetItemAsync(string name, IHttpContext httpContext)
+        public Task<IStoreItem> GetItemAsync(string name, IHttpContext httpContext, CancellationToken cancellationToken)
         {
             // Determine the full path
             var fullPath = Path.Combine(_directoryInfo.FullName, name);
@@ -169,7 +170,7 @@ namespace NWebDav.Server.Stores
             return Task.FromResult<IStoreItem>(null);
         }
 
-        public Task<IList<IStoreItem>> GetItemsAsync(IHttpContext httpContext)
+        public Task<IList<IStoreItem>> GetItemsAsync(IHttpContext httpContext, CancellationToken cancellationToken)
         {
             var items = new List<IStoreItem>();
 
@@ -185,7 +186,7 @@ namespace NWebDav.Server.Stores
             return Task.FromResult<IList<IStoreItem>>(items);
         }
 
-        public Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, IHttpContext httpContext)
+        public Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, IHttpContext httpContext, CancellationToken cancellationToken)
         {
             // Return error
             if (!IsWritable)
@@ -226,7 +227,7 @@ namespace NWebDav.Server.Stores
             return Task.FromResult(new StoreItemResult(result, new DiskStoreItem(LockingManager, new FileInfo(destinationPath), IsWritable)));
         }
 
-        public Task<StoreCollectionResult> CreateCollectionAsync(string name, bool overwrite, IHttpContext httpContext)
+        public Task<StoreCollectionResult> CreateCollectionAsync(string name, bool overwrite, IHttpContext httpContext, CancellationToken cancellationToken)
         {
             // Return error
             if (!IsWritable)
@@ -268,10 +269,10 @@ namespace NWebDav.Server.Stores
             return Task.FromResult(new StoreCollectionResult(result, new DiskStoreCollection(LockingManager, new DirectoryInfo(destinationPath), IsWritable)));
         }
 
-        public async Task<StoreItemResult> CopyAsync(IStoreCollection destinationCollection, string name, bool overwrite, IHttpContext httpContext)
+        public async Task<StoreItemResult> CopyAsync(IStoreCollection destinationCollection, string name, bool overwrite, IHttpContext httpContext, CancellationToken cancellationToken)
         {
             // Just create the folder itself
-            var result = await destinationCollection.CreateCollectionAsync(name, overwrite, httpContext).ConfigureAwait(false);
+            var result = await destinationCollection.CreateCollectionAsync(name, overwrite, httpContext, cancellationToken).ConfigureAwait(false);
             return new StoreItemResult(result.Result, result.Collection);
         }
 
@@ -281,14 +282,14 @@ namespace NWebDav.Server.Stores
             return destination is DiskStoreCollection;
         }
 
-        public async Task<StoreItemResult> MoveItemAsync(string sourceName, IStoreCollection destinationCollection, string destinationName, bool overwrite, IHttpContext httpContext)
+        public async Task<StoreItemResult> MoveItemAsync(string sourceName, IStoreCollection destinationCollection, string destinationName, bool overwrite, IHttpContext httpContext, CancellationToken cancellationToken)
         {
             // Return error
             if (!IsWritable)
                 return new StoreItemResult(DavStatusCode.PreconditionFailed);
 
             // Determine the object that is being moved
-            var item = await GetItemAsync(sourceName, httpContext).ConfigureAwait(false);
+            var item = await GetItemAsync(sourceName, httpContext, cancellationToken).ConfigureAwait(false);
             if (item == null)
                 return new StoreItemResult(DavStatusCode.NotFound);
 
@@ -354,9 +355,9 @@ namespace NWebDav.Server.Stores
                 else
                 {
                     // Attempt to copy the item to the destination collection
-                    var result = await item.CopyAsync(destinationCollection, destinationName, overwrite, httpContext).ConfigureAwait(false);
+                    var result = await item.CopyAsync(destinationCollection, destinationName, overwrite, httpContext, cancellationToken).ConfigureAwait(false);
                     if (result.Result == DavStatusCode.Created || result.Result == DavStatusCode.NoContent)
-                        await DeleteItemAsync(sourceName, httpContext).ConfigureAwait(false);
+                        await DeleteItemAsync(sourceName, httpContext, cancellationToken).ConfigureAwait(false);
 
                     // Return the result
                     return result;
@@ -368,7 +369,7 @@ namespace NWebDav.Server.Stores
             }
         }
 
-        public Task<DavStatusCode> DeleteItemAsync(string name, IHttpContext httpContext)
+        public Task<DavStatusCode> DeleteItemAsync(string name, IHttpContext httpContext, CancellationToken cancellationToken)
         {
             // Return error
             if (!IsWritable)

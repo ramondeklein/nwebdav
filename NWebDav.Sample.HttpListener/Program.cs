@@ -35,12 +35,12 @@ namespace NWebDav.Sample.HttpListener
                 // Determine the proper HTTP context
                 IHttpContext httpContext;
                 if (httpListenerContext.Request.IsAuthenticated)
-                    httpContext = new HttpBasicContext(httpListenerContext, i => i.Name == webdavUsername && i.Password == webdavPassword, cancellationToken);
+                    httpContext = new HttpBasicContext(httpListenerContext, i => i.Name == webdavUsername && i.Password == webdavPassword);
                 else
-                    httpContext = new HttpContext(httpListenerContext, cancellationToken);
+                    httpContext = new HttpContext(httpListenerContext);
 
-                // Dispatch the request
-                await webDavDispatcher.DispatchRequestAsync(httpContext).ConfigureAwait(false);
+                // Dispatch the request (HttpListener doesn't seem to detect request cancellations :-()
+                await webDavDispatcher.DispatchRequestAsync(httpContext, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -81,14 +81,16 @@ namespace NWebDav.Sample.HttpListener
                 httpListener.Start();
 
                 // Start dispatching requests
-                var cancellationTokenSource = new CancellationTokenSource();
-                DispatchHttpRequestsAsync(httpListener, cancellationTokenSource.Token);
+                using (var cancellationTokenSource = new CancellationTokenSource())
+                {
+                    DispatchHttpRequestsAsync(httpListener, cancellationTokenSource.Token);
 
-                // Wait until somebody presses return
-                Console.WriteLine("WebDAV server running. Press 'x' to quit.");
-                while (Console.ReadKey().KeyChar != 'x') ;
+                    // Wait until somebody presses return
+                    Console.WriteLine("WebDAV server running. Press 'x' to quit.");
+                    while (Console.ReadKey().KeyChar != 'x') ;
 
-                cancellationTokenSource.Cancel();
+                    cancellationTokenSource.Cancel();
+                }
             }
         }
     }

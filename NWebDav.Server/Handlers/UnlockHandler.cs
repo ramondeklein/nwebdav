@@ -41,7 +41,7 @@ namespace NWebDav.Server.Handlers
             var lockToken = request.GetLockToken();
 
             // Obtain the WebDAV item
-            var item = await store.GetItemAsync(request.Url, httpContext).ConfigureAwait(false);
+            var item = await store.GetItemAsync(request.Url, httpContext, cancellationToken).ConfigureAwait(false);
             if (item == null)
             {
                 // Set status to not found
@@ -59,7 +59,7 @@ namespace NWebDav.Server.Handlers
             }
 
             // Perform the lock
-            var result = lockingManager.Unlock(item, lockToken);
+            var result = await lockingManager.UnlockAsync(item, lockToken, cancellationToken).ConfigureAwait(false);
 
             // Send response
             response.SetStatus(result);

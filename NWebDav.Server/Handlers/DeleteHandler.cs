@@ -46,7 +46,7 @@ namespace NWebDav.Server.Handlers
             var splitUri = RequestHelper.SplitUri(request.Url);
 
             // Obtain parent collection
-            var parentCollection = await store.GetCollectionAsync(splitUri.CollectionUri, httpContext).ConfigureAwait(false);
+            var parentCollection = await store.GetCollectionAsync(splitUri.CollectionUri, httpContext, cancellationToken).ConfigureAwait(false);
             if (parentCollection == null)
             {
                 // Source not found
@@ -55,7 +55,7 @@ namespace NWebDav.Server.Handlers
             }
 
             // Obtain the item that actually is deleted
-            var deleteItem = await parentCollection.GetItemAsync(splitUri.Name, httpContext).ConfigureAwait(false);
+            var deleteItem = await parentCollection.GetItemAsync(splitUri.Name, httpContext, cancellationToken).ConfigureAwait(false);
             if (deleteItem == null)
             {
                 // Source not found
@@ -64,22 +64,27 @@ namespace NWebDav.Server.Handlers
             }
 
             // Check if the item is locked
-            if (deleteItem.LockingManager?.IsLocked(deleteItem) ?? false)
+            var isLocked = false;
+            if (deleteItem.LockingManager != null)
+                isLocked = await deleteItem.LockingManager.IsLockedAsync(deleteItem, cancellationToken).ConfigureAwait(false);
+
+            if (isLocked)
             {
                 // Obtain the lock token
                 var ifToken = request.GetIfLockToken();
-                if (!deleteItem.LockingManager.HasLock(deleteItem, ifToken))
+                var hasLock = await deleteItem.LockingManager.HasLockAsync(deleteItem, ifToken, cancellationToken).ConfigureAwait(false);
+                if (!hasLock)
                 {
                     response.SetStatus(DavStatusCode.Locked);
                     return true;
                 }
 
                 // Remove the token
-                deleteItem.LockingManager.Unlock(deleteItem, ifToken);
+                await deleteItem.LockingManager.UnlockAsync(deleteItem, ifToken, cancellationToken);
             }
 
             // Delete item
-            var status = await DeleteItemAsync(parentCollection, splitUri.Name, httpContext, splitUri.CollectionUri).ConfigureAwait(false);
+            var status = await DeleteItemAsync(parentCollection, splitUri.Name, httpContext, splitUri.CollectionUri, cancellationToken).ConfigureAwait(false);
             if (status == DavStatusCode.Ok && errors.HasItems)
             {
                 // Obtain the status document
@@ -98,22 +103,22 @@ namespace NWebDav.Server.Handlers
             return true;
         }
 
-        private async Task<DavStatusCode> DeleteItemAsync(IStoreCollection collection, string name, IHttpContext httpContext, Uri baseUri)
+        private async Task<DavStatusCode> DeleteItemAsync(IStoreCollection collection, string name, IHttpContext httpContext, Uri baseUri, CancellationToken cancellationToken)
         {
             // Obtain the actual item
-            var deleteItem = await collection.GetItemAsync(name, httpContext).ConfigureAwait(false);
+            var deleteItem = await collection.GetItemAsync(name, httpContext, cancellationToken).ConfigureAwait(false);
             if (deleteItem is IStoreCollection deleteCollection)
             {
                 // Determine the new base URI
                 var subBaseUri = UriHelper.Combine(baseUri, name);
 
                 // Delete all entries first
-                foreach (var entry in await deleteCollection.GetItemsAsync(httpContext).ConfigureAwait(false))
-                    await DeleteItemAsync(deleteCollection, entry.Name, httpContext, subBaseUri).ConfigureAwait(false);
+                foreach (var entry in await deleteCollection.GetItemsAsync(httpContext, cancellationToken).ConfigureAwait(false))
+                    await DeleteItemAsync(deleteCollection, entry.Name, httpContext, subBaseUri, cancellationToken).ConfigureAwait(false);
             }
 
             // Attempt to delete the item
-            return await collection.DeleteItemAsync(name, httpContext).ConfigureAwait(false);
+            return await collection.DeleteItemAsync(name, httpContext, cancellationToken).ConfigureAwait(false);
         }
     }
 }

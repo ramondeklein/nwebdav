@@ -9,10 +9,10 @@ namespace NWebDav.Server.HttpListener
     {
         private readonly HttpListenerResponse _response;
 
-        protected HttpBaseContext(HttpListenerRequest request, HttpListenerResponse response, CancellationToken cancellationToken)
+        protected HttpBaseContext(HttpListenerRequest request, HttpListenerResponse response)
         {
             // Assign properties
-            Request = new HttpRequest(request, cancellationToken);
+            Request = new HttpRequest(request);
             Response = new HttpResponse(response);
 
             // Save response

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -29,36 +30,36 @@ namespace NWebDav.Server.Props
 
         public IList<PropertyInfo> Properties { get; }
 
-        public Task<object> GetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName propertyName, bool skipExpensive = false)
+        public Task<object> GetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName propertyName, bool skipExpensive, CancellationToken cancellationToken)
         {
             // Find the property
             if (!_properties.TryGetValue(propertyName, out var property))
-                return _basePropertyManager.GetPropertyAsync(httpContext, _converter((TEntry)item), propertyName, skipExpensive);
+                return _basePropertyManager.GetPropertyAsync(httpContext, _converter((TEntry)item), propertyName, skipExpensive, cancellationToken);
 
             // Check if the property has a getter
             if (property.GetterAsync == null)
-                return _basePropertyManager.GetPropertyAsync(httpContext, _converter((TEntry)item), propertyName, skipExpensive);
+                return _basePropertyManager.GetPropertyAsync(httpContext, _converter((TEntry)item), propertyName, skipExpensive, cancellationToken);
 
             // Skip expensive properties
             if (skipExpensive && property.IsExpensive)
                 return Task.FromResult((object)null);
 
             // Obtain the value
-            return property.GetterAsync(httpContext, (TEntry)item);
+            return property.GetterAsync(httpContext, (TEntry)item, cancellationToken);
         }
 
-        public Task<DavStatusCode> SetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName propertyName, object value)
+        public Task<DavStatusCode> SetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName propertyName, object value, CancellationToken cancellationToken)
         {
             // Find the property
             if (!_properties.TryGetValue(propertyName, out var property))
-                return _basePropertyManager.SetPropertyAsync(httpContext, _converter((TEntry)item), propertyName, value);
+                return _basePropertyManager.SetPropertyAsync(httpContext, _converter((TEntry)item), propertyName, value, cancellationToken);
 
             // Check if the property has a setter
             if (property.SetterAsync == null)
-                return _basePropertyManager.SetPropertyAsync(httpContext, _converter((TEntry)item), propertyName, value);
+                return _basePropertyManager.SetPropertyAsync(httpContext, _converter((TEntry)item), propertyName, value, cancellationToken);
 
             // Set the value
-            return property.SetterAsync(httpContext, (TEntry)item, value);
+            return property.SetterAsync(httpContext, (TEntry)item, value, cancellationToken);
         }
 
         private IList<PropertyInfo> GetPropertyInfo()

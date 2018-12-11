@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -65,13 +66,16 @@ namespace NWebDav.Server.Props
         /// Flag indicating whether to skip the property if it is too expensive
         /// to compute.
         /// </param>
+        /// <param name="cancellationToken">
+        /// Cancellation token.
+        /// </param>
         /// <returns>
         /// A task that represents the get property operation. The task will
         /// return the property value or <see langword="null"/> if
         /// <paramref name="skipExpensive"/> is set to <see langword="true"/>
         /// and the parameter is expensive to compute.
         /// </returns>
-        public Task<object> GetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName propertyName, bool skipExpensive = false)
+        public Task<object> GetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName propertyName, bool skipExpensive, CancellationToken cancellationToken)
         {
             // Find the property
             if (!_properties.TryGetValue(propertyName, out var property))
@@ -86,7 +90,7 @@ namespace NWebDav.Server.Props
                 return Task.FromResult((object)null);
 
             // Obtain the value
-            return property.GetterAsync(httpContext, (TEntry)item);
+            return property.GetterAsync(httpContext, (TEntry)item, cancellationToken);
         }
 
         /// <summary>
@@ -103,12 +107,15 @@ namespace NWebDav.Server.Props
         /// </param>
         /// <param name="value">
         /// New value of the property.
+        /// <param name="cancellationToken">
+        /// Cancellation token.
+        /// </param>
         /// </param>
         /// <returns>
         /// A task that represents the set property operation. The task will
         /// return the WebDAV status code of the set operation upon completion.
         /// </returns>
-        public Task<DavStatusCode> SetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName propertyName, object value)
+        public Task<DavStatusCode> SetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName propertyName, object value, CancellationToken cancellationToken)
         {
             // Find the property
             if (!_properties.TryGetValue(propertyName, out var property))
@@ -119,7 +126,7 @@ namespace NWebDav.Server.Props
                 return Task.FromResult(DavStatusCode.Conflict);
 
             // Set the value
-            return property.SetterAsync(httpContext, (TEntry)item, value);
+            return property.SetterAsync(httpContext, (TEntry)item, value, cancellationToken);
         }
     }
 }

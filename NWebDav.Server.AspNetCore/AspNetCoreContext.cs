@@ -9,14 +9,14 @@ namespace NWebDav.Server.AspNetCore
 {
     public partial class AspNetCoreContext : IHttpContext
     {
-        public AspNetCoreContext(HttpContext httpContext, CancellationToken cancellationToken)
+        public AspNetCoreContext(HttpContext httpContext)
         {
             // Make sure a valid HTTP context is specified
             if (httpContext == null)
                 throw new ArgumentNullException(nameof(httpContext));
 
             // Save request, response and session
-            Request = new AspNetCoreRequest(httpContext.Request, cancellationToken);
+            Request = new AspNetCoreRequest(httpContext.Request, httpContext.RequestAborted);
             Response = new AspNetCoreResponse(httpContext.Response);
             Session = new AspNetCoreSession(httpContext.User);
         }

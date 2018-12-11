@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 using NWebDav.Server.Stores;
@@ -62,7 +64,7 @@ namespace NWebDav.Server.Locking
             new LockEntry(LockScope.Shared, LockType.Write)
         };
 
-        public LockResult Lock(IStoreItem item, LockType lockType, LockScope lockScope, XElement owner, Uri lockRootUri, bool recursive, IEnumerable<int> timeouts)
+        public Task<LockResult> LockAsync(IStoreItem item, LockType lockType, LockScope lockScope, XElement owner, Uri lockRootUri, bool recursive, IEnumerable<int> timeouts, CancellationToken cancellationToken)
         {
             // Determine the expiration based on the first time-out
             var timeout = timeouts.Cast<int?>().FirstOrDefault();
@@ -86,7 +88,7 @@ namespace NWebDav.Server.Locking
                 {
                     // Check if there is already an exclusive lock
                     if (itemLockList.Any(l => l.Scope == LockScope.Exclusive))
-                        return new LockResult(DavStatusCode.Locked);
+                        return Task.FromResult(new LockResult(DavStatusCode.Locked));
                 }
 
                 // Create the lock info object
@@ -96,16 +98,16 @@ namespace NWebDav.Server.Locking
                 itemLockList.Add(itemLockInfo);
 
                 // Return the active lock
-                return new LockResult(DavStatusCode.Ok, GetActiveLockInfo(itemLockInfo));
+                return Task.FromResult(new LockResult(DavStatusCode.Ok, GetActiveLockInfo(itemLockInfo)));
             }
         }
 
-        public DavStatusCode Unlock(IStoreItem item, Uri lockTokenUri)
+        public Task<DavStatusCode> UnlockAsync(IStoreItem item, Uri lockTokenUri, CancellationToken cancellationToken)
         {
             // Determine the actual lock token
             var lockToken = GetTokenFromLockToken(lockTokenUri);
             if (lockToken == null)
-                return DavStatusCode.PreconditionFailed;
+                return Task.FromResult(DavStatusCode.PreconditionFailed);
 
             // Determine the item's key
             var key = item.UniqueKey;
@@ -114,7 +116,7 @@ namespace NWebDav.Server.Locking
             {
                 // Make sure the item is in the dictionary
                 if (!_itemLocks.TryGetValue(key, out var itemLockTypeDictionary))
-                    return DavStatusCode.PreconditionFailed;
+                    return Task.FromResult(DavStatusCode.PreconditionFailed);
 
                 // Scan both the dictionaries for the token
                 foreach (var kv in itemLockTypeDictionary)
@@ -141,22 +143,22 @@ namespace NWebDav.Server.Locking
                             }
 
                             // Lock has been removed
-                            return DavStatusCode.NoContent;
+                            return Task.FromResult(DavStatusCode.NoContent);
                         }
                     }
                 }
             }
 
             // Item cannot be unlocked (token cannot be found)
-            return DavStatusCode.PreconditionFailed;
+            return Task.FromResult(DavStatusCode.PreconditionFailed);
         }
 
-        public LockResult RefreshLock(IStoreItem item, bool recursiveLock, IEnumerable<int> timeouts, Uri lockTokenUri)
+        public Task<LockResult> RefreshLockAsync(IStoreItem item, bool recursiveLock, IEnumerable<int> timeouts, Uri lockTokenUri, CancellationToken cancellationToken)
         {
             // Determine the actual lock token
             var lockToken = GetTokenFromLockToken(lockTokenUri);
             if (lockToken == null)
-                return new LockResult(DavStatusCode.PreconditionFailed);
+                return Task.FromResult(new LockResult(DavStatusCode.PreconditionFailed));
 
             // Determine the item's key
             var key = item.UniqueKey;
@@ -165,7 +167,7 @@ namespace NWebDav.Server.Locking
             {
                 // Make sure the item is in the dictionary
                 if (!_itemLocks.TryGetValue(key, out var itemLockTypeDictionary))
-                    return new LockResult(DavStatusCode.PreconditionFailed);
+                    return Task.FromResult(new LockResult(DavStatusCode.PreconditionFailed));
 
                 // Scan both the dictionaries for the token
                 foreach (var kv in itemLockTypeDictionary)
@@ -179,16 +181,16 @@ namespace NWebDav.Server.Locking
                         itemLockInfo.RefreshExpiration(timeout);
 
                         // Return the active lock
-                        return new LockResult(DavStatusCode.Ok, GetActiveLockInfo(itemLockInfo));
+                        return Task.FromResult(new LockResult(DavStatusCode.Ok, GetActiveLockInfo(itemLockInfo)));
                     }
                 }
             }
 
             // Item cannot be unlocked (token cannot be found)
-            return new LockResult(DavStatusCode.PreconditionFailed);
+            return Task.FromResult(new LockResult(DavStatusCode.PreconditionFailed));
         }
 
-        public IEnumerable<ActiveLock> GetActiveLockInfo(IStoreItem item)
+        public Task<IEnumerable<ActiveLock>> GetActiveLockInfoAsync(IStoreItem item, CancellationToken cancellationToken)
         {
             // Determine the item's key
             var key = item.UniqueKey;
@@ -197,20 +199,20 @@ namespace NWebDav.Server.Locking
             {
                 // Make sure the item is in the dictionary
                 if (!_itemLocks.TryGetValue(key, out var itemLockTypeDictionary))
-                    return new ActiveLock[0];
+                    return Task.FromResult(new ActiveLock[0].AsEnumerable());
 
                 // Return all non-expired locks
-                return itemLockTypeDictionary.SelectMany(kv => kv.Value).Where(l => !l.IsExpired).Select(GetActiveLockInfo).ToList();
+                return Task.FromResult(itemLockTypeDictionary.SelectMany(kv => kv.Value).Where(l => !l.IsExpired).Select(GetActiveLockInfo).ToList().AsEnumerable());
             }
         }
 
-        public IEnumerable<LockEntry> GetSupportedLocks(IStoreItem item)
+        public Task<IEnumerable<LockEntry>> GetSupportedLocksAsync(IStoreItem item, CancellationToken cancellationToken)
         {
             // We support both shared and exclusive locks for items and collections
-            return s_supportedLocks;
+            return Task.FromResult(s_supportedLocks.AsEnumerable());
         }
 
-        public bool IsLocked(IStoreItem item)
+        public Task<bool> IsLockedAsync(IStoreItem item, CancellationToken cancellationToken)
         {
             // Determine the item's key
             var key = item.UniqueKey;
@@ -223,20 +225,20 @@ namespace NWebDav.Server.Locking
                     foreach (var kv in itemLockTypeDictionary)
                     {
                         if (kv.Value.Any(li => !li.IsExpired))
-                            return true;
+                            return Task.FromResult(true);
                     }
                 }
             }
 
             // No lock
-            return false;
+            return Task.FromResult(false);
         }
 
-        public bool HasLock(IStoreItem item, Uri lockTokenUri)
+        public Task<bool> HasLockAsync(IStoreItem item, Uri lockTokenUri, CancellationToken cancellationToken)
         {
             // If no lock is specified, then we should abort
             if (lockTokenUri == null)
-                return false;
+                return Task.FromResult(false);
 
             // Determine the item's key
             var key = item.UniqueKey;
@@ -244,13 +246,13 @@ namespace NWebDav.Server.Locking
             // Determine the actual lock token
             var lockToken = GetTokenFromLockToken(lockTokenUri);
             if (lockToken == null)
-                return false;
+                return Task.FromResult(false);
 
             lock (_itemLocks)
             {
                 // Make sure the item is in the dictionary
                 if (!_itemLocks.TryGetValue(key, out var itemLockTypeDictionary))
-                    return false;
+                    return Task.FromResult(false);
 
                 // Scan both the dictionaries for the token
                 foreach (var kv in itemLockTypeDictionary)
@@ -258,12 +260,12 @@ namespace NWebDav.Server.Locking
                     // Refresh the lock
                     var itemLockInfo = kv.Value.FirstOrDefault(lt => lt.Token == lockToken.Value && !lt.IsExpired);
                     if (itemLockInfo != null)
-                        return true;
+                        return Task.FromResult(true);
                 }
             }
 
             // No lock
-            return false;
+            return Task.FromResult(false);
         }
 
         private static ActiveLock GetActiveLockInfo(ItemLockInfo itemLockInfo)

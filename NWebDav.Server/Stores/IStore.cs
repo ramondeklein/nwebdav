@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 using NWebDav.Server.Http;
@@ -73,8 +74,8 @@ namespace NWebDav.Server.Stores
 
     public interface IStore
     {
-        Task<IStoreItem> GetItemAsync(Uri uri, IHttpContext httpContext);
-        Task<IStoreCollection> GetCollectionAsync(Uri uri, IHttpContext httpContext);
+        Task<IStoreItem> GetItemAsync(Uri uri, IHttpContext httpContext, CancellationToken cancellationToken);
+        Task<IStoreCollection> GetCollectionAsync(Uri uri, IHttpContext httpContext, CancellationToken cancellationToken);
     }
 
     public interface IStoreItem
@@ -84,11 +85,11 @@ namespace NWebDav.Server.Stores
         string UniqueKey { get; }
 
         // Read/Write access to the data
-        Task<Stream> GetReadableStreamAsync(IHttpContext httpContext);
-        Task<DavStatusCode> UploadFromStreamAsync(IHttpContext httpContext, Stream source);
+        Task<Stream> GetReadableStreamAsync(IHttpContext httpContext, CancellationToken cancellationToken);
+        Task<DavStatusCode> UploadFromStreamAsync(IHttpContext httpContext, Stream source, CancellationToken cancellationToken);
 
         // Copy support
-        Task<StoreItemResult> CopyAsync(IStoreCollection destination, string name, bool overwrite, IHttpContext httpContext);
+        Task<StoreItemResult> CopyAsync(IStoreCollection destination, string name, bool overwrite, IHttpContext httpContext, CancellationToken cancellationToken);
 
         // Property support
         IPropertyManager PropertyManager { get; }
@@ -100,21 +101,21 @@ namespace NWebDav.Server.Stores
     public interface IStoreCollection : IStoreItem
     {
         // Get specific item (or all items)
-        Task<IStoreItem> GetItemAsync(string name, IHttpContext httpContext);
-        Task<IList<IStoreItem>> GetItemsAsync(IHttpContext httpContext);
+        Task<IStoreItem> GetItemAsync(string name, IHttpContext httpContext, CancellationToken cancellationToken);
+        Task<IList<IStoreItem>> GetItemsAsync(IHttpContext httpContext, CancellationToken cancellationToken);
 
         // Create items and collections and add to the collection
-        Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, IHttpContext httpContext);
-        Task<StoreCollectionResult> CreateCollectionAsync(string name, bool overwrite, IHttpContext httpContext);
+        Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, IHttpContext httpContext, CancellationToken cancellationToken);
+        Task<StoreCollectionResult> CreateCollectionAsync(string name, bool overwrite, IHttpContext httpContext, CancellationToken cancellationToken);
 
         // Checks if the collection can be moved directly to the destination
         bool SupportsFastMove(IStoreCollection destination, string destinationName, bool overwrite, IHttpContext httpContext);
 
         // Move items between collections
-        Task<StoreItemResult> MoveItemAsync(string sourceName, IStoreCollection destination, string destinationName, bool overwrite, IHttpContext httpContext);
+        Task<StoreItemResult> MoveItemAsync(string sourceName, IStoreCollection destination, string destinationName, bool overwrite, IHttpContext httpContext, CancellationToken cancellationToken);
 
         // Delete items from collection
-        Task<DavStatusCode> DeleteItemAsync(string name, IHttpContext httpContext);
+        Task<DavStatusCode> DeleteItemAsync(string name, IHttpContext httpContext, CancellationToken cancellationToken);
 
         InfiniteDepthMode InfiniteDepthMode { get; }
     }

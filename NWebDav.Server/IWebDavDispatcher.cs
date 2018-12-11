@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 using NWebDav.Server.Http;
 
@@ -24,9 +25,12 @@ namespace NWebDav.Server
         /// <param name="httpContext">
         /// HTTP context for this request.
         /// </param>
+        /// <param name="cancellationToken">
+        /// Cancellation token.
+        /// </param>
         /// <returns>
         /// A task that represents the request dispatching operation.
         /// </returns>
-        Task DispatchRequestAsync(IHttpContext httpContext);
+        Task DispatchRequestAsync(IHttpContext httpContext, CancellationToken cancellationToken);
     }
 }

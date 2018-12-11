@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Logging;
 
@@ -28,10 +27,10 @@ namespace NWebDav.Sample.Kestrel
             app.Run(async context =>
             {
                 // Create the proper HTTP context
-                var httpContext = new AspNetCoreContext(context, CancellationToken.None);
+                var httpContext = new AspNetCoreContext(context);
 
                 // Dispatch request
-                await webDavDispatcher.DispatchRequestAsync(httpContext).ConfigureAwait(false);
+                await webDavDispatcher.DispatchRequestAsync(httpContext, context.RequestAborted).ConfigureAwait(false);
             });
         }
     }

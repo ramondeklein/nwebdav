@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-
+using System.Threading;
 using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Props
@@ -26,7 +26,11 @@ namespace NWebDav.Server.Props
         /// </summary>
         public DavLockDiscoveryDefault()
         {
-            Getter = (httpContext, item) => item.LockingManager.GetActiveLockInfo(item).Select(ali => ali.ToXml());
+            GetterAsync = async (httpContext, item, cancellationToken) =>
+            {
+                var supportedLocks = await item.LockingManager.GetActiveLockInfoAsync(item, cancellationToken).ConfigureAwait(false);
+                return supportedLocks.Select(ali => ali.ToXml());
+            };
         }
     }
 
@@ -52,7 +56,11 @@ namespace NWebDav.Server.Props
         /// </summary>
         public DavSupportedLockDefault()
         {
-            Getter = (httpContext, item) => item.LockingManager.GetSupportedLocks(item).Select(sl => sl.ToXml());
+            GetterAsync = async (httpContext, item, cancellationToken) =>
+            {
+                var supportedLocks = await item.LockingManager.GetSupportedLocksAsync(item, cancellationToken).ConfigureAwait(false);
+                return supportedLocks.Select(sl => sl.ToXml());
+            };
         }
     }
 }

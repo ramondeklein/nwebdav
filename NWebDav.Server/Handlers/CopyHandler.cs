@@ -63,7 +63,7 @@ namespace NWebDav.Server.Handlers
             var destination = RequestHelper.SplitUri(destinationUri);
 
             // Obtain the destination collection
-            var destinationCollection = await store.GetCollectionAsync(destination.CollectionUri, httpContext).ConfigureAwait(false);
+            var destinationCollection = await store.GetCollectionAsync(destination.CollectionUri, httpContext, cancellationToken).ConfigureAwait(false);
             if (destinationCollection == null)
             {
                 // Source not found
@@ -72,7 +72,7 @@ namespace NWebDav.Server.Handlers
             }
 
             // Obtain the source item
-            var sourceItem = await store.GetItemAsync(request.Url, httpContext).ConfigureAwait(false);
+            var sourceItem = await store.GetItemAsync(request.Url, httpContext, cancellationToken).ConfigureAwait(false);
             if (sourceItem == null)
             {
                 // Source not found
@@ -87,7 +87,7 @@ namespace NWebDav.Server.Handlers
             var errors = new UriResultCollection();
 
             // Copy collection
-            await CopyAsync(sourceItem, destinationCollection, destination.Name, overwrite, depth, httpContext, destination.CollectionUri, errors).ConfigureAwait(false);
+            await CopyAsync(sourceItem, destinationCollection, destination.Name, overwrite, depth, httpContext, destination.CollectionUri, errors, cancellationToken).ConfigureAwait(false);
 
             // Check if there are any errors
             if (errors.HasItems)
@@ -107,13 +107,13 @@ namespace NWebDav.Server.Handlers
             return true;
         }
 
-        private async Task CopyAsync(IStoreItem source, IStoreCollection destinationCollection, string name, bool overwrite, int depth, IHttpContext httpContext, Uri baseUri, UriResultCollection errors)
+        private async Task CopyAsync(IStoreItem source, IStoreCollection destinationCollection, string name, bool overwrite, int depth, IHttpContext httpContext, Uri baseUri, UriResultCollection errors, CancellationToken cancellationToken)
         {
             // Determine the new base Uri
             var newBaseUri = UriHelper.Combine(baseUri, name);
 
             // Copy the item
-            var copyResult = await source.CopyAsync(destinationCollection, name, overwrite, httpContext).ConfigureAwait(false);
+            var copyResult = await source.CopyAsync(destinationCollection, name, overwrite, httpContext, cancellationToken).ConfigureAwait(false);
             if (copyResult.Result != DavStatusCode.Created && copyResult.Result != DavStatusCode.NoContent)
             {
                 errors.AddResult(newBaseUri, copyResult.Result);
@@ -128,8 +128,8 @@ namespace NWebDav.Server.Handlers
                 var newCollection = (IStoreCollection)copyResult.Item;
 
                 // Copy all childs of the source collection
-                foreach (var entry in await sourceCollection.GetItemsAsync(httpContext).ConfigureAwait(false))
-                    await CopyAsync(entry, newCollection, entry.Name, overwrite, depth - 1, httpContext, newBaseUri, errors).ConfigureAwait(false);
+                foreach (var entry in await sourceCollection.GetItemsAsync(httpContext, cancellationToken).ConfigureAwait(false))
+                    await CopyAsync(entry, newCollection, entry.Name, overwrite, depth - 1, httpContext, newBaseUri, errors, cancellationToken).ConfigureAwait(false);
             }
         }
     }

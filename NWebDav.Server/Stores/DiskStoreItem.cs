@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 
 using NWebDav.Server.Helpers;
@@ -124,9 +125,9 @@ namespace NWebDav.Server.Stores
         public string Name => _fileInfo.Name;
         public string UniqueKey => _fileInfo.FullName;
         public string FullPath => _fileInfo.FullName;
-        public Task<Stream> GetReadableStreamAsync(IHttpContext httpContext) => Task.FromResult((Stream)_fileInfo.OpenRead());
+        public Task<Stream> GetReadableStreamAsync(IHttpContext httpContext, CancellationToken cancellationToken) => Task.FromResult((Stream)_fileInfo.OpenRead());
 
-        public async Task<DavStatusCode> UploadFromStreamAsync(IHttpContext httpContext, Stream inputStream)
+        public async Task<DavStatusCode> UploadFromStreamAsync(IHttpContext httpContext, Stream inputStream, CancellationToken cancellationToken)
         {
             // Check if the item is writable
             if (!IsWritable)
@@ -138,7 +139,7 @@ namespace NWebDav.Server.Stores
                 // Copy the information to the destination stream
                 using (var outputStream = _fileInfo.OpenWrite())
                 {
-                    await inputStream.CopyToAsync(outputStream).ConfigureAwait(false);
+                    await inputStream.CopyToAsync(outputStream, 81920, cancellationToken).ConfigureAwait(false);
                 }
                 return DavStatusCode.Ok;
             }
@@ -151,7 +152,7 @@ namespace NWebDav.Server.Stores
         public IPropertyManager PropertyManager => DefaultPropertyManager;
         public ILockingManager LockingManager { get; }
 
-        public async Task<StoreItemResult> CopyAsync(IStoreCollection destination, string name, bool overwrite, IHttpContext httpContext)
+        public async Task<StoreItemResult> CopyAsync(IStoreCollection destination, string name, bool overwrite, IHttpContext httpContext, CancellationToken cancellationToken)
         {
             try
             {
@@ -179,14 +180,14 @@ namespace NWebDav.Server.Stores
                 else
                 {
                     // Create the item in the destination collection
-                    var result = await destination.CreateItemAsync(name, overwrite, httpContext).ConfigureAwait(false);
+                    var result = await destination.CreateItemAsync(name, overwrite, httpContext, cancellationToken).ConfigureAwait(false);
 
                     // Check if the item could be created
                     if (result.Item != null)
                     {
-                        using (var sourceStream = await GetReadableStreamAsync(httpContext).ConfigureAwait(false))
+                        using (var sourceStream = await GetReadableStreamAsync(httpContext, cancellationToken).ConfigureAwait(false))
                         {
-                            var copyResult = await result.Item.UploadFromStreamAsync(httpContext, sourceStream).ConfigureAwait(false);
+                            var copyResult = await result.Item.UploadFromStreamAsync(httpContext, sourceStream, cancellationToken).ConfigureAwait(false);
                             if (copyResult != DavStatusCode.Ok)
                                 return new StoreItemResult(copyResult, result.Item);
                         }

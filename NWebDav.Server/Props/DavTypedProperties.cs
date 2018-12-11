@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
@@ -77,8 +78,8 @@ namespace NWebDav.Server.Props
 
         private Func<IHttpContext, TEntry, TType> _getter;
         private Func<IHttpContext, TEntry, TType, DavStatusCode> _setter;
-        private Func<IHttpContext, TEntry, Task<TType>> _getterAsync;
-        private Func<IHttpContext, TEntry, TType, Task<DavStatusCode>> _setterAsync;
+        private Func<IHttpContext, TEntry, CancellationToken, Task<TType>> _getterAsync;
+        private Func<IHttpContext, TEntry, TType, CancellationToken, Task<DavStatusCode>> _setterAsync;
 
         /// <summary>
         /// Converter to convert property values from/to XML for this type.
@@ -97,7 +98,7 @@ namespace NWebDav.Server.Props
             set
             {
                 _getter = value;
-                base.GetterAsync = (c, s) =>
+                base.GetterAsync = (c, s, ct) =>
                 {
                     var v = _getter(c, s);
                     return Task.FromResult(Converter != null ? Converter.ToXml(c, v) : v);
@@ -114,7 +115,7 @@ namespace NWebDav.Server.Props
             set
             {
                 _setter = value;
-                base.SetterAsync = (c, s, v) =>
+                base.SetterAsync = (c, s, v, ct) =>
                 {
                     var tv = Converter != null ? Converter.FromXml(c, v) : (TType)v;
                     return Task.FromResult(_setter(c, s, tv));
@@ -125,15 +126,15 @@ namespace NWebDav.Server.Props
         /// <summary>
         /// Asynchronous getter to obtain the property value.
         /// </summary>
-        public new Func<IHttpContext, TEntry, Task<TType>> GetterAsync
+        public new Func<IHttpContext, TEntry, CancellationToken, Task<TType>> GetterAsync
         {
             get => _getterAsync;
             set
             {
                 _getterAsync = value;
-                base.GetterAsync = async (c, s) =>
+                base.GetterAsync = async (c, s, ct) =>
                 {
-                    var v = await _getterAsync(c, s).ConfigureAwait(false);
+                    var v = await _getterAsync(c, s, ct).ConfigureAwait(false);
                     return Converter != null ? Converter.ToXml(c, v) : v;
                 };
             }
@@ -142,16 +143,16 @@ namespace NWebDav.Server.Props
         /// <summary>
         /// Asynchronous setter to set the property value.
         /// </summary>
-        public new Func<IHttpContext, TEntry, TType, Task<DavStatusCode>> SetterAsync
+        public new Func<IHttpContext, TEntry, TType, CancellationToken, Task<DavStatusCode>> SetterAsync
         {
             get => _setterAsync;
             set
             {
                 _setterAsync = value;
-                base.SetterAsync = (c, s, v) =>
+                base.SetterAsync = (c, s, v, ct) =>
                 {
                     var tv = Converter != null ? Converter.FromXml(c, v) : (TType)v;
-                    return _setterAsync(c, s, tv);
+                    return _setterAsync(c, s, tv, ct);
                 };
             }
         }

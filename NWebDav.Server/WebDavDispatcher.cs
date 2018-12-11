@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 
 using NWebDav.Server.Helpers;
@@ -68,7 +69,7 @@ namespace NWebDav.Server
         /// <returns>
         /// A task that represents the request dispatching operation.
         /// </returns>
-        public async Task DispatchRequestAsync(IHttpContext httpContext)
+        public async Task DispatchRequestAsync(IHttpContext httpContext, CancellationToken cancellationToken)
         {
             // Make sure a HTTP context is specified
             if (httpContext == null)
@@ -129,7 +130,7 @@ namespace NWebDav.Server
                 try
                 {
                     // Handle the request
-                    if (await requestHandler.HandleRequestAsync(httpContext, _store, httpContext.Request.CancellationToken).ConfigureAwait(false))
+                    if (await requestHandler.HandleRequestAsync(httpContext, _store, cancellationToken).ConfigureAwait(false))
                     {
                         // Log processing duration
                         s_log.Log(LogLevel.Info, () => $"{logRequest} - Finished processing ({sw.ElapsedMilliseconds}ms, HTTP result: {httpContext.Response.Status})");
@@ -174,4 +175,3 @@ namespace NWebDav.Server
         }
     }
 }
-

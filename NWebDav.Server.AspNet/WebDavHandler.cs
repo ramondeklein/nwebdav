@@ -16,7 +16,10 @@ namespace NWebDav.Server.AspNet
 
         public void ProcessRequest(HttpContext context)
         {
-            ExecuteAsync(context, CancellationToken.None).Wait();
+            using (var cts = GetCancellationTokenSource(context))
+            {
+                ExecuteAsync(context, cts.Token).Wait(cts.Token);
+            }
         }
 
         public bool IsReusable => true;
@@ -25,22 +28,31 @@ namespace NWebDav.Server.AspNet
         {
             // Dispatch the request. Note we don't use the ConfigureAwait(false), 
             // because we want to retain the HTTP context inside the controller.
-            var task = ExecuteAsync(context, CancellationToken.None);
-
-            var tcs = new TaskCompletionSource<bool>(extraData);
-            task.ContinueWith(t =>
+            var cts = GetCancellationTokenSource(context);
+            try
             {
-                if (t.IsFaulted)
-                    tcs.TrySetException(t.Exception.InnerExceptions);
-                else if (t.IsCanceled)
-                    tcs.TrySetCanceled();
-                else
-                    tcs.TrySetResult(true);
+                var task = ExecuteAsync(context, cts.Token);
 
-                cb?.Invoke(tcs.Task);
-            }, TaskScheduler.Default);
-            return tcs.Task;
+                var tcs = new TaskCompletionSource<bool>(extraData);
+                task.ContinueWith(t =>
+                {
+                    cts.Dispose();
+                    if (t.IsFaulted)
+                        tcs.TrySetException(t.Exception.InnerExceptions);
+                    else if (t.IsCanceled)
+                        tcs.TrySetCanceled();
+                    else
+                        tcs.TrySetResult(true);
 
+                    cb?.Invoke(tcs.Task);
+                }, TaskScheduler.Default);
+                return tcs.Task;
+            }
+            catch (Exception)
+            {
+                cts.Dispose();
+                throw;
+            }
         }
 
         public void EndProcessRequest(IAsyncResult result)
@@ -52,14 +64,19 @@ namespace NWebDav.Server.AspNet
                 throw new OperationCanceledException();
         }
 
+        private static CancellationTokenSource GetCancellationTokenSource(HttpContext context)
+        {
+            return CancellationTokenSource.CreateLinkedTokenSource(context.Response.ClientDisconnectedToken, context.Request.TimedOutToken);
+        }
+
         private Task ExecuteAsync(HttpContext context, CancellationToken cancellationToken)
         {
             // Create the NWebDAV compatible context based on the ASP.NET context
-            var aspNetContext = new AspNetContext(context, cancellationToken);
+            var aspNetContext = new AspNetContext(context);
 
             // Dispatch the request. Note we don't use the ConfigureAwait(false), 
             // because we want to retain the HTTP context inside the controller.
-            return _webDavDispatcher.DispatchRequestAsync(aspNetContext);
+            return _webDavDispatcher.DispatchRequestAsync(aspNetContext, cancellationToken);
         }
     }
 }
