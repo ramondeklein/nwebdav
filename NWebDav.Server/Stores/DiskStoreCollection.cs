@@ -54,7 +54,7 @@ namespace NWebDav.Server.Stores
             },
             new DavGetResourceType<DiskStoreCollection>
             {
-                Getter = (context, collection) => s_xDavCollection
+                Getter = (context, collection) => new []{s_xDavCollection}
             },
 
             // Default locking property handling via the LockingManager
