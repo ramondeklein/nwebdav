@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 using NWebDav.Server.Http;
@@ -284,8 +285,14 @@ namespace NWebDav.Server.Helpers
         /// XML document that represents the body content (or 
         /// <see langword="null"/> if no body content is specified).
         /// </returns>
+#if (NET5_0_OR_GREATER)
+        public static async Task<XDocument> LoadXmlDocumentAsync(this IHttpRequest request)
+#else
         public static XDocument LoadXmlDocument(this IHttpRequest request)
+#endif
         {
+               
+
             // If there is no input stream, then there is no XML document
             if (request.Stream == null || request.Stream == Stream.Null)
                 return null;
@@ -303,7 +310,11 @@ namespace NWebDav.Server.Helpers
                 return null;
 
             // Obtain an XML document from the stream
+#if (NET5_0_OR_GREATER)
+            var xDocument = await XDocument.LoadAsync(request.Stream, LoadOptions.None, cancellationToken: default);
+#else
             var xDocument = XDocument.Load(request.Stream);
+#endif
 #if DEBUG
             // Dump the XML document to the logging
             if (xDocument.Root != null && s_log.IsLogEnabled(NWebDav.Server.Logging.LogLevel.Debug))

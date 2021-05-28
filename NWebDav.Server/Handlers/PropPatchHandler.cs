@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
@@ -46,13 +45,14 @@ namespace NWebDav.Server.Handlers
 
             private readonly IList<PropSet> _propertySetters = new List<PropSet>();
 
-            public PropSetCollection(IHttpRequest request)
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="requestXDoc">The Parsed Request Documetn</param>
+            public PropSetCollection(XDocument requestXDoc)
             {
-                // Create an XML document from the stream
-                var xDoc = request.LoadXmlDocument();
-
                 // The document should contain a 'propertyupdate' root element
-                var xRoot = xDoc.Root;
+                var xRoot = requestXDoc.Root;
                 if (xRoot == null)
                     throw new Exception("No root element (expected 'propertyupdate')");
                 if (xRoot.Name != WebDavNamespaces.DavNs + "propertyupdate")
@@ -133,7 +133,14 @@ namespace NWebDav.Server.Handlers
             try
             {
                 // Create an XML document from the stream
-                propSetCollection = new PropSetCollection(request);
+#if (NET5_0_OR_GREATER)
+                var xDoc = await request.LoadXmlDocumentAsync();
+#else
+                var xDoc = request.LoadXmlDocument();
+#endif
+
+                // Create an XML document from the stream
+                propSetCollection = new PropSetCollection(xDoc);
             }
             catch (Exception)
             {

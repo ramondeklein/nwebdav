@@ -83,7 +83,16 @@ namespace NWebDav.Server.Handlers
                 try
                 {
                     // Create an XML document from the stream
-                    var xDoc = request.LoadXmlDocument();
+                    // Switched to async method since .NET5 does not allow sycronous stream reading anymore.
+                    XDocument xDoc = null;
+                    using (var r = new System.IO.StreamReader(request.Stream))
+                    {
+                        var c = await r.ReadToEndAsync();
+                        xDoc = XDocument.Parse(c);
+                    }
+
+                    if (xDoc == null)
+                        throw new Exception("Request-content couldn't be read");
 
                     // Save the root document
                     var xRoot = xDoc.Root;

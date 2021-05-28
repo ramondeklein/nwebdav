@@ -67,7 +67,11 @@ namespace NWebDav.Server.Handlers
 
             // Determine the list of properties that need to be obtained
             var propertyList = new List<XName>();
+#if (NET5_0_OR_GREATER)
+            var propertyMode = await GetRequestedPropertiesAsync(request, propertyList);
+#else
             var propertyMode = GetRequestedProperties(request, propertyList);
+#endif
 
             // Generate the list of items from which we need to obtain the properties
             var entries = new List<PropertyEntry>();
@@ -219,11 +223,19 @@ namespace NWebDav.Server.Handlers
             }
         }
 
+#if (NET5_0_OR_GREATER)
+        private static async Task<PropertyMode> GetRequestedPropertiesAsync(IHttpRequest request, ICollection<XName> properties)
+#else
         private static PropertyMode GetRequestedProperties(IHttpRequest request, ICollection<XName> properties)
+#endif
         {
             // Create an XML document from the stream
+#if (NET5_0_OR_GREATER)
+            var xDocument = await request.LoadXmlDocumentAsync();
+#else
             var xDocument = request.LoadXmlDocument();
-            if (xDocument?.Root == null || xDocument.Root.Name != WebDavNamespaces.DavNs + "propfind")
+#endif
+            if (xDocument == null || xDocument?.Root == null || xDocument.Root.Name != WebDavNamespaces.DavNs + "propfind")
                 return PropertyMode.AllProperties;
 
             // Obtain the propfind node
