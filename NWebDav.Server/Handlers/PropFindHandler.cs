@@ -67,7 +67,7 @@ namespace NWebDav.Server.Handlers
 
             // Determine the list of properties that need to be obtained
             var propertyList = new List<XName>();
-#if (NET5_0_OR_GREATER)
+#if (NET5_0 || NETSTANDARD2_1_OR_GREATER)
             var propertyMode = await GetRequestedPropertiesAsync(request, propertyList);
 #else
             var propertyMode = GetRequestedProperties(request, propertyList);
@@ -223,14 +223,14 @@ namespace NWebDav.Server.Handlers
             }
         }
 
-#if (NET5_0_OR_GREATER)
+#if (NET5_0 || NETSTANDARD2_1_OR_GREATER)
         private static async Task<PropertyMode> GetRequestedPropertiesAsync(IHttpRequest request, ICollection<XName> properties)
 #else
         private static PropertyMode GetRequestedProperties(IHttpRequest request, ICollection<XName> properties)
 #endif
         {
             // Create an XML document from the stream
-#if (NET5_0_OR_GREATER)
+#if (NET5_0 || NETSTANDARD2_1_OR_GREATER)
             var xDocument = await request.LoadXmlDocumentAsync();
 #else
             var xDocument = request.LoadXmlDocument();

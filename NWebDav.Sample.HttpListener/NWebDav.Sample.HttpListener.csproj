@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net45;netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>net45;netcoreapp2.0;net5.0</TargetFrameworks>
     <AssemblyName>NWebDav.Sample.HttpListener</AssemblyName>
     <Title>NWebDav example using HttpListener</Title>
     <OutputType>Exe</OutputType>
