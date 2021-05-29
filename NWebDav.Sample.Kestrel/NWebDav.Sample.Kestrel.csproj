@@ -1,12 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <AssemblyName>NWebDav.Sample.Kestrel</AssemblyName>
     <Title>NWebDav example using Kestrel</Title>
     <OutputType>Exe</OutputType>
     <Description>WebDAV server sample application (using Kestrel).</Description>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\NWebDav.Sample.HttpListener\LogAdapters\ConsoleAdapter.cs" Link="LogAdapters\ConsoleAdapter.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Include="App.config" />

@@ -1,22 +1,28 @@
 ﻿using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Logging;
-
 using NWebDav.Server;
 using NWebDav.Server.Stores;
 using NWebDav.Server.AspNetCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace NWebDav.Sample.Kestrel
 {
     public class Startup
     {
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
+        public void ConfigureServices(IServiceCollection services)
         {
-            // Add logging
-            // TODO: Migrate this logging with NWebDav logging
-            loggerFactory.AddConsole(LogLevel.Debug);
+            // TODO: Migrate this logging with NWebDav logging - still up to date?
+            services.AddLogging((logging) =>
+            {
+                logging.AddDebug();
+                logging.AddConsole();
+            });
+        }
 
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app)
+        {
             // Create the request handler factory
             var requestHandlerFactory = new RequestHandlerFactory();
 
