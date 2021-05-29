@@ -143,7 +143,12 @@ namespace NWebDav.Server.Handlers
                 }
 
                 // Move all sub items
+#if (NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER)
+                await foreach (var entry in moveCollection.GetItemsAsync(httpContext))
+#else
                 foreach (var entry in await moveCollection.GetItemsAsync(httpContext).ConfigureAwait(false))
+#endif
+
                     await MoveAsync(moveCollection, entry, newCollectionResult.Collection, entry.Name, overwrite, httpContext, subBaseUri, errors).ConfigureAwait(false);
 
                 // Delete the source collection

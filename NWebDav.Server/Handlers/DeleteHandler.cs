@@ -107,7 +107,12 @@ namespace NWebDav.Server.Handlers
                 var subBaseUri = UriHelper.Combine(baseUri, name);
 
                 // Delete all entries first
-                foreach (var entry in await deleteCollection.GetItemsAsync(httpContext).ConfigureAwait(false))
+#if (NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER)
+            await foreach (var entry in deleteCollection.GetItemsAsync(httpContext))
+#else
+            foreach (var entry in await deleteCollection.GetItemsAsync(httpContext).ConfigureAwait(false))
+#endif
+
                     await DeleteItemAsync(deleteCollection, entry.Name, httpContext, subBaseUri).ConfigureAwait(false);
             }
 

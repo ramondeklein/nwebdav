@@ -169,20 +169,35 @@ namespace NWebDav.Server.Stores
             return Task.FromResult<IStoreItem>(null);
         }
 
-        public Task<IList<IStoreItem>> GetItemsAsync(IHttpContext httpContext)
+#if (NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER)
+        public IAsyncEnumerable<IStoreItem> GetItemsAsync(IHttpContext httpContext, System.Threading.CancellationToken cancellationToken = default)
+#else
+        // Switched form IList to IEnumerable, if count is required maybe switch to IReadOnlyCollection<T>?
+        public Task<IEnumerable<IStoreItem>> GetItemsAsync(IHttpContext httpContext)
+#endif
         {
-            var items = new List<IStoreItem>();
+            // Async file enumeration:
+            // https://github.com/dotnet/runtime/issues/809
 
+#if (NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER)
+                // Just this line requires the package System.Linq.Async
+                // Here are mulitple diskussions: https://stackoverflow.com/questions/59725865/warning-message-in-iasyncenumerable-when-it-lacks-the-await-operator
+                // Here the discusssion why no async file api: https://github.com/dotnet/runtime/issues/809
+                return GetItemsInternal(httpContext).ToAsyncEnumerable();
+#else
+                return Task.FromResult(GetItemsInternal(httpContext));
+#endif
+        }
+
+        private IEnumerable<IStoreItem> GetItemsInternal(IHttpContext httpContext)
+        {
             // Add all directories
             foreach (var subDirectory in _directoryInfo.GetDirectories())
-                items.Add(new DiskStoreCollection(LockingManager, subDirectory, IsWritable));
+                yield return new DiskStoreCollection(LockingManager, subDirectory, IsWritable);
 
             // Add all files
             foreach (var file in _directoryInfo.GetFiles())
-                items.Add(new DiskStoreItem(LockingManager, file, IsWritable));
-
-            // Return the items
-            return Task.FromResult<IList<IStoreItem>>(items);
+                yield return new DiskStoreItem(LockingManager, file, IsWritable);
         }
 
         public Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, IHttpContext httpContext)

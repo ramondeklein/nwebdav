@@ -285,7 +285,7 @@ namespace NWebDav.Server.Helpers
         /// XML document that represents the body content (or 
         /// <see langword="null"/> if no body content is specified).
         /// </returns>
-#if (NET5_0 || NETSTANDARD2_1_OR_GREATER)
+#if (NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER)
         public static async Task<XDocument> LoadXmlDocumentAsync(this IHttpRequest request)
 #else
         public static XDocument LoadXmlDocument(this IHttpRequest request)
@@ -310,7 +310,7 @@ namespace NWebDav.Server.Helpers
                 return null;
 
             // Obtain an XML document from the stream
-#if (NET5_0 || NETSTANDARD2_1_OR_GREATER)
+#if (NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER)
             var xDocument = await XDocument.LoadAsync(request.Stream, LoadOptions.None, cancellationToken: default);
 #else
             var xDocument = XDocument.Load(request.Stream);

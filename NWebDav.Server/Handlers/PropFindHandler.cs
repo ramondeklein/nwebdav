@@ -67,7 +67,7 @@ namespace NWebDav.Server.Handlers
 
             // Determine the list of properties that need to be obtained
             var propertyList = new List<XName>();
-#if (NET5_0 || NETSTANDARD2_1_OR_GREATER)
+#if (NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER)
             var propertyMode = await GetRequestedPropertiesAsync(request, propertyList);
 #else
             var propertyMode = GetRequestedProperties(request, propertyList);
@@ -223,14 +223,14 @@ namespace NWebDav.Server.Handlers
             }
         }
 
-#if (NET5_0 || NETSTANDARD2_1_OR_GREATER)
+#if (NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER)
         private static async Task<PropertyMode> GetRequestedPropertiesAsync(IHttpRequest request, ICollection<XName> properties)
 #else
         private static PropertyMode GetRequestedProperties(IHttpRequest request, ICollection<XName> properties)
 #endif
         {
             // Create an XML document from the stream
-#if (NET5_0 || NETSTANDARD2_1_OR_GREATER)
+#if (NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER)
             var xDocument = await request.LoadXmlDocumentAsync();
 #else
             var xDocument = request.LoadXmlDocument();
@@ -289,8 +289,12 @@ namespace NWebDav.Server.Handlers
             // If we have enough depth, then add the children
             if (depth > 0)
             {
+#if (NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER)
+                await foreach (var childEntry in collection.GetItemsAsync(httpContext))
+#else
                 // Add all child collections
                 foreach (var childEntry in await collection.GetItemsAsync(httpContext).ConfigureAwait(false))
+#endif
                 {
                     var subUri = UriHelper.Combine(uri, childEntry.Name);
                     if (childEntry is IStoreCollection subCollection)

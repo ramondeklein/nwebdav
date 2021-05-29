@@ -99,9 +99,18 @@ namespace NWebDav.Server.Stores
 
     public interface IStoreCollection : IStoreItem
     {
+
+        
+
         // Get specific item (or all items)
         Task<IStoreItem> GetItemAsync(string name, IHttpContext httpContext);
-        Task<IList<IStoreItem>> GetItemsAsync(IHttpContext httpContext);
+
+#if (NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER)
+        // [System.Runtime.CompilerServices.EnumeratorCancellation] has only effect on methods actually beeing async
+        IAsyncEnumerable<IStoreItem> GetItemsAsync(IHttpContext httpContext, System.Threading.CancellationToken cancellationToken = default);
+#else
+        Task<IEnumerable<IStoreItem>> GetItemsAsync(IHttpContext httpContext);
+#endif
 
         // Create items and collections and add to the collection
         Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, IHttpContext httpContext);
