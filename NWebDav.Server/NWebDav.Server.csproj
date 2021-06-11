@@ -8,7 +8,15 @@
     <PackageId>NWebDav.Server</PackageId>
     <Description>NWebDav.Server is a flexible WebDAV server library that can be used to expose files or other data using WebDAV.</Description>
     <PackageTags>C# .NET WebDAV Server</PackageTags>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+  </ItemGroup>
+
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
     <Reference Include="System.Xml" />
