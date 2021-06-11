@@ -6,8 +6,6 @@
     <AssemblyName>NWebDav.Sample.HttpListener</AssemblyName>
     <Title>NWebDav example using HttpListener</Title>
     <Description>WebDAV server sample application (using HttpListener).</Description>
-    <ApplicationIcon />
-    <StartupObject />
   </PropertyGroup>
 
   <ItemGroup>
