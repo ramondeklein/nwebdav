@@ -169,24 +169,10 @@ namespace NWebDav.Server.Stores
             return Task.FromResult<IStoreItem>(null);
         }
 
-#if (NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER)
-        public IAsyncEnumerable<IStoreItem> GetItemsAsync(IHttpContext httpContext, System.Threading.CancellationToken cancellationToken = default)
-#else
         // Switched form IList to IEnumerable, if count is required maybe switch to IReadOnlyCollection<T>?
         public Task<IEnumerable<IStoreItem>> GetItemsAsync(IHttpContext httpContext)
-#endif
         {
-            // Async file enumeration:
-            // https://github.com/dotnet/runtime/issues/809
-
-#if (NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER)
-                // Just this line requires the package System.Linq.Async
-                // Here are mulitple diskussions: https://stackoverflow.com/questions/59725865/warning-message-in-iasyncenumerable-when-it-lacks-the-await-operator
-                // Here the discusssion why no async file api: https://github.com/dotnet/runtime/issues/809
-                return GetItemsInternal(httpContext).ToAsyncEnumerable();
-#else
-                return Task.FromResult(GetItemsInternal(httpContext));
-#endif
+            return Task.FromResult(GetItemsInternal(httpContext));
         }
 
         private IEnumerable<IStoreItem> GetItemsInternal(IHttpContext httpContext)

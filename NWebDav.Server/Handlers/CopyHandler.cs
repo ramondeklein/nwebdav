@@ -127,11 +127,7 @@ namespace NWebDav.Server.Handlers
                 var newCollection = (IStoreCollection)copyResult.Item;
 
                 // Copy all childs of the source collection
-#if (NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER)
-                await foreach (var entry in sourceCollection.GetItemsAsync(httpContext))
-#else
                 foreach (var entry in await sourceCollection.GetItemsAsync(httpContext).ConfigureAwait(false))
-#endif
                     await CopyAsync(entry, newCollection, entry.Name, overwrite, depth - 1, httpContext, newBaseUri, errors).ConfigureAwait(false);
             }
         }

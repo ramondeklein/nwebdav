@@ -289,12 +289,8 @@ namespace NWebDav.Server.Handlers
             // If we have enough depth, then add the children
             if (depth > 0)
             {
-#if (NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER)
-                await foreach (var childEntry in collection.GetItemsAsync(httpContext))
-#else
                 // Add all child collections
                 foreach (var childEntry in await collection.GetItemsAsync(httpContext).ConfigureAwait(false))
-#endif
                 {
                     var subUri = UriHelper.Combine(uri, childEntry.Name);
                     if (childEntry is IStoreCollection subCollection)
