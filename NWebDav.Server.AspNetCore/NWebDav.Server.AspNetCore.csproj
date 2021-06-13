@@ -8,7 +8,6 @@
     <PackageId>NWebDav.Server.AspNetCore</PackageId>
     <Description>NWebDav.Server.AspNetCore is a flexible WebDAV server library that can be used to expose files or other data using WebDAV hosted via .NET core.</Description>
     <PackageTags>C# .NET WebDAV Server AspNetCore HttpContext</PackageTags>
-    <Version>0.2.01</Version>
   </PropertyGroup>
 
   <ItemGroup>
