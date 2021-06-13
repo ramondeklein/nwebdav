@@ -20,21 +20,11 @@ namespace NWebDav.Sample.Kestrel
             var host = Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseUrls("http://localhost:11113");
                     webBuilder.UseStartup<Startup>();
-                });
+                })
+                .Build();
 
-            host.Build().Run();
-
-            //var host = new WebHostBuilder()
-            //    .UseUrls("http://localhost:11113") // <----
-            //    .UseKestrel(options => {
-            //        //options.ThreadCount = 4;
-            //        //options.UseConnectionLogging();
-            //    })
-            //    .UseStartup<Startup>()
-            //    .Build();
-            //host.Run();
+            host.Run();
         }
     }
 }
