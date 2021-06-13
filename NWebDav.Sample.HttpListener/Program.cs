@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.Net;
 using System.Threading;
 using System.Xml;
@@ -7,14 +8,14 @@ using NWebDav.Server.Http;
 using NWebDav.Server.HttpListener;
 using NWebDav.Server.Logging;
 using NWebDav.Server.Stores;
+
 using NWebDav.Sample.HttpListener.LogAdapters;
-using Microsoft.Extensions.Configuration;
 
 namespace NWebDav.Sample.HttpListener
 {
     internal class Program
     {
-        private static async void DispatchHttpRequestsAsync(IConfigurationSection webDavConfig, System.Net.HttpListener httpListener, CancellationToken cancellationToken)
+        private static async void DispatchHttpRequestsAsync(System.Net.HttpListener httpListener, CancellationToken cancellationToken)
         {
             // Create a request handler factory that uses basic authentication
             var requestHandlerFactory = new RequestHandlerFactory();
@@ -25,8 +26,8 @@ namespace NWebDav.Sample.HttpListener
 
             // Determine the WebDAV username/password for authorization
             // (only when basic authentication is enabled)
-            var webdavUsername = webDavConfig["UserName"] ?? "test";
-            var webdavPassword = webDavConfig["Password"] ?? "test";
+            var webdavUsername = ConfigurationManager.AppSettings["webdav.username"] ?? "test";
+            var webdavPassword = ConfigurationManager.AppSettings["webdav.password"] ?? "test";
 
             HttpListenerContext httpListenerContext;
             while (!cancellationToken.IsCancellationRequested && (httpListenerContext = await httpListener.GetContextAsync().ConfigureAwait(false)) != null)
@@ -48,16 +49,10 @@ namespace NWebDav.Sample.HttpListener
             // Use the Log4NET adapter for logging
             LoggerFactory.Factory = new ConsoleAdapter();
 
-            var builder = new ConfigurationBuilder()
-              .AddJsonFile(@"appsettings.json");
-            var configuration = builder.Build();
-
-            IConfigurationSection webDavSect = configuration.GetSection("WebDav");
-            
             // Obtain the HTTP binding settings
-            var webdavProtocol = webDavSect["Protocol"] ?? "http";
-            var webdavIp = webDavSect["IP"] ?? "127.0.0.1";
-            var webdavPort = webDavSect["Port"] ?? "11111";
+            var webdavProtocol = ConfigurationManager.AppSettings["webdav.protocol"] ?? "http";
+            var webdavIp = ConfigurationManager.AppSettings["webdav.ip"] ?? "127.0.0.1";
+            var webdavPort = ConfigurationManager.AppSettings["webdav.port"] ?? "11111";
 
             using (var httpListener = new System.Net.HttpListener())
             {
@@ -65,7 +60,7 @@ namespace NWebDav.Sample.HttpListener
                 httpListener.Prefixes.Add($"{webdavProtocol}://{webdavIp}:{webdavPort}/");
 
                 // Use basic authentication if requested
-                var webdavUseAuthentication = XmlConvert.ToBoolean(webDavSect["webdav-authentication"] ?? "false");
+                var webdavUseAuthentication = XmlConvert.ToBoolean(ConfigurationManager.AppSettings["webdav-authentication"] ?? "false");
                 if (webdavUseAuthentication)
                 {
                     // Check if HTTPS is enabled
@@ -87,7 +82,7 @@ namespace NWebDav.Sample.HttpListener
 
                 // Start dispatching requests
                 var cancellationTokenSource = new CancellationTokenSource();
-                DispatchHttpRequestsAsync(webDavSect, httpListener, cancellationTokenSource.Token);
+                DispatchHttpRequestsAsync(httpListener, cancellationTokenSource.Token);
 
                 // Wait until somebody presses return
                 Console.WriteLine("WebDAV server running. Press 'x' to quit.");
