@@ -169,21 +169,20 @@ namespace NWebDav.Server.Stores
             return Task.FromResult<IStoreItem>(null);
         }
 
-        // Switched form IList to IEnumerable, if count is required maybe switch to IReadOnlyCollection<T>?
         public Task<IEnumerable<IStoreItem>> GetItemsAsync(IHttpContext httpContext)
         {
-            return Task.FromResult(GetItemsInternal(httpContext));
-        }
+            IEnumerable<IStoreItem> GetItemsInternal()
+            {
+                // Add all directories
+                foreach (var subDirectory in _directoryInfo.GetDirectories())
+                    yield return new DiskStoreCollection(LockingManager, subDirectory, IsWritable);
 
-        private IEnumerable<IStoreItem> GetItemsInternal(IHttpContext httpContext)
-        {
-            // Add all directories
-            foreach (var subDirectory in _directoryInfo.GetDirectories())
-                yield return new DiskStoreCollection(LockingManager, subDirectory, IsWritable);
+                // Add all files
+                foreach (var file in _directoryInfo.GetFiles())
+                    yield return new DiskStoreItem(LockingManager, file, IsWritable);
+            }
 
-            // Add all files
-            foreach (var file in _directoryInfo.GetFiles())
-                yield return new DiskStoreItem(LockingManager, file, IsWritable);
+            return Task.FromResult(GetItemsInternal());
         }
 
         public Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, IHttpContext httpContext)
