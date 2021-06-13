@@ -45,21 +45,14 @@ namespace NWebDav.Server.Handlers
 
             private readonly IList<PropSet> _propertySetters = new List<PropSet>();
 
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="requestXDoc">The Parsed Request Documetn</param>
-            public PropSetCollection(XDocument requestXDoc)
+            public PropSetCollection(XElement xPropertyUpdate)
             {
                 // The document should contain a 'propertyupdate' root element
-                var xRoot = requestXDoc.Root;
-                if (xRoot == null)
-                    throw new Exception("No root element (expected 'propertyupdate')");
-                if (xRoot.Name != WebDavNamespaces.DavNs + "propertyupdate")
+                if (xPropertyUpdate == null || xPropertyUpdate.Name != WebDavNamespaces.DavNs + "propertyupdate")
                     throw new Exception("Invalid root element (expected 'propertyupdate')");
 
                 // Check all descendants
-                foreach (var xElement in xRoot.Elements())
+                foreach (var xElement in xPropertyUpdate.Elements())
                 {
                     // The descendant should be a 'set' or 'remove' entry
                     if (xElement.Name != WebDavNamespaces.DavNs + "set" && xElement.Name != WebDavNamespaces.DavNs + "remove")
@@ -133,14 +126,10 @@ namespace NWebDav.Server.Handlers
             try
             {
                 // Create an XML document from the stream
-#if (NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER)
-                var xDoc = await request.LoadXmlDocumentAsync();
-#else
-                var xDoc = request.LoadXmlDocument();
-#endif
+                var xDoc = await request.LoadXmlDocumentAsync().ConfigureAwait(false);
 
                 // Create an XML document from the stream
-                propSetCollection = new PropSetCollection(xDoc);
+                propSetCollection = new PropSetCollection(xDoc.Root);
             }
             catch (Exception)
             {

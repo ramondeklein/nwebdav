@@ -285,14 +285,21 @@ namespace NWebDav.Server.Helpers
         /// XML document that represents the body content (or 
         /// <see langword="null"/> if no body content is specified).
         /// </returns>
-#if (NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER)
+
+        // The async version of XDocument.LoadAsync has become available with .NET Standard 2.1
+        // and is required for modern Kestrel versions that require all reads to be done async.
+        // Older versions use a synchronous version and have the additional penalty of using
+        // async, but if performance is an ultimate goal, then don't use WebDAV and you should
+        // be upgrading to .NET Core anyway :-) The other option is to put the burden on all
+        // the callers of this method, which I prefer to avoid.
+#if !USE_ASYNC_READ
+#pragma warning disable 1998
+#endif
         public static async Task<XDocument> LoadXmlDocumentAsync(this IHttpRequest request)
-#else
-        public static XDocument LoadXmlDocument(this IHttpRequest request)
+#if !USE_ASYNC_READ
+#pragma warning restore 1998
 #endif
         {
-               
-
             // If there is no input stream, then there is no XML document
             if (request.Stream == null || request.Stream == Stream.Null)
                 return null;
@@ -310,7 +317,7 @@ namespace NWebDav.Server.Helpers
                 return null;
 
             // Obtain an XML document from the stream
-#if (NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER)
+#if USE_ASYNC_READ
             var xDocument = await XDocument.LoadAsync(request.Stream, LoadOptions.None, cancellationToken: default);
 #else
             var xDocument = XDocument.Load(request.Stream);

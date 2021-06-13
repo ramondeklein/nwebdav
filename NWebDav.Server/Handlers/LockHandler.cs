@@ -83,12 +83,7 @@ namespace NWebDav.Server.Handlers
                 try
                 {
                     // Create an XML document from the stream
-#if (NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER)
-                    var xDoc = await request.LoadXmlDocumentAsync();
-#else
-                    var xDoc = request.LoadXmlDocument();
-#endif
-
+                    var xDoc = await request.LoadXmlDocumentAsync().ConfigureAwait(false);
                     if (xDoc == null)
                         throw new Exception("Request-content couldn't be read");
 
