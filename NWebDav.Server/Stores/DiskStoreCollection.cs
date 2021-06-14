@@ -169,20 +169,20 @@ namespace NWebDav.Server.Stores
             return Task.FromResult<IStoreItem>(null);
         }
 
-        public Task<IList<IStoreItem>> GetItemsAsync(IHttpContext httpContext)
+        public Task<IEnumerable<IStoreItem>> GetItemsAsync(IHttpContext httpContext)
         {
-            var items = new List<IStoreItem>();
+            IEnumerable<IStoreItem> GetItemsInternal()
+            {
+                // Add all directories
+                foreach (var subDirectory in _directoryInfo.GetDirectories())
+                    yield return new DiskStoreCollection(LockingManager, subDirectory, IsWritable);
 
-            // Add all directories
-            foreach (var subDirectory in _directoryInfo.GetDirectories())
-                items.Add(new DiskStoreCollection(LockingManager, subDirectory, IsWritable));
+                // Add all files
+                foreach (var file in _directoryInfo.GetFiles())
+                    yield return new DiskStoreItem(LockingManager, file, IsWritable);
+            }
 
-            // Add all files
-            foreach (var file in _directoryInfo.GetFiles())
-                items.Add(new DiskStoreItem(LockingManager, file, IsWritable));
-
-            // Return the items
-            return Task.FromResult<IList<IStoreItem>>(items);
+            return Task.FromResult(GetItemsInternal());
         }
 
         public Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, IHttpContext httpContext)

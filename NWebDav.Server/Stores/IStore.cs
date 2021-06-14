@@ -99,9 +99,13 @@ namespace NWebDav.Server.Stores
 
     public interface IStoreCollection : IStoreItem
     {
+
+        
+
         // Get specific item (or all items)
         Task<IStoreItem> GetItemAsync(string name, IHttpContext httpContext);
-        Task<IList<IStoreItem>> GetItemsAsync(IHttpContext httpContext);
+
+        Task<IEnumerable<IStoreItem>> GetItemsAsync(IHttpContext httpContext);
 
         // Create items and collections and add to the collection
         Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, IHttpContext httpContext);

@@ -4,7 +4,7 @@
     <Product>NWebDav</Product>
     <Company></Company>
     <Authors>Ramon de Klein &lt;mail@ramondeklein.nl&gt;</Authors>
-    <Copyright>Copyright (C) 2016-2019 Ramon de Klein</Copyright>
+    <Copyright>Copyright (C) 2016-2021 Ramon de Klein</Copyright>
     <PackageProjectUrl>https://github.com/ramondeklein/nwebdav</PackageProjectUrl>
     <RepositoryUrl>https://github.com/ramondeklein/nwebdav.git</RepositoryUrl>
     <PackageLicenseUrl>https://www.gnu.org/licenses/lgpl.html</PackageLicenseUrl>
