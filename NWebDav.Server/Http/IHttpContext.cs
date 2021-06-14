@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NWebDav.Server.Http
@@ -53,6 +54,11 @@ namespace NWebDav.Server.Http
         /// set this property to <see langword="null"/>.
         /// </remarks>
         IHttpSession Session { get; }
+        
+        /// <summary>
+        /// Notifies when the connection underlying this request is aborted and thus request operations should be cancelled.
+        /// </summary>
+        CancellationToken RequestAborted { get; }
 
         /// <summary>
         /// Close the context.

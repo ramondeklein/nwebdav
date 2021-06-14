@@ -169,7 +169,7 @@ namespace NWebDav.Server.Handlers
             }
 
             // Stream the document
-            await response.SendResponseAsync(DavStatusCode.MultiStatus, xDocument).ConfigureAwait(false);
+            await httpContext.SendResponseAsync(DavStatusCode.MultiStatus, xDocument).ConfigureAwait(false);
 
             // Finished writing
             return true;

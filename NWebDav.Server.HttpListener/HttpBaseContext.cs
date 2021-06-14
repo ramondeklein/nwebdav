@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using NWebDav.Server.Http;
 
@@ -21,6 +22,7 @@ namespace NWebDav.Server.HttpListener
         public IHttpRequest Request { get; }
         public IHttpResponse Response { get; }
         public abstract IHttpSession Session { get; }
+        public CancellationToken RequestAborted { get; }
 
         public Task CloseAsync()
         {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
@@ -18,6 +19,7 @@ namespace NWebDav.Server.AspNetCore
             Request = new AspNetCoreRequest(httpContext.Request);
             Response = new AspNetCoreResponse(httpContext.Response);
             Session = new AspNetCoreSession(httpContext.User);
+            RequestAborted = httpContext.RequestAborted;
         }
 
         public IHttpRequest Request { get; }
@@ -29,5 +31,7 @@ namespace NWebDav.Server.AspNetCore
             // Context is closed automatically
             return Task.FromResult(true);
         }
+
+        public CancellationToken RequestAborted { get; }
     }
 }

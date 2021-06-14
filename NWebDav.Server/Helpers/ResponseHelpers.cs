@@ -60,7 +60,7 @@ namespace NWebDav.Server.Helpers
         /// <returns>
         /// A task that represents the asynchronous response send.
         /// </returns>
-        public static async Task SendResponseAsync(this IHttpResponse response, DavStatusCode statusCode, XDocument xDocument)
+        public static async Task SendResponseAsync(this IHttpContext context, DavStatusCode statusCode, XDocument xDocument)
         {
             // Make sure an XML document is specified
             if (xDocument == null)
@@ -71,7 +71,7 @@ namespace NWebDav.Server.Helpers
                 throw new ArgumentException("The specified XML document doesn't have a root node", nameof(xDocument));
 
             // Set the response
-            response.SetStatus(statusCode);
+            context.Response.SetStatus(statusCode);
 
             // Obtain the result as an XML document
             using (var ms = new MemoryStream())
@@ -109,12 +109,12 @@ namespace NWebDav.Server.Helpers
                 }
 #endif
                 // Set content type/length
-                response.SetHeaderValue("Content-Type", "text/xml; charset=\"utf-8\"");
-                response.SetHeaderValue("Content-Length", ms.Position.ToString(CultureInfo.InvariantCulture));
+                context.Response.SetHeaderValue("Content-Type", "text/xml; charset=\"utf-8\"");
+                context.Response.SetHeaderValue("Content-Length", ms.Position.ToString(CultureInfo.InvariantCulture));
 
                 // Reset stream and write the stream to the result
                 ms.Seek(0, SeekOrigin.Begin);
-                await ms.CopyToAsync(response.Stream).ConfigureAwait(false);
+                await ms.CopyToAsync(context.Response.Stream, 81920, context.RequestAborted).ConfigureAwait(false);
             }
         }
     }
