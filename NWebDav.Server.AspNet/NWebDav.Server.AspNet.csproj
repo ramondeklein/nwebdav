@@ -8,7 +8,15 @@
     <PackageId>NWebDav.Server.AspNet</PackageId>
     <Description>NWebDav.Server.AspNet is a flexible WebDAV server library that can be used to expose files or other data using WebDAV hosted via ASP.NET.</Description>
     <PackageTags>C# .NET WebDAV Server ASP.NET</PackageTags>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <ProjectReference Include="..\NWebDav.Server\NWebDav.Server.csproj" />
