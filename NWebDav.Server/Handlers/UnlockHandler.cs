@@ -58,7 +58,7 @@ namespace NWebDav.Server.Handlers
             }
 
             // Perform the lock
-            var result = lockingManager.Unlock(item, lockToken);
+            var result = lockingManager.UnlockAsync(item, lockToken);
 
             // Send response
             response.SetStatus(result);

@@ -9,7 +9,7 @@ namespace NWebDav.Server.Props
     /// </summary>
     /// <remarks>
     /// This property implementation calls the
-    /// <see cref="NWebDav.Server.Locking.ILockingManager.GetActiveLockInfo"/>
+    /// <see cref="NWebDav.Server.Locking.ILockingManager.GetActiveLockInfoAsync"/>
     /// of the item's <see cref="IStoreItem.LockingManager"/> to determine the
     /// active locks.
     /// </remarks>
@@ -21,12 +21,13 @@ namespace NWebDav.Server.Props
         /// <summary>
         /// Create an instance of the <see cref="DavLockDiscovery{TEntry}"/>
         /// property that implements the property using the
-        /// <see cref="NWebDav.Server.Locking.ILockingManager.GetActiveLockInfo"/> 
+        /// <see cref="NWebDav.Server.Locking.ILockingManager.GetActiveLockInfoAsync"/> 
         /// method of the item's locking manager.
         /// </summary>
         public DavLockDiscoveryDefault()
         {
-            Getter = (httpContext, item) => item.LockingManager.GetActiveLockInfo(item).Select(ali => ali.ToXml());
+            GetterAsync = async (httpContext, item) => (await item.LockingManager.GetActiveLockInfoAsync(item).ConfigureAwait(false))
+                .Select(ali => ali.ToXml());
         }
     }
 
@@ -35,7 +36,7 @@ namespace NWebDav.Server.Props
     /// </summary>
     /// <remarks>
     /// This property implementation calls the
-    /// <see cref="NWebDav.Server.Locking.ILockingManager.GetSupportedLocks"/>
+    /// <see cref="NWebDav.Server.Locking.ILockingManager.GetSupportedLocksAsync"/>
     /// of the item's <see cref="IStoreItem.LockingManager"/> to determine the
     /// supported locks.
     /// </remarks>
@@ -47,12 +48,13 @@ namespace NWebDav.Server.Props
         /// <summary>
         /// Create an instance of the <see cref="DavSupportedLock{TEntry}"/>
         /// property that implements the property using the
-        /// <see cref="NWebDav.Server.Locking.ILockingManager.GetSupportedLocks"/>
+        /// <see cref="NWebDav.Server.Locking.ILockingManager.GetSupportedLocksAsync"/>
         /// method of the item's locking manager.
         /// </summary>
         public DavSupportedLockDefault()
         {
-            Getter = (httpContext, item) => item.LockingManager.GetSupportedLocks(item).Select(sl => sl.ToXml());
+            GetterAsync = async (httpContext, item) => (await item.LockingManager.GetSupportedLocksAsync(item).ConfigureAwait(false))
+                .Select(sl => sl.ToXml());
         }
     }
 }

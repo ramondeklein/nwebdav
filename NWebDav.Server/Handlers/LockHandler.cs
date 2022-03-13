@@ -70,7 +70,7 @@ namespace NWebDav.Server.Handlers
             if (refreshLockToken != null)
             {
                 // Obtain the token
-                lockResult = lockingManager.RefreshLock(item, depth > 0, timeouts, refreshLockToken);
+                lockResult = await lockingManager.RefreshLockAsync(item, depth > 0, timeouts, refreshLockToken).ConfigureAwait(false);
             }
             else
             {
@@ -125,7 +125,7 @@ namespace NWebDav.Server.Handlers
                 }
 
                 // Perform the lock
-                lockResult = lockingManager.Lock(item, lockType, lockScope, owner, request.Url, depth > 0, timeouts);
+                lockResult = await lockingManager.LockAsync(item, lockType, lockScope, owner, request.Url, depth > 0, timeouts).ConfigureAwait(false);
             }
 
             // Check if result is fine

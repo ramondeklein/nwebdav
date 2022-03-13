@@ -63,7 +63,7 @@ namespace NWebDav.Server.Handlers
             }
 
             // Check if the item is locked
-            if (deleteItem.LockingManager?.IsLocked(deleteItem) ?? false)
+            if (deleteItem.LockingManager != null && await deleteItem.LockingManager.IsLockedAsync(deleteItem).ConfigureAwait(false))
             {
                 // Obtain the lock token
                 var ifToken = request.GetIfLockToken();
@@ -74,7 +74,7 @@ namespace NWebDav.Server.Handlers
                 }
 
                 // Remove the token
-                deleteItem.LockingManager.Unlock(deleteItem, ifToken);
+                await deleteItem.LockingManager.UnlockAsync(deleteItem, ifToken).ConfigureAwait(false);
             }
 
             // Delete item
@@ -92,7 +92,6 @@ namespace NWebDav.Server.Handlers
                 // Return the proper status
                 response.SetStatus(status);
             }
-
 
             return true;
         }
