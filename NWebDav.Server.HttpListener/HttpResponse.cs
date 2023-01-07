@@ -1,31 +1,37 @@
-﻿using System.IO;
+﻿using NWebDav.Server.Http;
+using System.IO;
 using System.Net;
-
-using NWebDav.Server.Http;
 
 namespace NWebDav.Server.HttpListener
 {
-    public class HttpResponse : IHttpResponse
+    /// <inheritdoc cref="IHttpResponse"/>
+    internal sealed class HttpResponse : IHttpResponse
     {
         private readonly HttpListenerResponse _response;
 
-        internal HttpResponse(HttpListenerResponse response)
+        public HttpResponse(HttpListenerResponse response)
         {
             _response = response;
         }
 
-        public int Status
+        /// <inheritdoc/>
+        public int StatusCode
         {
             get => _response.StatusCode;
             set => _response.StatusCode = value;
         }
 
-        public string StatusDescription
+        /// <inheritdoc/>
+        public string? StatusDescription
         {
             get => _response.StatusDescription;
             set => _response.StatusDescription = value;
         }
 
+        /// <inheritdoc/>
+        public Stream OutputStream => _response.OutputStream;
+
+        /// <inheritdoc/>
         public void SetHeaderValue(string header, string value)
         {
             switch (header)
@@ -43,7 +49,5 @@ namespace NWebDav.Server.HttpListener
                     break;
             }
         }
-
-        public Stream Stream => _response.OutputStream;
     }
 }

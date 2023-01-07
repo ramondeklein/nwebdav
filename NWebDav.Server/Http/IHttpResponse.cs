@@ -18,7 +18,7 @@ namespace NWebDav.Server.Http
         /// possible to return an arbitrary integer value, it is recommended
         /// to stick to the values defined in <seealso cref="DavStatusCode"/>.
         /// </remarks>
-        int Status { get; set; }
+        int StatusCode { get; set; }
 
         /// <summary>
         /// Gets or sets the HTTP status description of the response.
@@ -27,24 +27,12 @@ namespace NWebDav.Server.Http
         /// <remarks>
         /// If this value is not set, then it will automatically determine
         /// the HTTP status description based upon the
-        /// <seealso cref="Status"/> value. The description is based on the
+        /// <seealso cref="StatusCode"/> value. The description is based on the
         /// value of the 
         /// <see cref="NWebDav.Server.Helpers.DavStatusCodeAttribute"/>
         /// attribute for this status.
         /// </remarks>
-        string StatusDescription { get; set; }
-
-        /// <summary>
-        /// Sets a header to a specific value.
-        /// </summary>
-        /// <param name="header">Name of the header.</param>
-        /// <param name="value">Value of the header.</param>
-        /// <remarks>
-        /// The <paramref name="header"/> is case insensitive, but it is
-        /// recommended to adhere to the casing as defined in the WebDAV
-        /// specification.
-        /// </remarks>
-        void SetHeaderValue(string header, string value);
+        string? StatusDescription { get; set; }
 
         /// <summary>
         /// Gets the stream that represents the response body.
@@ -63,6 +51,18 @@ namespace NWebDav.Server.Http
         /// positioning (seeking) within the stream.
         /// </para>
         /// </remarks>
-        Stream Stream { get; }
+        Stream OutputStream { get; }
+
+        /// <summary>
+        /// Sets a header to a specific value.
+        /// </summary>
+        /// <param name="header">Name of the header.</param>
+        /// <param name="value">Value of the header.</param>
+        /// <remarks>
+        /// The <paramref name="header"/> is case insensitive, but it is
+        /// recommended to adhere to the casing as defined in the WebDAV
+        /// specification.
+        /// </remarks>
+        void SetHeaderValue(string header, string value);
     }
 }

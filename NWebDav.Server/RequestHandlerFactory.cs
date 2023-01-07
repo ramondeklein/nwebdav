@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
-using NWebDav.Server.Handlers;
-using NWebDav.Server.Http;
+﻿using NWebDav.Server.Handlers;
+using System.Collections.Generic;
 
 namespace NWebDav.Server
 {
@@ -10,7 +9,7 @@ namespace NWebDav.Server
     /// </summary>
     /// <seealso cref="IRequestHandler"/>
     /// <seealso cref="IRequestHandlerFactory"/>
-    public class RequestHandlerFactory : IRequestHandlerFactory
+    public sealed class RequestHandlerFactory : IRequestHandlerFactory
     {
         private static readonly IDictionary<string, IRequestHandler> s_requestHandlers = new Dictionary<string, IRequestHandler>
         {
@@ -28,26 +27,11 @@ namespace NWebDav.Server
             { "UNLOCK", new UnlockHandler() }
         };
 
-        /// <summary>
-        /// Obtain the <seealso cref="IRequestHandler">request handler</seealso>
-        /// that can process the specified request.
-        /// </summary>
-        /// <param name="httpContext">
-        /// The HTTP context specifies the entire HTTP context for this
-        /// request. In most cases only the <see cref="IHttpRequest.HttpMethod"/>
-        /// of the request will specify which handler should be used.
-        /// </param>
-        /// <returns>
-        /// The request handler that will further process the request.
-        /// </returns>
-        /// <remarks>
-        /// This implementation creates a new instance of the appropriate
-        /// request handler for each request.
-        /// </remarks>
-        public IRequestHandler GetRequestHandler(IHttpContext httpContext)
+        /// <inheritdoc/>
+        public IRequestHandler? GetRequestHandler(string request)
         {
             // Obtain the dispatcher
-            if (!s_requestHandlers.TryGetValue(httpContext.Request.HttpMethod, out var requestHandler))
+            if (!s_requestHandlers.TryGetValue(request, out var requestHandler))
                 return null;
 
             // Create an instance of the request handler

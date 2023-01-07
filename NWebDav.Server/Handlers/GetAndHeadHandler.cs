@@ -148,7 +148,7 @@ namespace NWebDav.Server.Handlers
 
                     // HEAD method doesn't require the actual item data
                     if (!head)
-                        await CopyToAsync(stream, response.Stream, range?.Start ?? 0, range?.End).ConfigureAwait(false);
+                        await CopyToAsync(stream, response.OutputStream, range?.Start ?? 0, range?.End).ConfigureAwait(false);
                 }
                 else
                 {

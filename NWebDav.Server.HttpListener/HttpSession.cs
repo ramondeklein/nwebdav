@@ -1,16 +1,17 @@
-﻿using System.Security.Principal;
-
-using NWebDav.Server.Http;
+﻿using NWebDav.Server.Http;
+using System.Security.Principal;
 
 namespace NWebDav.Server.HttpListener
 {
-    public class HttpSession : IHttpSession
+    /// <inheritdoc cref="IHttpSession"/>
+    internal sealed class HttpSession : IHttpSession
     {
-        internal HttpSession(IPrincipal principal)
+        public HttpSession(IPrincipal principal)
         {
             Principal = principal;
         }
 
+        /// <inheritdoc/>
         public IPrincipal Principal { get; }
     }
 }

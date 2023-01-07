@@ -1,7 +1,7 @@
-﻿using System.Threading.Tasks;
-
-using NWebDav.Server.Http;
+﻿using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace NWebDav.Server
 {
@@ -30,23 +30,17 @@ namespace NWebDav.Server
     public interface IRequestHandler
     {
         /// <summary>
-        /// Handle an incoming WebDAV request.
+        /// Handles and processes an incoming request.
         /// </summary>
-        /// <param name="httpContext">
-        /// The HTTP context of the request.
-        /// </param>
-        /// <param name="store">
-        /// Store that is used to access the collections and items.
-        /// </param>
+        /// <param name="context">The HTTP context of the request.</param>
+        /// <param name="store">Store that is used to access the collections and items.</param>
         /// <returns>
-        /// A task that represents the asynchronous handle request operation.
-        /// The task will return a boolean upon completion of the task that
-        /// is <see langword="true"/> if the request was handled or
-        /// <see langword="false"/> if the request wasn't handled. If a request
-        /// is not handled, then the status code
-        /// <see cref="DavStatusCode.NotImplemented"/> is returned to the
-        /// requester.
+        /// A <see cref="Task"/> that represents the asynchronous operation.
+        /// The task will return a boolean upon completion of the task that is <see langword="true"/> if the request was handled or
+        /// <see langword="false"/> if the request wasn't handled. If a request is not handled, then the status code
+        /// <see cref="DavStatusCode.NotImplemented"/> is returned to the requester.
         /// </returns>
-        Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store);
+        // TODO(wd): Use IStorageService
+        Task<bool> HandleRequestAsync(IHttpContext context, IStore store, CancellationToken cancellationToken = default); 
     }
 }

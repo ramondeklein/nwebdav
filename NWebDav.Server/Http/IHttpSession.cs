@@ -11,6 +11,6 @@ namespace NWebDav.Server.Http
         /// Gets the principal of the current request.
         /// </summary>
         /// <value>Principal of the current request.</value>
-        IPrincipal Principal { get; }
+        IPrincipal? Principal { get; }
     }
 }

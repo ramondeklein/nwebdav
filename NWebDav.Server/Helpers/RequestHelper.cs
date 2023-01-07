@@ -301,7 +301,7 @@ namespace NWebDav.Server.Helpers
 #endif
         {
             // If there is no input stream, then there is no XML document
-            if (request.Stream == null || request.Stream == Stream.Null)
+            if (request.InputStream == null || request.InputStream == Stream.Null)
                 return null;
 
             // Return null if no content has been specified
@@ -313,12 +313,12 @@ namespace NWebDav.Server.Helpers
             }
 
             // Return null if no stream is available
-            if (request.Stream == null || request.Stream == Stream.Null)
+            if (request.InputStream == null || request.InputStream == Stream.Null)
                 return null;
 
             // Obtain an XML document from the stream
 #if USE_ASYNC_READ
-            var xDocument = await XDocument.LoadAsync(request.Stream, LoadOptions.None, cancellationToken: default);
+            var xDocument = await XDocument.LoadAsync(request.InputStream, LoadOptions.None, cancellationToken: default);
 #else
             var xDocument = XDocument.Load(request.Stream);
 #endif

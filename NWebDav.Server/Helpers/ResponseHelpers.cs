@@ -41,7 +41,7 @@ namespace NWebDav.Server.Helpers
         public static void SetStatus(this IHttpResponse response, DavStatusCode statusCode, string statusDescription = null)
         {
             // Set the status code and description
-            response.Status = (int)statusCode;
+            response.StatusCode = (int)statusCode;
             response.StatusDescription = statusDescription ?? statusCode.GetStatusDescription();
         }
 
@@ -114,7 +114,7 @@ namespace NWebDav.Server.Helpers
 
                 // Reset stream and write the stream to the result
                 ms.Seek(0, SeekOrigin.Begin);
-                await ms.CopyToAsync(response.Stream).ConfigureAwait(false);
+                await ms.CopyToAsync(response.OutputStream).ConfigureAwait(false);
             }
         }
     }

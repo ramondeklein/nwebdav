@@ -54,7 +54,7 @@ namespace NWebDav.Server.Handlers
             if (status == DavStatusCode.Created || status == DavStatusCode.NoContent)
             {
                 // Upload the information to the item
-                var uploadStatus = await result.Item.UploadFromStreamAsync(httpContext, request.Stream).ConfigureAwait(false);
+                var uploadStatus = await result.Item.UploadFromStreamAsync(httpContext, request.InputStream).ConfigureAwait(false);
                 if (uploadStatus != DavStatusCode.Ok)
                     status = uploadStatus;
             }

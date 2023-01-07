@@ -37,7 +37,7 @@ namespace NWebDav.Server.Http
         /// The URL in a WebDAV request typically specifies which document or
         /// collection should be used for the request.
         /// </remarks>
-        Uri Url { get; }
+        Uri? Url { get; }
 
         /// <summary>
         /// Gets the remote end point of the request.
@@ -59,7 +59,7 @@ namespace NWebDav.Server.Http
         /// because this will cause the request to fail.
         /// </para>
         /// </remarks>
-        string RemoteEndPoint { get; }
+        string? RemoteEndPoint { get; }
 
         /// <summary>
         /// Gets all headers of the request.
@@ -71,7 +71,7 @@ namespace NWebDav.Server.Http
         /// be returned in the case as they appear in the request message
         /// (if supported by the underlying HTTP infrastructure).
         /// </remarks>
-        IEnumerable<string> Headers { get; }
+        IEnumerable<string?> Headers { get; }
 
         /// <summary>
         /// Gets the value of a request header.
@@ -90,7 +90,7 @@ namespace NWebDav.Server.Http
         /// no rely on casing.
         /// </para>
         /// </remarks>
-        string GetHeaderValue(string header);
+        string? GetHeaderValue(string header);
 
         /// <summary>
         /// Gets the HTTP request body stream.
@@ -104,6 +104,6 @@ namespace NWebDav.Server.Http
         /// within the stream.
         /// </para>
         /// </remarks>
-        Stream Stream { get; }
+        Stream? InputStream { get; }
     }
 }
