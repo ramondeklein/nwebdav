@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using NWebDav.Server.Enums;
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Props;
@@ -82,15 +83,15 @@ namespace NWebDav.Server.Handlers
                 {
                     switch (topCollection.InfiniteDepthMode)
                     {
-                        case InfiniteDepthMode.Rejected:
+                        case EnumerationDepthMode.Rejected:
                             response.SetStatus(HttpStatusCode.Forbidden, "Not allowed to obtain properties with infinite depth.");
                             return;
 
-                        case InfiniteDepthMode.Assume0:
+                        case EnumerationDepthMode.Assume0:
                             depth = 0;
                             break;
 
-                        case InfiniteDepthMode.Assume1:
+                        case EnumerationDepthMode.Assume1:
                             depth = 1;
                             break;
                     }

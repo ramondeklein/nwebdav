@@ -1,4 +1,5 @@
-﻿using NWebDav.Server.Http;
+﻿using NWebDav.Server.Enums;
+using NWebDav.Server.Http;
 using NWebDav.Server.Locking;
 using NWebDav.Server.Props;
 using System;
@@ -410,7 +411,7 @@ namespace NWebDav.Server.Stores
             }
         }
 
-        public InfiniteDepthMode InfiniteDepthMode => InfiniteDepthMode.Rejected;
+        public EnumerationDepthMode InfiniteDepthMode => EnumerationDepthMode.Rejected;
 
         public override int GetHashCode()
         {
