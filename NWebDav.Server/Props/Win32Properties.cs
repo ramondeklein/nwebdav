@@ -126,8 +126,8 @@ namespace NWebDav.Server.Props
     {
         private class FileAttributesConverter : IConverter
         {
-            public object ToXml(IHttpContext httpContext, FileAttributes value) => ((int)value).ToString("X8");
-            public FileAttributes FromXml(IHttpContext httpContext, object value) => (FileAttributes)Convert.ToInt32((string)value, 16);
+            public object ToXml(IHttpContext context, FileAttributes value) => ((int)value).ToString("X8");
+            public FileAttributes FromXml(IHttpContext context, object value) => (FileAttributes)Convert.ToInt32((string)value, 16);
         }
 
         private static IConverter TypeConverter { get; } = new FileAttributesConverter();

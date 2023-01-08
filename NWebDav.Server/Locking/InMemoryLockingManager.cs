@@ -1,9 +1,9 @@
-﻿using System;
+﻿using NWebDav.Server.Stores;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Xml.Linq;
-
-using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Locking
 {
@@ -86,7 +86,7 @@ namespace NWebDav.Server.Locking
                 {
                     // Check if there is already an exclusive lock
                     if (itemLockList.Any(l => l.Scope == LockScope.Exclusive))
-                        return new LockResult(DavStatusCode.Locked);
+                        return new LockResult(HttpStatusCode.Locked);
                 }
 
                 // Create the lock info object
@@ -96,16 +96,16 @@ namespace NWebDav.Server.Locking
                 itemLockList.Add(itemLockInfo);
 
                 // Return the active lock
-                return new LockResult(DavStatusCode.Ok, GetActiveLockInfo(itemLockInfo));
+                return new LockResult(HttpStatusCode.OK, GetActiveLockInfo(itemLockInfo));
             }
         }
 
-        public DavStatusCode Unlock(IStoreItem item, Uri lockTokenUri)
+        public HttpStatusCode Unlock(IStoreItem item, Uri lockTokenUri)
         {
             // Determine the actual lock token
             var lockToken = GetTokenFromLockToken(lockTokenUri);
             if (lockToken == null)
-                return DavStatusCode.PreconditionFailed;
+                return HttpStatusCode.PreconditionFailed;
 
             // Determine the item's key
             var key = item.UniqueKey;
@@ -114,7 +114,7 @@ namespace NWebDav.Server.Locking
             {
                 // Make sure the item is in the dictionary
                 if (!_itemLocks.TryGetValue(key, out var itemLockTypeDictionary))
-                    return DavStatusCode.PreconditionFailed;
+                    return HttpStatusCode.PreconditionFailed;
 
                 // Scan both the dictionaries for the token
                 foreach (var kv in itemLockTypeDictionary)
@@ -141,14 +141,14 @@ namespace NWebDav.Server.Locking
                             }
 
                             // Lock has been removed
-                            return DavStatusCode.NoContent;
+                            return HttpStatusCode.NoContent;
                         }
                     }
                 }
             }
 
             // Item cannot be unlocked (token cannot be found)
-            return DavStatusCode.PreconditionFailed;
+            return HttpStatusCode.PreconditionFailed;
         }
 
         public LockResult RefreshLock(IStoreItem item, bool recursiveLock, IEnumerable<int> timeouts, Uri lockTokenUri)
@@ -156,7 +156,7 @@ namespace NWebDav.Server.Locking
             // Determine the actual lock token
             var lockToken = GetTokenFromLockToken(lockTokenUri);
             if (lockToken == null)
-                return new LockResult(DavStatusCode.PreconditionFailed);
+                return new LockResult(HttpStatusCode.PreconditionFailed);
 
             // Determine the item's key
             var key = item.UniqueKey;
@@ -165,7 +165,7 @@ namespace NWebDav.Server.Locking
             {
                 // Make sure the item is in the dictionary
                 if (!_itemLocks.TryGetValue(key, out var itemLockTypeDictionary))
-                    return new LockResult(DavStatusCode.PreconditionFailed);
+                    return new LockResult(HttpStatusCode.PreconditionFailed);
 
                 // Scan both the dictionaries for the token
                 foreach (var kv in itemLockTypeDictionary)
@@ -179,13 +179,13 @@ namespace NWebDav.Server.Locking
                         itemLockInfo.RefreshExpiration(timeout);
 
                         // Return the active lock
-                        return new LockResult(DavStatusCode.Ok, GetActiveLockInfo(itemLockInfo));
+                        return new LockResult(HttpStatusCode.OK, GetActiveLockInfo(itemLockInfo));
                     }
                 }
             }
 
             // Item cannot be unlocked (token cannot be found)
-            return new LockResult(DavStatusCode.PreconditionFailed);
+            return new LockResult(HttpStatusCode.PreconditionFailed);
         }
 
         public IEnumerable<ActiveLock> GetActiveLockInfo(IStoreItem item)

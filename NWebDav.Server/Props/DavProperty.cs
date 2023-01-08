@@ -1,10 +1,10 @@
-﻿using System;
+﻿using NWebDav.Server.Http;
+using NWebDav.Server.Stores;
+using System;
 using System.Diagnostics;
+using System.Net;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-
-using NWebDav.Server.Http;
-using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Props
 {
@@ -45,7 +45,7 @@ namespace NWebDav.Server.Props
         /// value of a store item/collection.
         /// </summary>
         /// <returns>Delegate to set the property value.</returns>
-        public Func<IHttpContext, TEntry, object, Task<DavStatusCode>> SetterAsync { get; set; }
+        public Func<IHttpContext, TEntry, object, Task<HttpStatusCode>> SetterAsync { get; set; }
 
         /// <summary>
         /// Gets or sets the flag whether or not the property is expensive.

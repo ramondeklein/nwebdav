@@ -1,10 +1,11 @@
-﻿using System;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-
-using NWebDav.Server.Helpers;
+﻿using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
+using System;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace NWebDav.Server.Handlers
 {
@@ -22,21 +23,12 @@ namespace NWebDav.Server.Handlers
         /// <summary>
         /// Handle a DELETE request.
         /// </summary>
-        /// <param name="httpContext">
-        /// The HTTP context of the request.
-        /// </param>
-        /// <param name="store">
-        /// Store that is used to access the collections and items.
-        /// </param>
-        /// <returns>
-        /// A task that represents the asynchronous DELETE operation. The task
-        /// will always return <see langword="true"/> upon completion.
-        /// </returns>
-        public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)
+        /// <inheritdoc/>
+        public async Task<bool> HandleRequestAsync(IHttpContext context, IStore store, CancellationToken cancellationToken = default)
         {
             // Obtain request and response
-            var request = httpContext.Request;
-            var response = httpContext.Response;
+            var request = context.Request;
+            var response = context.Response;
 
             // Keep track of all errors
             var errors = new UriResultCollection();
@@ -45,20 +37,20 @@ namespace NWebDav.Server.Handlers
             var splitUri = RequestHelper.SplitUri(request.Url);
 
             // Obtain parent collection
-            var parentCollection = await store.GetCollectionAsync(splitUri.CollectionUri, httpContext).ConfigureAwait(false);
+            var parentCollection = await store.GetCollectionAsync(splitUri.CollectionUri, context).ConfigureAwait(false);
             if (parentCollection == null)
             {
                 // Source not found
-                response.SetStatus(DavStatusCode.NotFound);
+                response.SetStatus(HttpStatusCode.NotFound);
                 return true;
             }
 
             // Obtain the item that actually is deleted
-            var deleteItem = await parentCollection.GetItemAsync(splitUri.Name, httpContext).ConfigureAwait(false);
+            var deleteItem = await parentCollection.GetItemAsync(splitUri.Name, context).ConfigureAwait(false);
             if (deleteItem == null)
             {
                 // Source not found
-                response.SetStatus(DavStatusCode.NotFound);
+                response.SetStatus(HttpStatusCode.NotFound);
                 return true;
             }
 
@@ -69,7 +61,7 @@ namespace NWebDav.Server.Handlers
                 var ifToken = request.GetIfLockToken();
                 if (!deleteItem.LockingManager.HasLock(deleteItem, ifToken))
                 {
-                    response.SetStatus(DavStatusCode.Locked);
+                    response.SetStatus(HttpStatusCode.Locked);
                     return true;
                 }
 
@@ -78,14 +70,14 @@ namespace NWebDav.Server.Handlers
             }
 
             // Delete item
-            var status = await DeleteItemAsync(parentCollection, splitUri.Name, httpContext, splitUri.CollectionUri).ConfigureAwait(false);
-            if (status == DavStatusCode.Ok && errors.HasItems)
+            var status = await DeleteItemAsync(parentCollection, splitUri.Name, context, splitUri.CollectionUri).ConfigureAwait(false);
+            if (status == HttpStatusCode.OK && errors.HasItems)
             {
                 // Obtain the status document
                 var xDocument = new XDocument(errors.GetXmlMultiStatus());
 
                 // Stream the document
-                await response.SendResponseAsync(DavStatusCode.MultiStatus, xDocument).ConfigureAwait(false);
+                await response.SendResponseAsync(HttpStatusCode.MultiStatus, xDocument).ConfigureAwait(false);
             }
             else
             {
@@ -97,22 +89,22 @@ namespace NWebDav.Server.Handlers
             return true;
         }
 
-        private async Task<DavStatusCode> DeleteItemAsync(IStoreCollection collection, string name, IHttpContext httpContext, Uri baseUri)
+        private async Task<HttpStatusCode> DeleteItemAsync(IStoreCollection collection, string name, IHttpContext context, Uri baseUri)
         {
             // Obtain the actual item
-            var deleteItem = await collection.GetItemAsync(name, httpContext).ConfigureAwait(false);
+            var deleteItem = await collection.GetItemAsync(name, context).ConfigureAwait(false);
             if (deleteItem is IStoreCollection deleteCollection)
             {
                 // Determine the new base URI
                 var subBaseUri = UriHelper.Combine(baseUri, name);
 
                 // Delete all entries first
-                foreach (var entry in await deleteCollection.GetItemsAsync(httpContext).ConfigureAwait(false))
-                    await DeleteItemAsync(deleteCollection, entry.Name, httpContext, subBaseUri).ConfigureAwait(false);
+                foreach (var entry in await deleteCollection.GetItemsAsync(context).ConfigureAwait(false))
+                    await DeleteItemAsync(deleteCollection, entry.Name, context, subBaseUri).ConfigureAwait(false);
             }
 
             // Attempt to delete the item
-            return await collection.DeleteItemAsync(name, httpContext).ConfigureAwait(false);
+            return await collection.DeleteItemAsync(name, context).ConfigureAwait(false);
         }
     }
 }

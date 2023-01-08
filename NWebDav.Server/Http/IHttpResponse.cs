@@ -14,9 +14,9 @@ namespace NWebDav.Server.Http
         /// <remarks>
         /// The WebDAV specification extends the standard HTTP status
         /// codes. These additional codes have been defined in the
-        /// <seealso cref="DavStatusCode"/> enumeration. Although it is
+        /// <seealso cref="HttpStatusCode"/> enumeration. Although it is
         /// possible to return an arbitrary integer value, it is recommended
-        /// to stick to the values defined in <seealso cref="DavStatusCode"/>.
+        /// to stick to the values defined in <seealso cref="HttpStatusCode"/>.
         /// </remarks>
         int StatusCode { get; set; }
 
@@ -29,7 +29,7 @@ namespace NWebDav.Server.Http
         /// the HTTP status description based upon the
         /// <seealso cref="StatusCode"/> value. The description is based on the
         /// value of the 
-        /// <see cref="NWebDav.Server.Helpers.DavStatusCodeAttribute"/>
+        /// <see cref="NWebDav.Server.Helpers.HttpStatusCodeAttribute"/>
         /// attribute for this status.
         /// </remarks>
         string? StatusDescription { get; set; }

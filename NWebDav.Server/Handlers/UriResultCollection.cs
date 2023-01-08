@@ -1,9 +1,9 @@
-﻿using System;
+﻿using NWebDav.Server.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Xml.Linq;
-
-using NWebDav.Server.Helpers;
 
 namespace NWebDav.Server.Handlers
 {
@@ -12,9 +12,9 @@ namespace NWebDav.Server.Handlers
         private struct UriResult
         {
             private Uri Uri { get; }
-            private DavStatusCode Result { get; }
+            private HttpStatusCode Result { get; }
 
-            public UriResult(Uri uri, DavStatusCode result)
+            public UriResult(Uri uri, HttpStatusCode result)
             {
                 Uri = uri;
                 Result = result;
@@ -22,7 +22,7 @@ namespace NWebDav.Server.Handlers
 
             public XElement GetXmlResponse()
             {
-                var statusText = $"HTTP/1.1 {(int)Result} {DavStatusCodeHelper.GetStatusDescription(Result)}";
+                var statusText = $"HTTP/1.1 {(int)Result} {Result.ToString()}";
                 return new XElement(WebDavNamespaces.DavNs + "response",
                     new XElement(WebDavNamespaces.DavNs + "href", UriHelper.ToEncodedString(Uri)),
                     new XElement(WebDavNamespaces.DavNs + "status", statusText));
@@ -33,7 +33,7 @@ namespace NWebDav.Server.Handlers
 
         public bool HasItems => _results.Any();
 
-        public void AddResult(Uri uri, DavStatusCode result)
+        public void AddResult(Uri uri, HttpStatusCode result)
         {
             _results.Add(new UriResult(uri, result));
         }

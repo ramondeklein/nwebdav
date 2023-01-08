@@ -1,8 +1,9 @@
-﻿using System.Threading.Tasks;
-
-using NWebDav.Server.Helpers;
+﻿using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace NWebDav.Server.Handlers
 {
@@ -20,42 +21,33 @@ namespace NWebDav.Server.Handlers
         /// <summary>
         /// Handle a PUT request.
         /// </summary>
-        /// <param name="httpContext">
-        /// The HTTP context of the request.
-        /// </param>
-        /// <param name="store">
-        /// Store that is used to access the collections and items.
-        /// </param>
-        /// <returns>
-        /// A task that represents the asynchronous PUT operation. The task
-        /// will always return <see langword="true"/> upon completion.
-        /// </returns>
-        public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)
+        /// <inheritdoc/>
+        public async Task<bool> HandleRequestAsync(IHttpContext context, IStore store, CancellationToken cancellationToken = default)
         {
             // Obtain request and response
-            var request = httpContext.Request;
-            var response = httpContext.Response;
+            var request = context.Request;
+            var response = context.Response;
 
             // It's not a collection, so we'll try again by fetching the item in the parent collection
             var splitUri = RequestHelper.SplitUri(request.Url);
 
             // Obtain collection
-            var collection = await store.GetCollectionAsync(splitUri.CollectionUri, httpContext).ConfigureAwait(false);
+            var collection = await store.GetCollectionAsync(splitUri.CollectionUri, context).ConfigureAwait(false);
             if (collection == null)
             {
                 // Source not found
-                response.SetStatus(DavStatusCode.Conflict);
+                response.SetStatus(HttpStatusCode.Conflict);
                 return true;
             }
 
             // Obtain the item
-            var result = await collection.CreateItemAsync(splitUri.Name, true, httpContext).ConfigureAwait(false);
+            var result = await collection.CreateItemAsync(splitUri.Name, true, context).ConfigureAwait(false);
             var status = result.Result;
-            if (status == DavStatusCode.Created || status == DavStatusCode.NoContent)
+            if (status == HttpStatusCode.Created || status == HttpStatusCode.NoContent)
             {
                 // Upload the information to the item
-                var uploadStatus = await result.Item.UploadFromStreamAsync(httpContext, request.InputStream).ConfigureAwait(false);
-                if (uploadStatus != DavStatusCode.Ok)
+                var uploadStatus = await result.Item.UploadFromStreamAsync(context, request.InputStream).ConfigureAwait(false);
+                if (uploadStatus != HttpStatusCode.OK)
                     status = uploadStatus;
             }
 

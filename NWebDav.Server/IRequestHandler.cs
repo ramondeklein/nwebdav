@@ -38,7 +38,7 @@ namespace NWebDav.Server
         /// A <see cref="Task"/> that represents the asynchronous operation.
         /// The task will return a boolean upon completion of the task that is <see langword="true"/> if the request was handled or
         /// <see langword="false"/> if the request wasn't handled. If a request is not handled, then the status code
-        /// <see cref="DavStatusCode.NotImplemented"/> is returned to the requester.
+        /// <see cref="HttpStatusCode.NotImplemented"/> is returned to the requester.
         /// </returns>
         // TODO(wd): Use IStorageService
         Task<bool> HandleRequestAsync(IHttpContext context, IStore store, CancellationToken cancellationToken = default); 

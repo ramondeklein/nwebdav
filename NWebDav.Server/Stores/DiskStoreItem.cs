@@ -1,14 +1,14 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Security.Cryptography;
-using System.Threading.Tasks;
-
-using NWebDav.Server.Helpers;
+﻿using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Locking;
 using NWebDav.Server.Logging;
 using NWebDav.Server.Props;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Net;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace NWebDav.Server.Stores
 {
@@ -34,7 +34,7 @@ namespace NWebDav.Server.Stores
                 Setter = (context, item, value) =>
                 {
                     item._fileInfo.CreationTimeUtc = value;
-                    return DavStatusCode.Ok;
+                    return HttpStatusCode.OK;
                 }
             },
             new DavDisplayName<DiskStoreItem>
@@ -62,7 +62,7 @@ namespace NWebDav.Server.Stores
                 Setter = (context, item, value) =>
                 {
                     item._fileInfo.LastWriteTimeUtc = value;
-                    return DavStatusCode.Ok;
+                    return HttpStatusCode.OK;
                 }
             },
             new DavGetResourceType<DiskStoreItem>
@@ -88,7 +88,7 @@ namespace NWebDav.Server.Stores
                 Setter = (context, item, value) =>
                 {
                     item._fileInfo.CreationTimeUtc = value;
-                    return DavStatusCode.Ok;
+                    return HttpStatusCode.OK;
                 }
             },
             new Win32LastAccessTime<DiskStoreItem>
@@ -97,7 +97,7 @@ namespace NWebDav.Server.Stores
                 Setter = (context, item, value) =>
                 {
                     item._fileInfo.LastAccessTimeUtc = value;
-                    return DavStatusCode.Ok;
+                    return HttpStatusCode.OK;
                 }
             },
             new Win32LastModifiedTime<DiskStoreItem>
@@ -106,7 +106,7 @@ namespace NWebDav.Server.Stores
                 Setter = (context, item, value) =>
                 {
                     item._fileInfo.LastWriteTimeUtc = value;
-                    return DavStatusCode.Ok;
+                    return HttpStatusCode.OK;
                 }
             },
             new Win32FileAttributes<DiskStoreItem>
@@ -115,7 +115,7 @@ namespace NWebDav.Server.Stores
                 Setter = (context, item, value) =>
                 {
                     item._fileInfo.Attributes = value;
-                    return DavStatusCode.Ok;
+                    return HttpStatusCode.OK;
                 }
             }
         });
@@ -124,13 +124,13 @@ namespace NWebDav.Server.Stores
         public string Name => _fileInfo.Name;
         public string UniqueKey => _fileInfo.FullName;
         public string FullPath => _fileInfo.FullName;
-        public Task<Stream> GetReadableStreamAsync(IHttpContext httpContext) => Task.FromResult((Stream)_fileInfo.OpenRead());
+        public Task<Stream> GetReadableStreamAsync(IHttpContext context) => Task.FromResult((Stream)_fileInfo.OpenRead());
 
-        public async Task<DavStatusCode> UploadFromStreamAsync(IHttpContext httpContext, Stream inputStream)
+        public async Task<HttpStatusCode> UploadFromStreamAsync(IHttpContext context, Stream inputStream)
         {
             // Check if the item is writable
             if (!IsWritable)
-                return DavStatusCode.Conflict;
+                return HttpStatusCode.Conflict;
 
             // Copy the stream
             try
@@ -140,18 +140,18 @@ namespace NWebDav.Server.Stores
                 {
                     await inputStream.CopyToAsync(outputStream).ConfigureAwait(false);
                 }
-                return DavStatusCode.Ok;
+                return HttpStatusCode.OK;
             }
             catch (IOException ioException) when (ioException.IsDiskFull())
             {
-                return DavStatusCode.InsufficientStorage;
+                return HttpStatusCode.InsufficientStorage;
             }
         }
 
         public IPropertyManager PropertyManager => DefaultPropertyManager;
         public ILockingManager LockingManager { get; }
 
-        public async Task<StoreItemResult> CopyAsync(IStoreCollection destination, string name, bool overwrite, IHttpContext httpContext)
+        public async Task<StoreItemResult> CopyAsync(IStoreCollection destination, string name, bool overwrite, IHttpContext context)
         {
             try
             {
@@ -161,33 +161,33 @@ namespace NWebDav.Server.Stores
                 {
                     // Check if the collection is writable
                     if (!diskCollection.IsWritable)
-                        return new StoreItemResult(DavStatusCode.PreconditionFailed);
+                        return new StoreItemResult(HttpStatusCode.PreconditionFailed);
 
                     var destinationPath = Path.Combine(diskCollection.FullPath, name);
 
                     // Check if the file already exists
                     var fileExists = File.Exists(destinationPath);
                     if (fileExists && !overwrite)
-                        return new StoreItemResult(DavStatusCode.PreconditionFailed);
+                        return new StoreItemResult(HttpStatusCode.PreconditionFailed);
 
                     // Copy the file
                     File.Copy(_fileInfo.FullName, destinationPath, true);
 
                     // Return the appropriate status
-                    return new StoreItemResult(fileExists ? DavStatusCode.NoContent : DavStatusCode.Created);
+                    return new StoreItemResult(fileExists ? HttpStatusCode.NoContent : HttpStatusCode.Created);
                 }
                 else
                 {
                     // Create the item in the destination collection
-                    var result = await destination.CreateItemAsync(name, overwrite, httpContext).ConfigureAwait(false);
+                    var result = await destination.CreateItemAsync(name, overwrite, context).ConfigureAwait(false);
 
                     // Check if the item could be created
                     if (result.Item != null)
                     {
-                        using (var sourceStream = await GetReadableStreamAsync(httpContext).ConfigureAwait(false))
+                        using (var sourceStream = await GetReadableStreamAsync(context).ConfigureAwait(false))
                         {
-                            var copyResult = await result.Item.UploadFromStreamAsync(httpContext, sourceStream).ConfigureAwait(false);
-                            if (copyResult != DavStatusCode.Ok)
+                            var copyResult = await result.Item.UploadFromStreamAsync(context, sourceStream).ConfigureAwait(false);
+                            if (copyResult != HttpStatusCode.OK)
                                 return new StoreItemResult(copyResult, result.Item);
                         }
                     }
@@ -199,7 +199,7 @@ namespace NWebDav.Server.Stores
             catch (Exception exc)
             {
                 s_log.Log(LogLevel.Error, () => "Unexpected exception while copying data.", exc);
-                return new StoreItemResult(DavStatusCode.InternalServerError);
+                return new StoreItemResult(HttpStatusCode.InternalServerError);
             }
         }
 

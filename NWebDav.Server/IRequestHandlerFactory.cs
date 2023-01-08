@@ -26,7 +26,7 @@
         /// </para>
         /// <para>
         /// If <see langword="null"/> is returned, then the status code
-        /// <see cref="DavStatusCode.NotImplemented"/> is returned to the
+        /// <see cref="HttpStatusCode.NotImplemented"/> is returned to the
         /// requester.
         /// </para>
         /// </remarks>

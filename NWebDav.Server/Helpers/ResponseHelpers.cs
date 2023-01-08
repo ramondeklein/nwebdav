@@ -1,12 +1,12 @@
-﻿using System;
+﻿using NWebDav.Server.Http;
+using System;
 using System.Globalization;
 using System.IO;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
-
-using NWebDav.Server.Http;
 
 namespace NWebDav.Server.Helpers
 {
@@ -38,11 +38,11 @@ namespace NWebDav.Server.Helpers
         /// Not all HTTP infrastructures allow to set the status description,
         /// so it should only be used for informational purposes.
         /// </remarks>
-        public static void SetStatus(this IHttpResponse response, DavStatusCode statusCode, string statusDescription = null)
+        public static void SetStatus(this IHttpResponse response, HttpStatusCode statusCode, string statusDescription = null)
         {
             // Set the status code and description
             response.StatusCode = (int)statusCode;
-            response.StatusDescription = statusDescription ?? statusCode.GetStatusDescription();
+            response.StatusDescription = statusDescription ?? statusCode.ToString();
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace NWebDav.Server.Helpers
         /// <returns>
         /// A task that represents the asynchronous response send.
         /// </returns>
-        public static async Task SendResponseAsync(this IHttpResponse response, DavStatusCode statusCode, XDocument xDocument)
+        public static async Task SendResponseAsync(this IHttpResponse response, HttpStatusCode statusCode, XDocument xDocument)
         {
             // Make sure an XML document is specified
             if (xDocument == null)

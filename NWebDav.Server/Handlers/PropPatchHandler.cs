@@ -1,11 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using NWebDav.Server.Helpers;
+﻿using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace NWebDav.Server.Handlers
 {
@@ -26,7 +28,7 @@ namespace NWebDav.Server.Handlers
             {
                 public XName Name { get; }
                 public object Value { get; }
-                public DavStatusCode Result { get; set; }
+                public HttpStatusCode Result { get; set; }
 
                 public PropSet(XName name, object value)
                 {
@@ -36,7 +38,7 @@ namespace NWebDav.Server.Handlers
 
                 public XElement GetXmlResponse()
                 {
-                    var statusText = $"HTTP/1.1 {(int)Result} {Result.GetStatusDescription()}";
+                    var statusText = $"HTTP/1.1 {(int)Result} {Result.ToString()}";
                     return new XElement(WebDavNamespaces.DavNs + "propstat",
                         new XElement(WebDavNamespaces.DavNs + "prop", new XElement(Name)),
                         new XElement(WebDavNamespaces.DavNs + "status", statusText));
@@ -88,7 +90,7 @@ namespace NWebDav.Server.Handlers
             {
                 var xResponse = new XElement(WebDavNamespaces.DavNs + "response", new XElement(WebDavNamespaces.DavNs + "href", UriHelper.ToEncodedString(uri)));
                 var xMultiStatus = new XElement(WebDavNamespaces.DavNs + "multistatus", xResponse);
-                foreach (var result in _propertySetters.Where(ps => ps.Result != DavStatusCode.Ok))
+                foreach (var result in _propertySetters.Where(ps => ps.Result != HttpStatusCode.OK))
                     xResponse.Add(result.GetXmlResponse());
                 return xMultiStatus;
             }
@@ -97,27 +99,18 @@ namespace NWebDav.Server.Handlers
         /// <summary>
         /// Handle a PROPPATCH request.
         /// </summary>
-        /// <param name="httpContext">
-        /// The HTTP context of the request.
-        /// </param>
-        /// <param name="store">
-        /// Store that is used to access the collections and items.
-        /// </param>
-        /// <returns>
-        /// A task that represents the asynchronous PROPPATCH operation. The task
-        /// will always return <see langword="true"/> upon completion.
-        /// </returns>
-        public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)
+        /// <inheritdoc/>
+        public async Task<bool> HandleRequestAsync(IHttpContext context, IStore store, CancellationToken cancellationToken = default)
         {
             // Obtain request and response
-            var request = httpContext.Request;
-            var response = httpContext.Response;
+            var request = context.Request;
+            var response = context.Response;
 
             // Obtain item
-            var item = await store.GetItemAsync(request.Url, httpContext).ConfigureAwait(false);
+            var item = await store.GetItemAsync(request.Url, context).ConfigureAwait(false);
             if (item == null)
             {
-                response.SetStatus(DavStatusCode.NotFound);
+                response.SetStatus(HttpStatusCode.NotFound);
                 return true;
             }
 
@@ -133,7 +126,7 @@ namespace NWebDav.Server.Handlers
             }
             catch (Exception)
             {
-                response.SetStatus(DavStatusCode.BadRequest);
+                response.SetStatus(HttpStatusCode.BadRequest);
                 return true;
             }
 
@@ -141,14 +134,14 @@ namespace NWebDav.Server.Handlers
             foreach (var propSet in propSetCollection)
             {
                 // Set the property
-                DavStatusCode result;
+                HttpStatusCode result;
                 try
                 {
-                    result = await item.PropertyManager.SetPropertyAsync(httpContext, item, propSet.Name, propSet.Value).ConfigureAwait(false);
+                    result = await item.PropertyManager.SetPropertyAsync(context, item, propSet.Name, propSet.Value).ConfigureAwait(false);
                 }
                 catch (Exception)
                 {
-                    result = DavStatusCode.Forbidden;
+                    result = HttpStatusCode.Forbidden;
                 }
 
                 propSet.Result = result;
@@ -158,7 +151,7 @@ namespace NWebDav.Server.Handlers
             var xDocument = new XDocument(propSetCollection.GetXmlMultiStatus(request.Url));
 
             // Stream the document
-            await response.SendResponseAsync(DavStatusCode.MultiStatus, xDocument).ConfigureAwait(false);
+            await response.SendResponseAsync(HttpStatusCode.MultiStatus, xDocument).ConfigureAwait(false);
             return true;
         }
     }

@@ -1,20 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-
-using NWebDav.Server.Http;
+﻿using NWebDav.Server.Http;
 using NWebDav.Server.Locking;
 using NWebDav.Server.Props;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace NWebDav.Server.Stores
 {
     public struct StoreItemResult
     {
-        public DavStatusCode Result { get; }
+        public HttpStatusCode Result { get; }
         public IStoreItem Item { get; }
 
-        public StoreItemResult(DavStatusCode result, IStoreItem item = null)
+        public StoreItemResult(HttpStatusCode result, IStoreItem item = null)
         {
             Result = result;
             Item = item;
@@ -42,10 +42,10 @@ namespace NWebDav.Server.Stores
 
     public struct StoreCollectionResult
     {
-        public DavStatusCode Result { get; }
+        public HttpStatusCode Result { get; }
         public IStoreCollection Collection { get; }
 
-        public StoreCollectionResult(DavStatusCode result, IStoreCollection collection = null)
+        public StoreCollectionResult(HttpStatusCode result, IStoreCollection collection = null)
         {
             Result = result;
             Collection = collection;
@@ -73,8 +73,8 @@ namespace NWebDav.Server.Stores
 
     public interface IStore
     {
-        Task<IStoreItem> GetItemAsync(Uri uri, IHttpContext httpContext);
-        Task<IStoreCollection> GetCollectionAsync(Uri uri, IHttpContext httpContext);
+        Task<IStoreItem> GetItemAsync(Uri uri, IHttpContext context);
+        Task<IStoreCollection> GetCollectionAsync(Uri uri, IHttpContext context);
     }
 
     public interface IStoreItem
@@ -84,11 +84,11 @@ namespace NWebDav.Server.Stores
         string UniqueKey { get; }
 
         // Read/Write access to the data
-        Task<Stream> GetReadableStreamAsync(IHttpContext httpContext);
-        Task<DavStatusCode> UploadFromStreamAsync(IHttpContext httpContext, Stream source);
+        Task<Stream> GetReadableStreamAsync(IHttpContext context);
+        Task<HttpStatusCode> UploadFromStreamAsync(IHttpContext context, Stream source);
 
         // Copy support
-        Task<StoreItemResult> CopyAsync(IStoreCollection destination, string name, bool overwrite, IHttpContext httpContext);
+        Task<StoreItemResult> CopyAsync(IStoreCollection destination, string name, bool overwrite, IHttpContext context);
 
         // Property support
         IPropertyManager PropertyManager { get; }
@@ -103,22 +103,22 @@ namespace NWebDav.Server.Stores
         
 
         // Get specific item (or all items)
-        Task<IStoreItem> GetItemAsync(string name, IHttpContext httpContext);
+        Task<IStoreItem> GetItemAsync(string name, IHttpContext context);
 
-        Task<IEnumerable<IStoreItem>> GetItemsAsync(IHttpContext httpContext);
+        Task<IEnumerable<IStoreItem>> GetItemsAsync(IHttpContext context);
 
         // Create items and collections and add to the collection
-        Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, IHttpContext httpContext);
-        Task<StoreCollectionResult> CreateCollectionAsync(string name, bool overwrite, IHttpContext httpContext);
+        Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, IHttpContext context);
+        Task<StoreCollectionResult> CreateCollectionAsync(string name, bool overwrite, IHttpContext context);
 
         // Checks if the collection can be moved directly to the destination
-        bool SupportsFastMove(IStoreCollection destination, string destinationName, bool overwrite, IHttpContext httpContext);
+        bool SupportsFastMove(IStoreCollection destination, string destinationName, bool overwrite, IHttpContext context);
 
         // Move items between collections
-        Task<StoreItemResult> MoveItemAsync(string sourceName, IStoreCollection destination, string destinationName, bool overwrite, IHttpContext httpContext);
+        Task<StoreItemResult> MoveItemAsync(string sourceName, IStoreCollection destination, string destinationName, bool overwrite, IHttpContext context);
 
         // Delete items from collection
-        Task<DavStatusCode> DeleteItemAsync(string name, IHttpContext httpContext);
+        Task<HttpStatusCode> DeleteItemAsync(string name, IHttpContext context);
 
         InfiniteDepthMode InfiniteDepthMode { get; }
     }

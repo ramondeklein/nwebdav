@@ -1,11 +1,11 @@
-﻿using System;
+﻿using NWebDav.Server.Http;
+using NWebDav.Server.Stores;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-
-using NWebDav.Server.Http;
-using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Props
 {
@@ -71,7 +71,7 @@ namespace NWebDav.Server.Props
         /// <paramref name="skipExpensive"/> is set to <see langword="true"/>
         /// and the parameter is expensive to compute.
         /// </returns>
-        public Task<object> GetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName propertyName, bool skipExpensive = false)
+        public Task<object> GetPropertyAsync(IHttpContext context, IStoreItem item, XName propertyName, bool skipExpensive = false)
         {
             // Find the property
             if (!_properties.TryGetValue(propertyName, out var property))
@@ -86,7 +86,7 @@ namespace NWebDav.Server.Props
                 return Task.FromResult((object)null);
 
             // Obtain the value
-            return property.GetterAsync(httpContext, (TEntry)item);
+            return property.GetterAsync(context, (TEntry)item);
         }
 
         /// <summary>
@@ -108,18 +108,18 @@ namespace NWebDav.Server.Props
         /// A task that represents the set property operation. The task will
         /// return the WebDAV status code of the set operation upon completion.
         /// </returns>
-        public Task<DavStatusCode> SetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName propertyName, object value)
+        public Task<HttpStatusCode> SetPropertyAsync(IHttpContext context, IStoreItem item, XName propertyName, object value)
         {
             // Find the property
             if (!_properties.TryGetValue(propertyName, out var property))
-                return Task.FromResult(DavStatusCode.NotFound);
+                return Task.FromResult(HttpStatusCode.NotFound);
 
             // Check if the property has a setter
             if (property.SetterAsync == null)
-                return Task.FromResult(DavStatusCode.Conflict);
+                return Task.FromResult(HttpStatusCode.Conflict);
 
             // Set the value
-            return property.SetterAsync(httpContext, (TEntry)item, value);
+            return property.SetterAsync(context, (TEntry)item, value);
         }
     }
 }

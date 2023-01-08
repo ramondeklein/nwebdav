@@ -3,6 +3,7 @@ using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using System;
 using System.Diagnostics;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -69,7 +70,7 @@ namespace NWebDav.Server.Dispatching
                         Logger?.LogWarning($"{logRequest} - Not implemented.");
 
                         // This request is not implemented
-                        context.Response.SetStatus(DavStatusCode.NotImplemented);
+                        context.Response.SetStatus(HttpStatusCode.NotImplemented);
                         return;
                     }
                 }
@@ -93,7 +94,7 @@ namespace NWebDav.Server.Dispatching
                         Logger?.LogWarning($"{logRequest} - Not processed.");
 
                         // Set status code to bad request
-                        context.Response.SetStatus(DavStatusCode.NotImplemented);
+                        context.Response.SetStatus(HttpStatusCode.NotImplemented);
                     }
                 }
                 catch (Exception ex)
@@ -104,7 +105,7 @@ namespace NWebDav.Server.Dispatching
                     try
                     {
                         // Attempt to return 'InternalServerError' (if still possible)
-                        context.Response.SetStatus(DavStatusCode.InternalServerError);
+                        context.Response.SetStatus(HttpStatusCode.InternalServerError);
                     }
                     catch (Exception)
                     {

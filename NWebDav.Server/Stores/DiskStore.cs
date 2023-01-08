@@ -21,7 +21,7 @@ namespace NWebDav.Server.Stores
         public bool IsWritable { get; }
         public ILockingManager LockingManager { get; }
 
-        public Task<IStoreItem> GetItemAsync(Uri uri, IHttpContext httpContext)
+        public Task<IStoreItem> GetItemAsync(Uri uri, IHttpContext context)
         {
             // Determine the path from the uri
             var path = GetPathFromUri(uri);
@@ -38,7 +38,7 @@ namespace NWebDav.Server.Stores
             return Task.FromResult<IStoreItem>(null);
         }
 
-        public Task<IStoreCollection> GetCollectionAsync(Uri uri, IHttpContext httpContext)
+        public Task<IStoreCollection> GetCollectionAsync(Uri uri, IHttpContext context)
         {
             // Determine the path from the uri
             var path = GetPathFromUri(uri);

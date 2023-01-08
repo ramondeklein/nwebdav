@@ -1,17 +1,17 @@
-﻿using System;
+﻿using NWebDav.Server.Stores;
+using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Xml.Linq;
-
-using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Locking
 {
     public struct LockResult
     {
-        public DavStatusCode Result { get; }
+        public HttpStatusCode Result { get; }
         public ActiveLock? Lock { get; }
 
-        public LockResult(DavStatusCode result, ActiveLock? @lock = null)
+        public LockResult(HttpStatusCode result, ActiveLock? @lock = null)
         {
             Result = result;
             Lock = @lock;
@@ -22,7 +22,7 @@ namespace NWebDav.Server.Locking
     public interface ILockingManager
     {
         LockResult Lock(IStoreItem item, LockType lockType, LockScope lockScope, XElement owner, Uri lockRootUri, bool recursiveLock, IEnumerable<int> timeouts);
-        DavStatusCode Unlock(IStoreItem item, Uri token);
+        HttpStatusCode Unlock(IStoreItem item, Uri token);
         LockResult RefreshLock(IStoreItem item, bool recursiveLock, IEnumerable<int> timeouts, Uri lockTokenUri);
 
         IEnumerable<ActiveLock> GetActiveLockInfo(IStoreItem item);

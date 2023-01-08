@@ -1,8 +1,9 @@
-﻿using System.Threading.Tasks;
-
-using NWebDav.Server.Helpers;
+﻿using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace NWebDav.Server.Handlers
 {
@@ -20,31 +21,22 @@ namespace NWebDav.Server.Handlers
         /// <summary>
         /// Handle a UNLOCK request.
         /// </summary>
-        /// <param name="httpContext">
-        /// The HTTP context of the request.
-        /// </param>
-        /// <param name="store">
-        /// Store that is used to access the collections and items.
-        /// </param>
-        /// <returns>
-        /// A task that represents the asynchronous UNLOCK operation. The task
-        /// will always return <see langword="true"/> upon completion.
-        /// </returns>
-        public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)
+        /// <inheritdoc/>
+        public async Task<bool> HandleRequestAsync(IHttpContext context, IStore store, CancellationToken cancellationToken = default)
         {
             // Obtain request and response
-            var request = httpContext.Request;
-            var response = httpContext.Response;
+            var request = context.Request;
+            var response = context.Response;
 
             // Obtain the lock-token
             var lockToken = request.GetLockToken();
 
             // Obtain the WebDAV item
-            var item = await store.GetItemAsync(request.Url, httpContext).ConfigureAwait(false);
+            var item = await store.GetItemAsync(request.Url, context).ConfigureAwait(false);
             if (item == null)
             {
                 // Set status to not found
-                response.SetStatus(DavStatusCode.PreconditionFailed);
+                response.SetStatus(HttpStatusCode.PreconditionFailed);
                 return true;
             }
 
@@ -53,7 +45,7 @@ namespace NWebDav.Server.Handlers
             if (lockingManager == null)
             {
                 // Set status to not found
-                response.SetStatus(DavStatusCode.PreconditionFailed);
+                response.SetStatus(HttpStatusCode.PreconditionFailed);
                 return true;
             }
 

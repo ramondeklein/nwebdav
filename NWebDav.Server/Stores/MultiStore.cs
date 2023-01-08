@@ -29,14 +29,14 @@ namespace NWebDav.Server.Stores
             _storeResolvers.Remove(prefix);
         }
 
-        public Task<IStoreItem> GetItemAsync(Uri uri, IHttpContext httpContext)
+        public Task<IStoreItem> GetItemAsync(Uri uri, IHttpContext context)
         {
-            return Resolve(uri, (storeResolver, subUri) => storeResolver.GetItemAsync(subUri, httpContext));
+            return Resolve(uri, (storeResolver, subUri) => storeResolver.GetItemAsync(subUri, context));
         }
 
-        public Task<IStoreCollection> GetCollectionAsync(Uri uri, IHttpContext httpContext)
+        public Task<IStoreCollection> GetCollectionAsync(Uri uri, IHttpContext context)
         {
-            return Resolve(uri, (storeResolver, subUri) => storeResolver.GetCollectionAsync(subUri, httpContext));
+            return Resolve(uri, (storeResolver, subUri) => storeResolver.GetCollectionAsync(subUri, context));
         }
 
         private T Resolve<T>(Uri uri, Func<IStore, Uri, T> action)

@@ -26,7 +26,7 @@ namespace NWebDav.Server.Props
         /// </summary>
         public DavLockDiscoveryDefault()
         {
-            Getter = (httpContext, item) => item.LockingManager.GetActiveLockInfo(item).Select(ali => ali.ToXml());
+            Getter = (context, item) => item.LockingManager.GetActiveLockInfo(item).Select(ali => ali.ToXml());
         }
     }
 
@@ -52,7 +52,7 @@ namespace NWebDav.Server.Props
         /// </summary>
         public DavSupportedLockDefault()
         {
-            Getter = (httpContext, item) => item.LockingManager.GetSupportedLocks(item).Select(sl => sl.ToXml());
+            Getter = (context, item) => item.LockingManager.GetSupportedLocks(item).Select(sl => sl.ToXml());
         }
     }
 }

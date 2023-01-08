@@ -1,13 +1,14 @@
-﻿using System;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-
-using NWebDav.Server.Helpers;
+﻿using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Locking;
 using NWebDav.Server.Stores;
+using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace NWebDav.Server.Handlers
 {
@@ -25,32 +26,23 @@ namespace NWebDav.Server.Handlers
         /// <summary>
         /// Handle a LOCK request.
         /// </summary>
-        /// <param name="httpContext">
-        /// The HTTP context of the request.
-        /// </param>
-        /// <param name="store">
-        /// Store that is used to access the collections and items.
-        /// </param>
-        /// <returns>
-        /// A task that represents the asynchronous LOCK operation. The task
-        /// will always return <see langword="true"/> upon completion.
-        /// </returns>
-        public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)
+        /// <inheritdoc/>
+        public async Task<bool> HandleRequestAsync(IHttpContext context, IStore store, CancellationToken cancellationToken = default)
         {
             // Obtain request and response
-            var request = httpContext.Request;
-            var response = httpContext.Response;
+            var request = context.Request;
+            var response = context.Response;
             
             // Determine the depth and requested timeout(s)
             var depth = request.GetDepth();
             var timeouts = request.GetTimeouts();
 
             // Obtain the WebDAV item
-            var item = await store.GetItemAsync(request.Url, httpContext).ConfigureAwait(false);
+            var item = await store.GetItemAsync(request.Url, context).ConfigureAwait(false);
             if (item == null)
             {
                 // Set status to not found
-                response.SetStatus(DavStatusCode.PreconditionFailed);
+                response.SetStatus(HttpStatusCode.PreconditionFailed);
                 return true;
             }
 
@@ -59,7 +51,7 @@ namespace NWebDav.Server.Handlers
             if (lockingManager == null)
             {
                 // Set status to not found
-                response.SetStatus(DavStatusCode.PreconditionFailed);
+                response.SetStatus(HttpStatusCode.PreconditionFailed);
                 return true;
             }
 
@@ -120,7 +112,7 @@ namespace NWebDav.Server.Handlers
                 }
                 catch (Exception)
                 {
-                    response.SetStatus(DavStatusCode.BadRequest);
+                    response.SetStatus(HttpStatusCode.BadRequest);
                     return true;
                 }
 
@@ -129,7 +121,7 @@ namespace NWebDav.Server.Handlers
             }
 
             // Check if result is fine
-            if (lockResult.Result != DavStatusCode.Ok)
+            if (lockResult.Result != HttpStatusCode.OK)
             {
                 // Set status to not found
                 response.SetStatus(lockResult.Result);
@@ -151,7 +143,7 @@ namespace NWebDav.Server.Handlers
                 response.SetHeaderValue("Lock-Token", $"<{lockResult.Lock.Value.LockToken.AbsoluteUri}>");
 
             // Stream the document
-            await response.SendResponseAsync(DavStatusCode.Ok, xDocument).ConfigureAwait(false);
+            await response.SendResponseAsync(HttpStatusCode.OK, xDocument).ConfigureAwait(false);
             return true;
         }
     }

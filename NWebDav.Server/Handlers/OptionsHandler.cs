@@ -1,8 +1,9 @@
-﻿using System.Threading.Tasks;
-
-using NWebDav.Server.Helpers;
+﻿using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace NWebDav.Server.Handlers
 {
@@ -18,20 +19,11 @@ namespace NWebDav.Server.Handlers
         /// <summary>
         /// Handle a OPTIONS request.
         /// </summary>
-        /// <param name="httpContext">
-        /// The HTTP context of the request.
-        /// </param>
-        /// <param name="store">
-        /// Store that is used to access the collections and items.
-        /// </param>
-        /// <returns>
-        /// A task that represents the asynchronous OPTIONS operation. The task
-        /// will always return <see langword="true"/> upon completion.
-        /// </returns>
-        public Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)
+        /// <inheritdoc/>
+        public Task<bool> HandleRequestAsync(IHttpContext context, IStore store, CancellationToken cancellationToken = default)
         {
             // Obtain response
-            var response = httpContext.Response;
+            var response = context.Response;
 
             // We're a DAV class 1 and 2 compatible server
             response.SetHeaderValue("Dav", "1, 2");
@@ -42,7 +34,7 @@ namespace NWebDav.Server.Handlers
             response.SetHeaderValue("Public", string.Join(", ", RequestHandlerFactory.AllowedMethods));
 
             // Finished
-            response.SetStatus(DavStatusCode.Ok);
+            response.SetStatus(HttpStatusCode.OK);
             return Task.FromResult(true);
         }
     }
