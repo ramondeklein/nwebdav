@@ -1,4 +1,5 @@
-using System.Threading.Tasks;
+using NWebDav.Server.Dispatching;
+using System;
 
 namespace NWebDav.Server.Http
 {
@@ -14,7 +15,7 @@ namespace NWebDav.Server.Http
     /// <para>
     /// The HTTP context will typically be created after receiving the HTTP
     /// message from the HTTP listener. It is passed to the
-    /// <see cref="IWebDavDispatcher">WebDAV dispatcher</see>, so it can be
+    /// <see cref="IRequestDispatcher">WebDAV dispatcher</see>, so it can be
     /// processed. The dispatcher passes it to the appropriate handler.
     /// Although the internal NWebDAV code will serialize access to the
     /// context (and its underlying request, response and session), it should
@@ -24,7 +25,7 @@ namespace NWebDav.Server.Http
     /// invalid HTTP context.
     /// </para>
     /// </remarks>
-    public interface IHttpContext
+    public interface IHttpContext : IAsyncDisposable
     {
         /// <summary>
         /// Gets the current HTTP request message.
@@ -53,20 +54,5 @@ namespace NWebDav.Server.Http
         /// set this property to <see langword="null"/>.
         /// </remarks>
         IHttpSession Session { get; }
-
-        /// <summary>
-        /// Close the context.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// Each request will have its own HTTP context and the
-        /// <seealso cref="IWebDavDispatcher"/> dispatching the request should
-        /// make sure the context is closed at the end of the request. When
-        /// this method completes the response should have been sent or it
-        /// should be ready, so the underlying HTTP infrastructure can send
-        /// it.
-        /// </para>
-        /// </remarks>
-        Task CloseAsync();
     }
 }

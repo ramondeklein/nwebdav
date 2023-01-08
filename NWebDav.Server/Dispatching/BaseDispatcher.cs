@@ -121,7 +121,7 @@ namespace NWebDav.Server.Dispatching
             finally
             {
                 // Always close the context
-                await context.CloseAsync().ConfigureAwait(false);
+                await context.DisposeAsync().ConfigureAwait(false);
             }
         }
 

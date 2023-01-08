@@ -1,6 +1,8 @@
-﻿using NWebDav.Server.Helpers;
+﻿using Microsoft.Extensions.Logging;
+using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
+using SecureFolderFS.Sdk.Storage;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,13 +16,13 @@ namespace NWebDav.Server.Handlers
     /// This implementation reports a class 1 and 2 compliant WebDAV server
     /// that supports all the standard WebDAV methods.
     /// </remarks>
-    public class OptionsHandler : IRequestHandler
+    public sealed class OptionsHandler : IRequestHandler
     {
         /// <summary>
         /// Handle a OPTIONS request.
         /// </summary>
         /// <inheritdoc/>
-        public Task<bool> HandleRequestAsync(IHttpContext context, IStore store, CancellationToken cancellationToken = default)
+        public Task HandleRequestAsync(IHttpContext context, IStore store, IStorageService storageService, ILogger? logger = null, CancellationToken cancellationToken = default)
         {
             // Obtain response
             var response = context.Response;
@@ -35,7 +37,7 @@ namespace NWebDav.Server.Handlers
 
             // Finished
             response.SetStatus(HttpStatusCode.OK);
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
     }
 }

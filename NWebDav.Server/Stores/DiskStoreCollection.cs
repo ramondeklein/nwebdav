@@ -1,4 +1,7 @@
-﻿using System;
+﻿using NWebDav.Server.Http;
+using NWebDav.Server.Locking;
+using NWebDav.Server.Props;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -7,17 +10,11 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-using NWebDav.Server.Http;
-using NWebDav.Server.Locking;
-using NWebDav.Server.Logging;
-using NWebDav.Server.Props;
-
 namespace NWebDav.Server.Stores
 {
     [DebuggerDisplay("{_directoryInfo.FullPath}\\")]
     public sealed class DiskStoreCollection : IDiskStoreCollection
     {
-        private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(DiskStoreCollection));
         private static readonly XElement s_xDavCollection = new XElement(WebDavNamespaces.DavNs + "collection");
         private readonly DirectoryInfo _directoryInfo;
 
@@ -219,7 +216,8 @@ namespace NWebDav.Server.Stores
             catch (Exception exc)
             {
                 // Log exception
-                s_log.Log(LogLevel.Error, () => $"Unable to create '{destinationPath}' file.", exc);
+                // TODO(wd): Add logging
+                //s_log.Log(LogLevel.Error, () => $"Unable to create '{destinationPath}' file.", exc);
                 return Task.FromResult(new StoreItemResult(HttpStatusCode.InternalServerError));
             }
 
@@ -261,7 +259,8 @@ namespace NWebDav.Server.Stores
             catch (Exception exc)
             {
                 // Log exception
-                s_log.Log(LogLevel.Error, () => $"Unable to create '{destinationPath}' directory.", exc);
+                // TODO(wd): Add logging
+                //s_log.Log(LogLevel.Error, () => $"Unable to create '{destinationPath}' directory.", exc);
                 return null;
             }
 
@@ -405,7 +404,8 @@ namespace NWebDav.Server.Stores
             catch (Exception exc)
             {
                 // Log exception
-                s_log.Log(LogLevel.Error, () => $"Unable to delete '{fullPath}' directory.", exc);
+                // TODO(wd): Add logging
+                //s_log.Log(LogLevel.Error, () => $"Unable to delete '{fullPath}' directory.", exc);
                 return Task.FromResult(HttpStatusCode.InternalServerError);
             }
         }

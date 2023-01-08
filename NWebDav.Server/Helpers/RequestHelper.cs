@@ -1,13 +1,14 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using NWebDav.Server.Http;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-
-using NWebDav.Server.Http;
 
 namespace NWebDav.Server.Helpers
 {
@@ -53,9 +54,6 @@ namespace NWebDav.Server.Helpers
     /// </summary>
     public static class RequestHelper
     {
-#if DEBUG
-        private static readonly NWebDav.Server.Logging.ILogger s_log = NWebDav.Server.Logging.LoggerFactory.CreateLogger(typeof(ResponseHelper));
-#endif
         private static readonly Regex s_rangeRegex = new Regex("bytes\\=(?<start>[0-9]*)-(?<end>[0-9]*)");
 
         /// <summary>
@@ -292,13 +290,7 @@ namespace NWebDav.Server.Helpers
         // async, but if performance is an ultimate goal, then don't use WebDAV and you should
         // be upgrading to .NET Core anyway :-) The other option is to put the burden on all
         // the callers of this method, which I prefer to avoid.
-#if !USE_ASYNC_READ
-#pragma warning disable 1998
-#endif
-        public static async Task<XDocument> LoadXmlDocumentAsync(this IHttpRequest request)
-#if !USE_ASYNC_READ
-#pragma warning restore 1998
-#endif
+        public static async Task<XDocument> LoadXmlDocumentAsync(this IHttpRequest request, ILogger? logger = null, CancellationToken cancellationToken = default)
         {
             // If there is no input stream, then there is no XML document
             if (request.InputStream == null || request.InputStream == Stream.Null)
@@ -317,39 +309,35 @@ namespace NWebDav.Server.Helpers
                 return null;
 
             // Obtain an XML document from the stream
-#if USE_ASYNC_READ
-            var xDocument = await XDocument.LoadAsync(request.InputStream, LoadOptions.None, cancellationToken: default);
-#else
-            var xDocument = XDocument.Load(request.Stream);
-#endif
+            var xDocument = await XDocument.LoadAsync(request.InputStream, LoadOptions.None, cancellationToken);
+
 #if DEBUG
             // Dump the XML document to the logging
-            if (xDocument.Root != null && s_log.IsLogEnabled(NWebDav.Server.Logging.LogLevel.Debug))
+            if (xDocument.Root != null && (logger?.IsEnabled(LogLevel.Debug) ?? false))
             {
                 // Format the XML document as an in-memory text representation
-                using (var ms = new MemoryStream())
+                await using var ms = new MemoryStream();
+                await using (var xmlWriter = System.Xml.XmlWriter.Create(ms, new System.Xml.XmlWriterSettings()
                 {
-                    using (var xmlWriter = System.Xml.XmlWriter.Create(ms, new System.Xml.XmlWriterSettings
-                    {
-                        OmitXmlDeclaration = false,
-                        Indent = true,
-                        Encoding = System.Text.Encoding.UTF8,
-                    }))
-                    {
-                        // Write the XML document to the stream
-                        xDocument.WriteTo(xmlWriter);
-                    }
-
-                    // Flush
-                    ms.Flush();
-
-                    // Reset stream and write the stream to the result
-                    ms.Seek(0, SeekOrigin.Begin);
-
-                    // Log the XML text to the logging
-                    var reader = new StreamReader(ms);
-                    s_log.Log(NWebDav.Server.Logging.LogLevel.Debug, () => reader.ReadToEnd());
+                    OmitXmlDeclaration = false,
+                    Async = true,
+                    Indent = true,
+                    Encoding = System.Text.Encoding.UTF8,
+                }))
+                {
+                    // Write the XML document to the stream
+                    await xDocument.WriteToAsync(xmlWriter, cancellationToken).ConfigureAwait(false);
                 }
+
+                // Flush
+                await ms.FlushAsync(cancellationToken).ConfigureAwait(false);
+
+                // Reset stream and write the stream to the result
+                ms.Seek(0, SeekOrigin.Begin);
+
+                // Log the XML text to the logging
+                var reader = new StreamReader(ms);
+                logger.LogDebug(message: await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false));
             }
 #endif
             // Return the XML document

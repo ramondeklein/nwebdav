@@ -1,6 +1,13 @@
-﻿using NWebDav.Server.Helpers;
+﻿using Microsoft.Extensions.Logging;
+using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
+using SecureFolderFS.Sdk.Storage;
+using SecureFolderFS.Sdk.Storage.Enums;
+using SecureFolderFS.Sdk.Storage.Extensions;
+using SecureFolderFS.Sdk.Storage.ModifiableStorage;
+using SecureFolderFS.Shared.Extensions;
+using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,44 +23,80 @@ namespace NWebDav.Server.Handlers
     /// WebDAV specification
     /// </see>.
     /// </remarks>
-    public class PutHandler : IRequestHandler
+    public sealed class PutHandler : IRequestHandler
     {
         /// <summary>
         /// Handle a PUT request.
         /// </summary>
         /// <inheritdoc/>
-        public async Task<bool> HandleRequestAsync(IHttpContext context, IStore store, CancellationToken cancellationToken = default)
+        public async Task HandleRequestAsync(IHttpContext context, IStore store, IStorageService storageService, ILogger? logger = null, CancellationToken cancellationToken = default)
         {
-            // Obtain request and response
-            var request = context.Request;
-            var response = context.Response;
+            if (context.Request.Url is null)
+            {
+                context.Response.SetStatus(HttpStatusCode.NotFound);
+                return;
+            }
 
             // It's not a collection, so we'll try again by fetching the item in the parent collection
-            var splitUri = RequestHelper.SplitUri(request.Url);
+            var splitUri = RequestHelper.SplitUri(context.Request.Url);
 
             // Obtain collection
-            var collection = await store.GetCollectionAsync(splitUri.CollectionUri, context).ConfigureAwait(false);
-            if (collection == null)
+            var folder = await storageService.TryGetFolderFromPathAsync(splitUri.CollectionUri.GetUriPath(), cancellationToken).ConfigureAwait(false);
+            if (folder is null)
             {
-                // Source not found
-                response.SetStatus(HttpStatusCode.Conflict);
-                return true;
+                context.Response.SetStatus(HttpStatusCode.Conflict);
+                return;
+            }
+            if (folder is not IModifiableFolder modifiableFolder)
+            {
+                context.Response.SetStatus(HttpStatusCode.Forbidden);
+                return;
             }
 
-            // Obtain the item
-            var result = await collection.CreateItemAsync(splitUri.Name, true, context).ConfigureAwait(false);
-            var status = result.Result;
-            if (status == HttpStatusCode.Created || status == HttpStatusCode.NoContent)
+            var createdFileResult = await modifiableFolder.CreateFileWithResultAsync(splitUri.Name, CreationCollisionOption.ReplaceExisting, cancellationToken).ConfigureAwait(false);
+            if (createdFileResult.Successful)
             {
-                // Upload the information to the item
-                var uploadStatus = await result.Item.UploadFromStreamAsync(context, request.InputStream).ConfigureAwait(false);
-                if (uploadStatus != HttpStatusCode.OK)
-                    status = uploadStatus;
-            }
+                var fileStreamResult = await createdFileResult.Value!.OpenStreamWithResultAsync(FileAccess.ReadWrite, cancellationToken).ConfigureAwait(false);
+                if (!fileStreamResult.Successful)
+                {
+                    context.Response.SetStatus(fileStreamResult);
+                    return;
+                }
 
-            // Finished writing
-            response.SetStatus(status);
-            return true;
+                if (context.Request.InputStream is null)
+                {
+                    // TODO: Is that error appropriate?
+                    context.Response.SetStatus(HttpStatusCode.NoContent);
+                    return;
+                }
+
+                var fileStream = fileStreamResult.Value!;
+                await using (fileStream)
+                {
+                    // Make sure we can write to the file
+                    if (!fileStream.CanWrite)
+                    {
+                        context.Response.SetStatus(HttpStatusCode.Forbidden);
+                        return;
+                    }
+
+                    try
+                    {
+                        // Copy contents
+                        await context.Request.InputStream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
+
+                        // Set status to OK
+                        context.Response.SetStatus(HttpStatusCode.OK);
+                    }
+                    catch (IOException ioEx) when (ioEx.IsDiskFull())
+                    {
+                        context.Response.SetStatus(HttpStatusCode.InsufficientStorage);
+                        return;
+                    }
+                }
+            }
+            else
+                context.Response.SetStatus(createdFileResult);
         }
     }
 }

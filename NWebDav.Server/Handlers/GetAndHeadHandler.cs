@@ -1,7 +1,9 @@
-﻿using NWebDav.Server.Helpers;
+﻿using Microsoft.Extensions.Logging;
+using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Props;
 using NWebDav.Server.Stores;
+using SecureFolderFS.Sdk.Storage;
 using System;
 using System.Globalization;
 using System.IO;
@@ -21,13 +23,13 @@ namespace NWebDav.Server.Handlers
     /// WebDAV specification
     /// </see>.
     /// </remarks>
-    public class GetAndHeadHandler : IRequestHandler
+    public sealed class GetAndHeadHandler : IRequestHandler
     {
         /// <summary>
         /// Handle a GET or HEAD request.
         /// </summary>
         /// <inheritdoc/>
-        public async Task<bool> HandleRequestAsync(IHttpContext context, IStore store, CancellationToken cancellationToken = default)
+        public async Task HandleRequestAsync(IHttpContext context, IStore store, IStorageService storageService, ILogger? logger = null, CancellationToken cancellationToken = default)
         {
             // Obtain request and response
             var request = context.Request;
@@ -45,7 +47,7 @@ namespace NWebDav.Server.Handlers
             {
                 // Set status to not found
                 response.SetStatus(HttpStatusCode.NotFound);
-                return true;
+                return;
             }
 
             // ETag might be used for a conditional request
@@ -135,12 +137,12 @@ namespace NWebDav.Server.Handlers
                     {
                         response.SetHeaderValue("Content-Length", "0");
                         response.SetStatus(HttpStatusCode.NotModified);
-                        return true;
+                        return;
                     }
 
                     // HEAD method doesn't require the actual item data
                     if (!head)
-                        await CopyToAsync(stream, response.OutputStream, range?.Start ?? 0, range?.End).ConfigureAwait(false);
+                        await CopyToAsync(stream, response.OutputStream, range?.Start ?? 0, range?.End, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
@@ -148,10 +150,9 @@ namespace NWebDav.Server.Handlers
                     response.SetStatus(HttpStatusCode.NoContent);
                 }
             }
-            return true;
         }
 
-        private async Task CopyToAsync(Stream src, Stream dest, long start, long? end)
+        private static async Task CopyToAsync(Stream src, Stream dest, long start, long? end, CancellationToken cancellationToken)
         {
             // Skip to the first offset
             if (start > 0)
@@ -174,14 +175,14 @@ namespace NWebDav.Server.Handlers
             {
                 // Read the requested bytes into memory
                 var requestedBytes = (int)Math.Min(bytesToRead, buffer.Length);
-                var bytesRead = await src.ReadAsync(buffer, 0, requestedBytes).ConfigureAwait(false);
+                var bytesRead = await src.ReadAsync(buffer, 0, requestedBytes, cancellationToken).ConfigureAwait(false);
 
                 // We're done, if we cannot read any data anymore
                 if (bytesRead == 0)
                     return;
                 
                 // Write the data to the destination stream
-                await dest.WriteAsync(buffer, 0, bytesRead).ConfigureAwait(false);
+                await dest.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
 
                 // Decrement the number of bytes left to read
                 bytesToRead -= bytesRead;

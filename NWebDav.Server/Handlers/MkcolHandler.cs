@@ -1,6 +1,8 @@
-﻿using NWebDav.Server.Helpers;
+﻿using Microsoft.Extensions.Logging;
+using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
+using SecureFolderFS.Sdk.Storage;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,13 +18,13 @@ namespace NWebDav.Server.Handlers
     /// WebDAV specification
     /// </see>.
     /// </remarks>
-    public class MkcolHandler : IRequestHandler
+    public sealed class MkcolHandler : IRequestHandler
     {
         /// <summary>
         /// Handle a MKCOL request.
         /// </summary>
         /// <inheritdoc/>
-        public async Task<bool> HandleRequestAsync(IHttpContext context, IStore store, CancellationToken cancellationToken = default)
+        public async Task HandleRequestAsync(IHttpContext context, IStore store, IStorageService storageService, ILogger? logger = null, CancellationToken cancellationToken = default)
         {
             // Obtain request and response
             var request = context.Request;
@@ -37,7 +39,7 @@ namespace NWebDav.Server.Handlers
             {
                 // Source not found
                 response.SetStatus(HttpStatusCode.Conflict);
-                return true;
+                return;
             }
 
             // Create the collection
@@ -45,7 +47,7 @@ namespace NWebDav.Server.Handlers
 
             // Finished
             response.SetStatus(result.Result);
-            return true;
+            return;
         }
     }
 }

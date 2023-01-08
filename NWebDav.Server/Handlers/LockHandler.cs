@@ -1,7 +1,9 @@
-﻿using NWebDav.Server.Helpers;
+﻿using Microsoft.Extensions.Logging;
+using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Locking;
 using NWebDav.Server.Stores;
+using SecureFolderFS.Sdk.Storage;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -21,13 +23,13 @@ namespace NWebDav.Server.Handlers
     /// WebDAV specification
     /// </see>.
     /// </remarks>
-    public class LockHandler : IRequestHandler
+    public sealed class LockHandler : IRequestHandler
     {
         /// <summary>
         /// Handle a LOCK request.
         /// </summary>
         /// <inheritdoc/>
-        public async Task<bool> HandleRequestAsync(IHttpContext context, IStore store, CancellationToken cancellationToken = default)
+        public async Task HandleRequestAsync(IHttpContext context, IStore store, IStorageService storageService, ILogger? logger = null, CancellationToken cancellationToken = default)
         {
             // Obtain request and response
             var request = context.Request;
@@ -43,7 +45,7 @@ namespace NWebDav.Server.Handlers
             {
                 // Set status to not found
                 response.SetStatus(HttpStatusCode.PreconditionFailed);
-                return true;
+                return;
             }
 
             // Check if we have a lock manager
@@ -52,7 +54,7 @@ namespace NWebDav.Server.Handlers
             {
                 // Set status to not found
                 response.SetStatus(HttpStatusCode.PreconditionFailed);
-                return true;
+                return;
             }
 
             LockResult lockResult;
@@ -75,7 +77,7 @@ namespace NWebDav.Server.Handlers
                 try
                 {
                     // Create an XML document from the stream
-                    var xDoc = await request.LoadXmlDocumentAsync().ConfigureAwait(false);
+                    var xDoc = await request.LoadXmlDocumentAsync(logger, cancellationToken).ConfigureAwait(false);
                     if (xDoc == null)
                         throw new Exception("Request-content couldn't be read");
 
@@ -113,7 +115,7 @@ namespace NWebDav.Server.Handlers
                 catch (Exception)
                 {
                     response.SetStatus(HttpStatusCode.BadRequest);
-                    return true;
+                    return;
                 }
 
                 // Perform the lock
@@ -125,7 +127,7 @@ namespace NWebDav.Server.Handlers
             {
                 // Set status to not found
                 response.SetStatus(lockResult.Result);
-                return true;
+                return;
             }
 
             // We should have an active lock result at this point
@@ -134,8 +136,7 @@ namespace NWebDav.Server.Handlers
             // Return the information about the lock
             var xDocument = new XDocument(
                 new XElement(WebDavNamespaces.DavNs + "prop",
-                    new XElement(WebDavNamespaces.DavNs + "lockdiscovery",
-                        lockResult.Lock.Value.ToXml())));
+                    new XElement(WebDavNamespaces.DavNs + "lockdiscovery", lockResult.Lock.Value.ToXml())));
 
             // Add the Lock-Token in the response
             // (only when creating a new lock)
@@ -143,8 +144,8 @@ namespace NWebDav.Server.Handlers
                 response.SetHeaderValue("Lock-Token", $"<{lockResult.Lock.Value.LockToken.AbsoluteUri}>");
 
             // Stream the document
-            await response.SendResponseAsync(HttpStatusCode.OK, xDocument).ConfigureAwait(false);
-            return true;
+            await response.SendResponseAsync(HttpStatusCode.OK, xDocument, logger, cancellationToken).ConfigureAwait(false);
+            return;
         }
     }
 }

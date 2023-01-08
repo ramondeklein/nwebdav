@@ -1,7 +1,11 @@
 ﻿using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
+using SecureFolderFS.Sdk.Storage;
+using System;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace NWebDav.Server
 {
@@ -34,13 +38,13 @@ namespace NWebDav.Server
         /// </summary>
         /// <param name="context">The HTTP context of the request.</param>
         /// <param name="store">Store that is used to access the collections and items.</param>
+        /// <param name="storageService">The <see cref="IStorageService"/> instance that will be used to access the file system.</param>
+        /// <param name="logger">The logger to used to trace warnings and debug information.</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/> that cancels this action.</param>
         /// <returns>
-        /// A <see cref="Task"/> that represents the asynchronous operation.
-        /// The task will return a boolean upon completion of the task that is <see langword="true"/> if the request was handled or
-        /// <see langword="false"/> if the request wasn't handled. If a request is not handled, then the status code
-        /// <see cref="HttpStatusCode.NotImplemented"/> is returned to the requester.
+        /// A <see cref="Task"/> that represents the asynchronous operation. If the request was not handled - i.e. <see cref="NotImplementedException"/> was thrown,
+        /// then the status code <see cref="HttpStatusCode.NotImplemented"/> is returned to the requester.
         /// </returns>
-        // TODO(wd): Use IStorageService
-        Task<bool> HandleRequestAsync(IHttpContext context, IStore store, CancellationToken cancellationToken = default); 
+        Task HandleRequestAsync(IHttpContext context, IStore store, IStorageService storageService, ILogger? logger = null, CancellationToken cancellationToken = default); 
     }
 }

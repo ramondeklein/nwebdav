@@ -6,12 +6,12 @@ namespace NWebDav.Server.HttpListener
     /// <inheritdoc cref="IHttpSession"/>
     internal sealed class HttpSession : IHttpSession
     {
-        public HttpSession(IPrincipal principal)
+        public HttpSession(IPrincipal? principal)
         {
             Principal = principal;
         }
 
         /// <inheritdoc/>
-        public IPrincipal Principal { get; }
+        public IPrincipal? Principal { get; }
     }
 }

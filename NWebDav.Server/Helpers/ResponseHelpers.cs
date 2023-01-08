@@ -1,9 +1,13 @@
-﻿using NWebDav.Server.Http;
+﻿using Microsoft.Extensions.Logging;
+using NWebDav.Server.Http;
+using SecureFolderFS.Shared.Extensions;
+using SecureFolderFS.Shared.Utils;
 using System;
 using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
@@ -15,52 +19,44 @@ namespace NWebDav.Server.Helpers
     /// </summary>
     public static class ResponseHelper
     {
-#if DEBUG
-        private static readonly NWebDav.Server.Logging.ILogger s_log = NWebDav.Server.Logging.LoggerFactory.CreateLogger(typeof(ResponseHelper));
-#endif
-        private static readonly UTF8Encoding s_utf8Encoding = new UTF8Encoding(false);  // Suppress BOM (not compatible with WebDrive)
+        private static UTF8Encoding Utf8WithoutUnicodeByteOrderMark { get; } = new(false);
 
         /// <summary>
         /// Set status of the HTTP response.
         /// </summary>
-        /// <param name="response">
-        /// The HTTP response that should be changed.
-        /// </param>
-        /// <param name="statusCode">
-        /// WebDAV status code that should be set.
-        /// </param>
+        /// <param name="response">The HTTP response that should be changed.</param>
+        /// <param name="statusCode">WebDAV status code that should be set.</param>
         /// <param name="statusDescription">
         /// The human-readable WebDAV status description. If no status
-        /// description is set (or <see langword="null"/>), then the
-        /// default status description is written. 
+        /// description is set, then the default status description is written. 
         /// </param>
         /// <remarks>
-        /// Not all HTTP infrastructures allow to set the status description,
-        /// so it should only be used for informational purposes.
+        /// Not all HTTP infrastructures allow to set the status description, so it should only be used for informational purposes.
         /// </remarks>
-        public static void SetStatus(this IHttpResponse response, HttpStatusCode statusCode, string statusDescription = null)
+        public static void SetStatus(this IHttpResponse response, HttpStatusCode statusCode, string? statusDescription = null)
         {
             // Set the status code and description
             response.StatusCode = (int)statusCode;
-            response.StatusDescription = statusDescription ?? statusCode.ToString();
+            response.StatusDescription = (statusDescription?.Length ?? 0) == 0 ? statusCode.ToString() : statusDescription;
+        }
+
+        public static void SetStatus(this IHttpResponse response, IResult result)
+        {
+            // Set the status code and description
+            response.StatusCode = (int)HttpStatusCode.Forbidden; // TODO(wd): Set appropriate status based on exception
+            response.StatusDescription = result.GetMessage();
         }
 
         /// <summary>
         /// Send an HTTP response with an XML body content.
         /// </summary>
-        /// <param name="response">
-        /// The HTTP response that needs to be sent.
-        /// </param>
-        /// <param name="statusCode">
-        /// WebDAV status code that should be set.
-        /// </param>
-        /// <param name="xDocument">
-        /// XML document that should be sent as the body of the message.
-        /// </param>
-        /// <returns>
-        /// A task that represents the asynchronous response send.
-        /// </returns>
-        public static async Task SendResponseAsync(this IHttpResponse response, HttpStatusCode statusCode, XDocument xDocument)
+        /// <param name="response">The HTTP response that needs to be sent.</param>
+        /// <param name="statusCode">WebDAV status code that should be set.</param>
+        /// <param name="xDocument">XML document that should be sent as the body of the message.</param>
+        /// <param name="logger">Used to trace warnings and debugging information.</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/> that cancels this action.</param>
+        /// <returns>A <see cref="Task"/> that represents the asynchronous operation.</returns>
+        public static async Task SendResponseAsync(this IHttpResponse response, HttpStatusCode statusCode, XDocument xDocument, ILogger? logger = null, CancellationToken cancellationToken = default)
         {
             // Make sure an XML document is specified
             if (xDocument == null)
@@ -74,48 +70,47 @@ namespace NWebDav.Server.Helpers
             response.SetStatus(statusCode);
 
             // Obtain the result as an XML document
-            using (var ms = new MemoryStream())
+            await using var ms = new MemoryStream();
+            await using (var xmlWriter = XmlWriter.Create(ms, new XmlWriterSettings()
             {
-                using (var xmlWriter = XmlWriter.Create(ms, new XmlWriterSettings
-                {
-                    OmitXmlDeclaration = false,
+                OmitXmlDeclaration = false,
+                Async = true,
 #if DEBUG
-                    Indent = true,
+                Indent = true,
 #else
-                    Indent = false,
+                Indent = false,
 #endif
-                    Encoding = s_utf8Encoding,
-                }))
-                {
-                    // Add the namespaces (Win7 WebDAV client requires them like this)
-                    xDocument.Root.SetAttributeValue(XNamespace.Xmlns + WebDavNamespaces.DavNsPrefix, WebDavNamespaces.DavNs);
-                    xDocument.Root.SetAttributeValue(XNamespace.Xmlns + WebDavNamespaces.Win32NsPrefix, WebDavNamespaces.Win32Ns);
+                Encoding = Utf8WithoutUnicodeByteOrderMark
+            }))
+            {
+                // Add the namespaces (Win7 WebDAV client requires them like this)
+                xDocument.Root.SetAttributeValue(XNamespace.Xmlns + WebDavNamespaces.DavNsPrefix, WebDavNamespaces.DavNs);
+                xDocument.Root.SetAttributeValue(XNamespace.Xmlns + WebDavNamespaces.Win32NsPrefix, WebDavNamespaces.Win32Ns);
 
-                    // Write the XML document to the stream
-                    xDocument.WriteTo(xmlWriter);
-                }
+                // Write the XML document to the stream
+                await xDocument.WriteToAsync(xmlWriter, cancellationToken).ConfigureAwait(false);
+            }
 
-                // Flush
-                ms.Flush();
+            // Flush
+            await ms.FlushAsync(cancellationToken).ConfigureAwait(false);
 #if DEBUG
-                // Dump the XML document to the logging
-                if (s_log.IsLogEnabled(NWebDav.Server.Logging.LogLevel.Debug))
-                {
-                    // Reset stream and write the stream to the result
-                    ms.Seek(0, SeekOrigin.Begin);
-
-                    var reader = new StreamReader(ms);
-                    s_log.Log(NWebDav.Server.Logging.LogLevel.Debug, () => reader.ReadToEnd());
-                }
-#endif
-                // Set content type/length
-                response.SetHeaderValue("Content-Type", "text/xml; charset=\"utf-8\"");
-                response.SetHeaderValue("Content-Length", ms.Position.ToString(CultureInfo.InvariantCulture));
-
+            // Dump the XML document to the logging
+            if (logger?.IsEnabled(LogLevel.Debug) ?? false)
+            {
                 // Reset stream and write the stream to the result
                 ms.Seek(0, SeekOrigin.Begin);
-                await ms.CopyToAsync(response.OutputStream).ConfigureAwait(false);
+
+                using var reader = new StreamReader(ms, leaveOpen: true);
+                logger.LogDebug(message: await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false));
             }
+#endif
+            // Set content type/length
+            response.SetHeaderValue("Content-Type", "text/xml; charset=\"utf-8\"");
+            response.SetHeaderValue("Content-Length", ms.Position.ToString(CultureInfo.InvariantCulture));
+
+            // Reset stream and write the stream to the result
+            ms.Seek(0, SeekOrigin.Begin);
+            await ms.CopyToAsync(response.OutputStream, cancellationToken).ConfigureAwait(false);
         }
     }
 }

@@ -1,6 +1,8 @@
-﻿using NWebDav.Server.Helpers;
+﻿using Microsoft.Extensions.Logging;
+using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
+using SecureFolderFS.Sdk.Storage;
 using System;
 using System.Net;
 using System.Threading;
@@ -18,13 +20,13 @@ namespace NWebDav.Server.Handlers
     /// WebDAV specification
     /// </see>.
     /// </remarks>
-    public class DeleteHandler : IRequestHandler
+    public sealed class DeleteHandler : IRequestHandler
     {
         /// <summary>
         /// Handle a DELETE request.
         /// </summary>
         /// <inheritdoc/>
-        public async Task<bool> HandleRequestAsync(IHttpContext context, IStore store, CancellationToken cancellationToken = default)
+        public async Task HandleRequestAsync(IHttpContext context, IStore store, IStorageService storageService, ILogger? logger = null, CancellationToken cancellationToken = default)
         {
             // Obtain request and response
             var request = context.Request;
@@ -42,7 +44,7 @@ namespace NWebDav.Server.Handlers
             {
                 // Source not found
                 response.SetStatus(HttpStatusCode.NotFound);
-                return true;
+                return;
             }
 
             // Obtain the item that actually is deleted
@@ -51,7 +53,7 @@ namespace NWebDav.Server.Handlers
             {
                 // Source not found
                 response.SetStatus(HttpStatusCode.NotFound);
-                return true;
+                return;
             }
 
             // Check if the item is locked
@@ -62,7 +64,7 @@ namespace NWebDav.Server.Handlers
                 if (!deleteItem.LockingManager.HasLock(deleteItem, ifToken))
                 {
                     response.SetStatus(HttpStatusCode.Locked);
-                    return true;
+                    return;
                 }
 
                 // Remove the token
@@ -77,7 +79,7 @@ namespace NWebDav.Server.Handlers
                 var xDocument = new XDocument(errors.GetXmlMultiStatus());
 
                 // Stream the document
-                await response.SendResponseAsync(HttpStatusCode.MultiStatus, xDocument).ConfigureAwait(false);
+                await response.SendResponseAsync(HttpStatusCode.MultiStatus, xDocument, logger, cancellationToken).ConfigureAwait(false);
             }
             else
             {
@@ -86,7 +88,7 @@ namespace NWebDav.Server.Handlers
             }
 
 
-            return true;
+            return;
         }
 
         private async Task<HttpStatusCode> DeleteItemAsync(IStoreCollection collection, string name, IHttpContext context, Uri baseUri)

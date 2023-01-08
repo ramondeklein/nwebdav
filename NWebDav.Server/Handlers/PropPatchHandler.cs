@@ -1,6 +1,8 @@
-﻿using NWebDav.Server.Helpers;
+﻿using Microsoft.Extensions.Logging;
+using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
+using SecureFolderFS.Sdk.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +22,7 @@ namespace NWebDav.Server.Handlers
     /// WebDAV specification
     /// </see>.
     /// </remarks>
-    public class PropPatchHandler : IRequestHandler
+    public sealed class PropPatchHandler : IRequestHandler
     {
         private class PropSetCollection : List<PropSetCollection.PropSet>
         {
@@ -100,7 +102,7 @@ namespace NWebDav.Server.Handlers
         /// Handle a PROPPATCH request.
         /// </summary>
         /// <inheritdoc/>
-        public async Task<bool> HandleRequestAsync(IHttpContext context, IStore store, CancellationToken cancellationToken = default)
+        public async Task HandleRequestAsync(IHttpContext context, IStore store, IStorageService storageService, ILogger? logger = null, CancellationToken cancellationToken = default)
         {
             // Obtain request and response
             var request = context.Request;
@@ -111,7 +113,7 @@ namespace NWebDav.Server.Handlers
             if (item == null)
             {
                 response.SetStatus(HttpStatusCode.NotFound);
-                return true;
+                return;
             }
 
             // Read the property set/remove items from the request
@@ -127,7 +129,7 @@ namespace NWebDav.Server.Handlers
             catch (Exception)
             {
                 response.SetStatus(HttpStatusCode.BadRequest);
-                return true;
+                return;
             }
 
             // Scan each property
@@ -151,8 +153,7 @@ namespace NWebDav.Server.Handlers
             var xDocument = new XDocument(propSetCollection.GetXmlMultiStatus(request.Url));
 
             // Stream the document
-            await response.SendResponseAsync(HttpStatusCode.MultiStatus, xDocument).ConfigureAwait(false);
-            return true;
+            await response.SendResponseAsync(HttpStatusCode.MultiStatus, xDocument, logger, cancellationToken).ConfigureAwait(false);
         }
     }
 }

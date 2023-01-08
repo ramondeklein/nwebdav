@@ -1,6 +1,8 @@
-﻿using NWebDav.Server.Helpers;
+﻿using Microsoft.Extensions.Logging;
+using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
+using SecureFolderFS.Sdk.Storage;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,13 +18,13 @@ namespace NWebDav.Server.Handlers
     /// WebDAV specification
     /// </see>.
     /// </remarks>
-    public class UnlockHandler : IRequestHandler
+    public sealed class UnlockHandler : IRequestHandler
     {
         /// <summary>
         /// Handle a UNLOCK request.
         /// </summary>
         /// <inheritdoc/>
-        public async Task<bool> HandleRequestAsync(IHttpContext context, IStore store, CancellationToken cancellationToken = default)
+        public async Task HandleRequestAsync(IHttpContext context, IStore store, IStorageService storageService, ILogger? logger = null, CancellationToken cancellationToken = default)
         {
             // Obtain request and response
             var request = context.Request;
@@ -37,7 +39,7 @@ namespace NWebDav.Server.Handlers
             {
                 // Set status to not found
                 response.SetStatus(HttpStatusCode.PreconditionFailed);
-                return true;
+                return;
             }
 
             // Check if we have a lock manager
@@ -46,7 +48,7 @@ namespace NWebDav.Server.Handlers
             {
                 // Set status to not found
                 response.SetStatus(HttpStatusCode.PreconditionFailed);
-                return true;
+                return;
             }
 
             // Perform the lock
@@ -54,7 +56,7 @@ namespace NWebDav.Server.Handlers
 
             // Send response
             response.SetStatus(result);
-            return true;
+            return;
         }
     }
 }

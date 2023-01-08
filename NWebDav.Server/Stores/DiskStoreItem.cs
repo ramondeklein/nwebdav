@@ -1,7 +1,6 @@
 ﻿using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Locking;
-using NWebDav.Server.Logging;
 using NWebDav.Server.Props;
 using System;
 using System.Diagnostics;
@@ -15,7 +14,6 @@ namespace NWebDav.Server.Stores
     [DebuggerDisplay("{_fileInfo.FullPath}")]
     public sealed class DiskStoreItem : IDiskStoreItem
     {
-        private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(DiskStoreItem));
         private readonly FileInfo _fileInfo;
 
         public DiskStoreItem(ILockingManager lockingManager, FileInfo fileInfo, bool isWritable)
@@ -198,7 +196,8 @@ namespace NWebDav.Server.Stores
             }
             catch (Exception exc)
             {
-                s_log.Log(LogLevel.Error, () => "Unexpected exception while copying data.", exc);
+                // TODO(wd): Add logging
+                //s_log.Log(LogLevel.Error, () => "Unexpected exception while copying data.", exc);
                 return new StoreItemResult(HttpStatusCode.InternalServerError);
             }
         }

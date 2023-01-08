@@ -1,12 +1,22 @@
-﻿using System.Net;
+﻿using NWebDav.Server.Http;
+using System.Net;
 using System.Threading.Tasks;
-using NWebDav.Server.Http;
 
 namespace NWebDav.Server.HttpListener
 {
+    /// <inheritdoc cref="IHttpContext"/>
     public abstract class HttpBaseContext : IHttpContext
     {
         private readonly HttpListenerResponse _response;
+
+        /// <inheritdoc/>
+        public IHttpRequest Request { get; }
+
+        /// <inheritdoc/>
+        public IHttpResponse Response { get; }
+
+        /// <inheritdoc/>
+        public abstract IHttpSession Session { get; }
 
         protected HttpBaseContext(HttpListenerRequest request, HttpListenerResponse response)
         {
@@ -18,17 +28,13 @@ namespace NWebDav.Server.HttpListener
             _response = response;
         }
 
-        public IHttpRequest Request { get; }
-        public IHttpResponse Response { get; }
-        public abstract IHttpSession Session { get; }
-
-        public Task CloseAsync()
+        /// <inheritdoc/>
+        public virtual ValueTask DisposeAsync()
         {
             // Close the response
             _response.Close();
 
-            // Command completed synchronous
-            return Task.FromResult(true);
+            return default;
         }
     }
 }

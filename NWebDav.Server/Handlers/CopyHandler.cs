@@ -1,6 +1,8 @@
-﻿using NWebDav.Server.Helpers;
+﻿using Microsoft.Extensions.Logging;
+using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
+using SecureFolderFS.Sdk.Storage;
 using System;
 using System.Net;
 using System.Threading;
@@ -18,13 +20,13 @@ namespace NWebDav.Server.Handlers
     /// WebDAV specification
     /// </see>.
     /// </remarks>
-    public class CopyHandler : IRequestHandler
+    public sealed class CopyHandler : IRequestHandler
     {
         /// <summary>
         /// Handle a COPY request.
         /// </summary>
         /// <inheritdoc/>
-        public async Task<bool> HandleRequestAsync(IHttpContext context, IStore store, CancellationToken cancellationToken = default)
+        public async Task HandleRequestAsync(IHttpContext context, IStore store, IStorageService storageService, ILogger? logger = null, CancellationToken cancellationToken = default)
         {
             // Obtain request and response
             var request = context.Request;
@@ -36,7 +38,7 @@ namespace NWebDav.Server.Handlers
             {
                 // Bad request
                 response.SetStatus(HttpStatusCode.BadRequest, "Destination header is missing.");
-                return true;
+                return;
             }
 
             // Make sure the source and destination are different
@@ -44,7 +46,7 @@ namespace NWebDav.Server.Handlers
             {
                 // Forbidden
                 response.SetStatus(HttpStatusCode.Forbidden, "Source and destination cannot be the same.");
-                return true;
+                return;
             }
 
             // Check if the Overwrite header is set
@@ -59,7 +61,7 @@ namespace NWebDav.Server.Handlers
             {
                 // Source not found
                 response.SetStatus(HttpStatusCode.Conflict, "Destination cannot be found or is not a collection.");
-                return true;
+                return;
             }
 
             // Obtain the source item
@@ -68,7 +70,7 @@ namespace NWebDav.Server.Handlers
             {
                 // Source not found
                 response.SetStatus(HttpStatusCode.NotFound, "Source cannot be found.");
-                return true;
+                return;
             }
 
             // Determine depth
@@ -87,15 +89,13 @@ namespace NWebDav.Server.Handlers
                 var xDocument = new XDocument(errors.GetXmlMultiStatus());
 
                 // Stream the document
-                await response.SendResponseAsync(HttpStatusCode.MultiStatus, xDocument).ConfigureAwait(false);
+                await response.SendResponseAsync(HttpStatusCode.MultiStatus, xDocument, logger, cancellationToken).ConfigureAwait(false);
             }
             else
             {
                 // Set the response
                 response.SetStatus(HttpStatusCode.OK);
             }
-
-            return true;
         }
 
         private async Task CopyAsync(IStoreItem source, IStoreCollection destinationCollection, string name, bool overwrite, int depth, IHttpContext context, Uri baseUri, UriResultCollection errors)

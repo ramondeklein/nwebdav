@@ -1,9 +1,8 @@
-﻿using System;
+﻿using NWebDav.Server.Http;
+using System;
 using System.Net;
 using System.Security;
 using System.Security.Principal;
-
-using NWebDav.Server.Http;
 
 namespace NWebDav.Server.HttpListener
 {
