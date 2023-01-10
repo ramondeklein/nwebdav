@@ -14,7 +14,7 @@ namespace NWebDav.Server.Dispatching
         private readonly IStore _store;
         private readonly IStorageService _davStorageService;
 
-        public WebDavDispatcher(IStore store, IStorageService davStorageService, IRequestHandlerFactory requestHandlerFactory, ILogger? logger)
+        public WebDavDispatcher(IStore store, IStorageService davStorageService, IRequestHandlerProvider requestHandlerFactory, ILogger? logger)
             : base(requestHandlerFactory, logger)
         {
             _store = store;

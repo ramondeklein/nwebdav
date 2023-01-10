@@ -32,8 +32,8 @@ namespace NWebDav.Server.Handlers
             response.SetHeaderValue("MS-Author-Via", "DAV");
 
             // Set the Allow/Public headers
-            response.SetHeaderValue("Allow", string.Join(", ", RequestHandlerFactory.AllowedMethods));
-            response.SetHeaderValue("Public", string.Join(", ", RequestHandlerFactory.AllowedMethods));
+            response.SetHeaderValue("Allow", string.Join(", ", RequestHandlerProvider.AllowedMethods));
+            response.SetHeaderValue("Public", string.Join(", ", RequestHandlerProvider.AllowedMethods));
 
             // Finished
             response.SetStatus(HttpStatusCode.OK);

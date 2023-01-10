@@ -72,13 +72,13 @@ namespace NWebDav.Server.Stores
         public override int GetHashCode() => Result.GetHashCode() ^ (Collection?.GetHashCode() ?? 0);
     }
 
-    public interface IStore
+    public interface IStore // TODO(wd): Replace with IStorageService
     {
         Task<IStoreItem> GetItemAsync(Uri uri, IHttpContext context);
         Task<IStoreCollection> GetCollectionAsync(Uri uri, IHttpContext context);
     }
 
-    public interface IStoreItem
+    public interface IStoreItem // TODO(wd): Replace with IDavFile, IDavStorable
     {
         // Item properties
         string Name { get; }
@@ -98,7 +98,7 @@ namespace NWebDav.Server.Stores
         ILockingManager LockingManager { get; }
     }
 
-    public interface IStoreCollection : IStoreItem
+    public interface IStoreCollection : IStoreItem // TODO(wd): Replace with IDavFolder, IDavStorable
     {
 
         

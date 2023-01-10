@@ -3,7 +3,6 @@ using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
 using SecureFolderFS.Sdk.Storage;
-using SecureFolderFS.Sdk.Storage.Enums;
 using SecureFolderFS.Sdk.Storage.Extensions;
 using SecureFolderFS.Sdk.Storage.ModifiableStorage;
 using SecureFolderFS.Shared.Extensions;
@@ -53,7 +52,7 @@ namespace NWebDav.Server.Handlers
                 return;
             }
 
-            var createdFileResult = await modifiableFolder.CreateFileWithResultAsync(splitUri.Name, CreationCollisionOption.ReplaceExisting, cancellationToken).ConfigureAwait(false);
+            var createdFileResult = await modifiableFolder.CreateFileWithResultAsync(splitUri.Name, true, cancellationToken).ConfigureAwait(false);
             if (createdFileResult.Successful)
             {
                 var fileStreamResult = await createdFileResult.Value!.OpenStreamWithResultAsync(FileAccess.ReadWrite, cancellationToken).ConfigureAwait(false);

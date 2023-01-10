@@ -4,12 +4,12 @@ using System.Collections.Generic;
 namespace NWebDav.Server
 {
     /// <summary>
-    /// Default implementation of the <see cref="IRequestHandlerFactory"/>
+    /// Default implementation of the <see cref="IRequestHandlerProvider"/>
     /// interface to create WebDAV request handlers. 
     /// </summary>
     /// <seealso cref="IRequestHandler"/>
-    /// <seealso cref="IRequestHandlerFactory"/>
-    public sealed class RequestHandlerFactory : IRequestHandlerFactory
+    /// <seealso cref="IRequestHandlerProvider"/>
+    public sealed class RequestHandlerProvider : IRequestHandlerProvider
     {
         private static readonly IDictionary<string, IRequestHandler> s_requestHandlers = new Dictionary<string, IRequestHandler>
         {

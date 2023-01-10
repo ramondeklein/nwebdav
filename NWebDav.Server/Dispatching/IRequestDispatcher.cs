@@ -11,14 +11,14 @@ namespace NWebDav.Server.Dispatching
     /// <remarks>
     /// The WebDAV dispatcher handles the processing of a WebDAV request.
     /// The library provides <see cref="IRequestDispatcher"/> that can be used to dispatch
-    /// requests based on the <see cref="IRequestHandler"/> interface and <see cref="IRequestHandlerFactory"/> interfaces.
+    /// requests based on the <see cref="IRequestHandler"/> interface and <see cref="IRequestHandlerProvider"/> interfaces.
     /// </remarks>
     public interface IRequestDispatcher
     {
         /// <summary>
         /// Gets the request handler factory associated with this dispatcher.
         /// </summary>
-        IRequestHandlerFactory RequestHandlerFactory { get; }
+        IRequestHandlerProvider RequestHandlerFactory { get; }
 
         /// <summary>
         /// Gets the logger associated with this dispatcher.

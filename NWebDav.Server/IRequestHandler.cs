@@ -1,11 +1,11 @@
-﻿using NWebDav.Server.Http;
+﻿using Microsoft.Extensions.Logging;
+using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
 using SecureFolderFS.Sdk.Storage;
 using System;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace NWebDav.Server
 {
@@ -27,10 +27,10 @@ namespace NWebDav.Server
     /// </para>
     /// <para>
     /// Request handlers are typically created via request handler factories
-    /// implementing the <see cref="IRequestHandlerFactory"/> interface.
+    /// implementing the <see cref="IRequestHandlerProvider"/> interface.
     /// </para>
     /// </remarks>
-    /// <seealso cref="IRequestHandlerFactory"/>
+    /// <seealso cref="IRequestHandlerProvider"/>
     public interface IRequestHandler
     {
         /// <summary>

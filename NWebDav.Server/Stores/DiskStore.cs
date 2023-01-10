@@ -8,7 +8,7 @@ using NWebDav.Server.Locking;
 
 namespace NWebDav.Server.Stores
 {
-    public sealed class DiskStore : IStore
+    public class DiskStore : IStore
     {
         public DiskStore(string directory, bool isWritable = true, ILockingManager lockingManager = null)
         {
@@ -21,7 +21,7 @@ namespace NWebDav.Server.Stores
         public bool IsWritable { get; }
         public ILockingManager LockingManager { get; }
 
-        public Task<IStoreItem> GetItemAsync(Uri uri, IHttpContext context)
+        public virtual Task<IStoreItem> GetItemAsync(Uri uri, IHttpContext context)
         {
             // Determine the path from the uri
             var path = GetPathFromUri(uri);
@@ -38,7 +38,7 @@ namespace NWebDav.Server.Stores
             return Task.FromResult<IStoreItem>(null);
         }
 
-        public Task<IStoreCollection> GetCollectionAsync(Uri uri, IHttpContext context)
+        public virtual Task<IStoreCollection> GetCollectionAsync(Uri uri, IHttpContext context)
         {
             // Determine the path from the uri
             var path = GetPathFromUri(uri);
@@ -49,7 +49,7 @@ namespace NWebDav.Server.Stores
             return Task.FromResult<IStoreCollection>(new DiskStoreCollection(LockingManager, new DirectoryInfo(path), IsWritable));
         }
 
-        private string GetPathFromUri(Uri uri)
+        protected string GetPathFromUri(Uri uri)
         {
             // Determine the path
             var requestedPath = UriHelper.GetDecodedPath(uri).Substring(1).Replace('/', Path.DirectorySeparatorChar);

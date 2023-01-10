@@ -13,12 +13,12 @@ namespace NWebDav.Server.Dispatching
     public abstract class BaseDispatcher : IRequestDispatcher
     {
         /// <inheritdoc/>
-        public virtual IRequestHandlerFactory RequestHandlerFactory { get; }
+        public virtual IRequestHandlerProvider RequestHandlerFactory { get; }
 
         /// <inheritdoc/>
         public virtual ILogger? Logger { get; }
 
-        protected BaseDispatcher(IRequestHandlerFactory requestHandlerFactory, ILogger? logger)
+        protected BaseDispatcher(IRequestHandlerProvider requestHandlerFactory, ILogger? logger)
         {
             RequestHandlerFactory = requestHandlerFactory;
             Logger = logger;

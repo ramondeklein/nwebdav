@@ -37,7 +37,7 @@ namespace NWebDav.Server.Props
             /// <summary>
             /// Get the XML representation of the specified value.
             /// </summary>
-            /// <param name="httpContext">
+            /// <param name="context">
             /// Current HTTP context.
             /// </param>
             /// <param name="value">
@@ -57,7 +57,7 @@ namespace NWebDav.Server.Props
             /// <summary>
             /// Get the typed value of the specified XML representation.
             /// </summary>
-            /// <param name="httpContext">
+            /// <param name="context">
             /// Current HTTP context.
             /// </param>
             /// <param name="value">

@@ -52,7 +52,7 @@ namespace NWebDav.Server.Props
         /// <summary>
         /// Get the value of the specified property for the given item.
         /// </summary>
-        /// <param name="httpContext">
+        /// <param name="context">
         /// HTTP context of the current request.
         /// </param>
         /// <param name="item">
@@ -92,7 +92,7 @@ namespace NWebDav.Server.Props
         /// <summary>
         /// Set the value of the specified property for the given item.
         /// </summary>
-        /// <param name="httpContext">
+        /// <param name="context">
         /// HTTP context of the current request.
         /// </param>
         /// <param name="item">

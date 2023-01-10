@@ -1,10 +1,12 @@
-﻿namespace NWebDav.Server
+﻿using System.Net;
+
+namespace NWebDav.Server
 {
     /// <summary>
     /// Factory responsible for returning the proper
     /// <see cref="IRequestHandler"/> instance to handle the request.
     /// </summary>
-    public interface IRequestHandlerFactory
+    public interface IRequestHandlerProvider
     {
         /// <summary>
         /// Obtain the <seealso cref="IRequestHandler">request handler</seealso>

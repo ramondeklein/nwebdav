@@ -22,7 +22,7 @@ namespace NWebDav.Server.Http
         /// </summary>
         /// <value>The HTTP method.</value>
         /// <remarks>
-        /// The <see cref="RequestHandlerFactory"/> uses this method to
+        /// The <see cref="RequestHandlerProvider"/> uses this method to
         /// determine which handler should be called based on this property.
         /// A description of all the HTTP methods (verbs) can be found in 
         /// <see href="http://www.webdav.org/specs/rfc2518.html#http.methods.for.distributed.authoring">chapter 8 of the WebDAV specification</see>.
