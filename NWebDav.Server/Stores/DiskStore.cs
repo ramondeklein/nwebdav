@@ -49,7 +49,7 @@ namespace NWebDav.Server.Stores
             return Task.FromResult<IStoreCollection>(new DiskStoreCollection(LockingManager, new DirectoryInfo(path), IsWritable));
         }
 
-        protected string GetPathFromUri(Uri uri)
+        protected virtual string GetPathFromUri(Uri uri)
         {
             // Determine the path
             var requestedPath = UriHelper.GetDecodedPath(uri).Substring(1).Replace('/', Path.DirectorySeparatorChar);

@@ -62,16 +62,16 @@ namespace NWebDav.Server.Handlers
                     return;
                 }
 
-                if (context.Request.InputStream is null)
-                {
-                    // TODO: Is that error appropriate?
-                    context.Response.SetStatus(HttpStatusCode.NoContent);
-                    return;
-                }
-
                 var fileStream = fileStreamResult.Value!;
                 await using (fileStream)
                 {
+                    if (context.Request.InputStream is null)
+                    {
+                        // TODO: Is that error appropriate?
+                        context.Response.SetStatus(HttpStatusCode.NoContent);
+                        return;
+                    }
+
                     // Make sure we can write to the file
                     if (!fileStream.CanWrite)
                     {
@@ -90,7 +90,6 @@ namespace NWebDav.Server.Handlers
                     catch (IOException ioEx) when (ioEx.IsDiskFull())
                     {
                         context.Response.SetStatus(HttpStatusCode.InsufficientStorage);
-                        return;
                     }
                 }
             }

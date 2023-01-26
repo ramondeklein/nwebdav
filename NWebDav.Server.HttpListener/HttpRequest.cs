@@ -32,6 +32,6 @@ namespace NWebDav.Server.HttpListener
         public string? GetHeaderValue(string header) => _request.Headers[header];
 
         /// <inheritdoc/>
-        public Stream InputStream => _request.InputStream;
+        public Stream? InputStream => _request.InputStream == Stream.Null ? null : _request.InputStream;
     }
 }
