@@ -31,7 +31,7 @@ namespace NWebDav.Server.Handlers
             // Obtain request and response
             var request = context.Request;
             var response = context.Response;
-            
+
             // We should always move the item from a parent container
             var splitSourceUri = RequestHelper.SplitUri(request.Url);
 
@@ -114,7 +114,7 @@ namespace NWebDav.Server.Handlers
             else
             {
                 // Set the response
-                response.SetStatus(HttpStatusCode.OK);
+                response.SetStatus(HttpStatusCode.Created);
             }
         }
 
