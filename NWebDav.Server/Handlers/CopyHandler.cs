@@ -31,7 +31,7 @@ namespace NWebDav.Server.Handlers
             // Obtain request and response
             var request = context.Request;
             var response = context.Response;
-            
+
             // Obtain the destination
             var destinationUri = request.GetDestinationUri();
             if (destinationUri == null)
@@ -94,7 +94,7 @@ namespace NWebDav.Server.Handlers
             else
             {
                 // Set the response
-                response.SetStatus(HttpStatusCode.OK);
+                response.SetStatus(HttpStatusCode.Created);
             }
         }
 
