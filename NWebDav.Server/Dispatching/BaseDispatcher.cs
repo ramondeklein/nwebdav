@@ -120,8 +120,16 @@ namespace NWebDav.Server.Dispatching
             }
             finally
             {
-                // Always close the context
-                await context.DisposeAsync().ConfigureAwait(false);
+                try
+                {
+                    // Always close the context
+                    await context.DisposeAsync().ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                    // Closing the context can sometimes fail, for example when Microsoft-WebDAV-MiniRedir cancels
+                    // a PUT request due to the file size being too large.
+                }
             }
         }
 
