@@ -40,7 +40,7 @@ namespace NWebDav.Server.Handlers
             var splitUri = RequestHelper.SplitUri(context.Request.Url);
 
             // Obtain collection
-            var folder = await storageService.TryGetFolderFromPathAsync(splitUri.CollectionUri.GetUriPath(), cancellationToken).ConfigureAwait(false);
+            var folder = await storageService.TryGetFolderAsync(splitUri.CollectionUri.GetUriPath(), cancellationToken).ConfigureAwait(false);
             if (folder is null)
             {
                 context.Response.SetStatus(HttpStatusCode.Conflict);
