@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 
 namespace NWebDav.Server.Helpers
 {
@@ -28,7 +29,7 @@ namespace NWebDav.Server.Helpers
 
         internal static Uri RemoveRootDirectory(Uri uri, string rootDirectory)
         {
-            return new($"{uri.Scheme}://{uri.Host}:{uri.Port}{new System.Text.RegularExpressions.Regex($"^\\/{rootDirectory}").Replace(uri.LocalPath, string.Empty)}");
+            return new($"{uri.Scheme}://{uri.Host}:{uri.Port}{new Regex($"^\\/{Regex.Escape(rootDirectory)}").Replace(uri.LocalPath, string.Empty)}");
         }
     }
 }
