@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NWebDav.Server\NWebDav.Server.csproj" />
-    <ProjectReference Include="..\NWebDav.Server.AspNetCore\NWebDav.Server.AspNetCore.csproj" />
   </ItemGroup>
 
   <ItemGroup>
