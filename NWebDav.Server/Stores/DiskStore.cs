@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NWebDav.Server.Helpers;
-using NWebDav.Server.Locking;
 
 namespace NWebDav.Server.Stores
 {
@@ -19,16 +18,18 @@ namespace NWebDav.Server.Stores
     public sealed class DiskStore : IStore
     {
         private readonly IOptions<DiskStoreOptions> _options;
+        private readonly DiskStoreCollectionPropertyManager _diskStoreCollectionPropertyManager;
+        private readonly DiskStoreItemPropertyManager _diskStoreItemPropertyManager;
         private readonly ILoggerFactory _loggerFactory;
 
-        public DiskStore(IOptions<DiskStoreOptions> options, ILockingManager lockingManager, ILoggerFactory loggerFactory)
+        public DiskStore(IOptions<DiskStoreOptions> options, DiskStoreCollectionPropertyManager diskStoreCollectionPropertyManager, DiskStoreItemPropertyManager diskStoreItemPropertyManager, ILoggerFactory loggerFactory)
         {
             _options = options;
-            LockingManager = lockingManager;
+            _diskStoreCollectionPropertyManager = diskStoreCollectionPropertyManager;
+            _diskStoreItemPropertyManager = diskStoreItemPropertyManager;
             _loggerFactory = loggerFactory;
         }
 
-        internal ILockingManager LockingManager { get; }
         internal bool IsWritable => _options.Value.IsWritable;
         private string BaseDirectory => _options.Value.BaseDirectory;
 
@@ -77,9 +78,9 @@ namespace NWebDav.Server.Stores
         }
 
         internal DiskStoreCollection CreateCollection(DirectoryInfo directoryInfo) =>
-            new(this, directoryInfo, _loggerFactory.CreateLogger<DiskStoreCollection>());
+            new(this, _diskStoreCollectionPropertyManager, directoryInfo, _loggerFactory.CreateLogger<DiskStoreCollection>());
 
         internal DiskStoreItem CreateItem(FileInfo file) =>
-            new(this, file, _loggerFactory.CreateLogger<DiskStoreItem>());
+            new(this, _diskStoreItemPropertyManager, file, _loggerFactory.CreateLogger<DiskStoreItem>());
     }
 }

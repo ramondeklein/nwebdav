@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using NWebDav.Server.Locking;
-using NWebDav.Server.Props;
 
 namespace NWebDav.Server.Stores
 {
@@ -22,49 +18,6 @@ namespace NWebDav.Server.Stores
     {
         Task<IStoreItem?> GetItemAsync(Uri uri, CancellationToken cancellationToken);
         Task<IStoreCollection?> GetCollectionAsync(Uri uri, CancellationToken cancellationToken);
-    }
-
-    public interface IStoreItem
-    {
-        // Item properties
-        string Name { get; }
-        string UniqueKey { get; }
-
-        // Read/Write access to the data
-        Task<Stream> GetReadableStreamAsync(CancellationToken cancellationToken);
-        Task<DavStatusCode> UploadFromStreamAsync(Stream source, CancellationToken cancellationToken);
-
-        // Copy support
-        Task<StoreItemResult> CopyAsync(IStoreCollection destination, string name, bool overwrite, CancellationToken cancellationToken);
-
-        // Property support
-        IPropertyManager? PropertyManager { get; }
-
-        // Locking support
-        ILockingManager? LockingManager { get; }
-    }
-
-    public interface IStoreCollection : IStoreItem
-    {
-        // Get specific item (or all items)
-        Task<IStoreItem?> GetItemAsync(string name, CancellationToken cancellationToken);
-
-        Task<IEnumerable<IStoreItem>> GetItemsAsync(CancellationToken cancellationToken);
-
-        // Create items and collections and add to the collection
-        Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, CancellationToken cancellationToken);
-        Task<StoreCollectionResult> CreateCollectionAsync(string name, bool overwrite, CancellationToken cancellationToken);
-
-        // Checks if the collection can be moved directly to the destination
-        bool SupportsFastMove(IStoreCollection destination, string destinationName, bool overwrite);
-
-        // Move items between collections
-        Task<StoreItemResult> MoveItemAsync(string sourceName, IStoreCollection destination, string destinationName, bool overwrite, CancellationToken cancellationToken);
-
-        // Delete items from collection
-        Task<DavStatusCode> DeleteItemAsync(string name, CancellationToken cancellationToken);
-
-        InfiniteDepthMode InfiniteDepthMode { get; }
     }
 
     /// <summary>

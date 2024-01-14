@@ -12,59 +12,52 @@ using NWebDav.Server.Props;
 
 namespace NWebDav.Server.Stores
 {
-    [DebuggerDisplay("{_directoryInfo.FullPath}\\")]
-    public sealed class DiskStoreCollection : IStoreCollection
+    public class DiskStoreCollectionPropertyManager : PropertyManager<DiskStoreCollection>
     {
         private static readonly XElement s_xDavCollection = new(WebDavNamespaces.DavNs + "collection");
-        private readonly DiskStore _diskStore;
-        private readonly DirectoryInfo _directoryInfo;
-        private readonly ILogger<DiskStoreCollection> _logger;
-
-        public DiskStoreCollection(DiskStore diskStore, DirectoryInfo directoryInfo, ILogger<DiskStoreCollection> logger)
+        
+        public DiskStoreCollectionPropertyManager(ILockingManager lockingManager) : base(GetProperties(lockingManager))
         {
-            _diskStore = diskStore;
-            _directoryInfo = directoryInfo;
-            _logger = logger;
         }
 
-        public static PropertyManager<DiskStoreCollection> DefaultPropertyManager { get; } = new(new DavProperty<DiskStoreCollection>[]
+        private static DavProperty<DiskStoreCollection>[] GetProperties(ILockingManager lockingManager) => new DavProperty<DiskStoreCollection>[]
         {
             // RFC-2518 properties
             new DavCreationDate<DiskStoreCollection>
             {
-                Getter = (_, collection) => collection._directoryInfo.CreationTimeUtc,
+                Getter = (_, collection) => collection.DirectoryInfo.CreationTimeUtc,
                 Setter = (_, collection, value) =>
                 {
-                    collection._directoryInfo.CreationTimeUtc = value;
+                    collection.DirectoryInfo.CreationTimeUtc = value;
                     return DavStatusCode.Ok;
                 }
             },
             new DavDisplayName<DiskStoreCollection>
             {
-                Getter = (_, collection) => collection._directoryInfo.Name
+                Getter = (_, collection) => collection.DirectoryInfo.Name
             },
             new DavGetLastModified<DiskStoreCollection>
             {
-                Getter = (_, collection) => collection._directoryInfo.LastWriteTimeUtc,
+                Getter = (_, collection) => collection.DirectoryInfo.LastWriteTimeUtc,
                 Setter = (_, collection, value) =>
                 {
-                    collection._directoryInfo.LastWriteTimeUtc = value;
+                    collection.DirectoryInfo.LastWriteTimeUtc = value;
                     return DavStatusCode.Ok;
                 }
             },
             new DavGetResourceType<DiskStoreCollection>
             {
-                Getter = (_, _) => new []{s_xDavCollection}
+                Getter = (_, _) => new[] { s_xDavCollection }
             },
 
             // Default locking property handling via the LockingManager
-            new DavLockDiscoveryDefault<DiskStoreCollection>(),
-            new DavSupportedLockDefault<DiskStoreCollection>(),
+            new DavLockDiscoveryDefault<DiskStoreCollection>(lockingManager),
+            new DavSupportedLockDefault<DiskStoreCollection>(lockingManager),
 
             // Hopmann/Lippert collection properties
             new DavExtCollectionChildCount<DiskStoreCollection>
             {
-                Getter = (_, collection) => collection._directoryInfo.EnumerateFiles().Count() + collection._directoryInfo.EnumerateDirectories().Count()
+                Getter = (_, collection) => collection.DirectoryInfo.EnumerateFiles().Count() + collection.DirectoryInfo.EnumerateDirectories().Count()
             },
             new DavExtCollectionIsFolder<DiskStoreCollection>
             {
@@ -72,7 +65,7 @@ namespace NWebDav.Server.Stores
             },
             new DavExtCollectionIsHidden<DiskStoreCollection>
             {
-                Getter = (_, collection) => (collection._directoryInfo.Attributes & FileAttributes.Hidden) != 0
+                Getter = (_, collection) => (collection.DirectoryInfo.Attributes & FileAttributes.Hidden) != 0
             },
             new DavExtCollectionIsStructuredDocument<DiskStoreCollection>
             {
@@ -80,7 +73,7 @@ namespace NWebDav.Server.Stores
             },
             new DavExtCollectionHasSubs<DiskStoreCollection>
             {
-                Getter = (_, collection) => collection._directoryInfo.EnumerateDirectories().Any()
+                Getter = (_, collection) => collection.DirectoryInfo.EnumerateDirectories().Any()
             },
             new DavExtCollectionNoSubs<DiskStoreCollection>
             {
@@ -88,7 +81,7 @@ namespace NWebDav.Server.Stores
             },
             new DavExtCollectionObjectCount<DiskStoreCollection>
             {
-                Getter = (_, collection) => collection._directoryInfo.EnumerateFiles().Count()
+                Getter = (_, collection) => collection.DirectoryInfo.EnumerateFiles().Count()
             },
             new DavExtCollectionReserved<DiskStoreCollection>
             {
@@ -97,60 +90,75 @@ namespace NWebDav.Server.Stores
             new DavExtCollectionVisibleCount<DiskStoreCollection>
             {
                 Getter = (_, collection) =>
-                    collection._directoryInfo.EnumerateDirectories().Count(di => (di.Attributes & FileAttributes.Hidden) == 0) +
-                    collection._directoryInfo.EnumerateFiles().Count(fi => (fi.Attributes & FileAttributes.Hidden) == 0)
+                    collection.DirectoryInfo.EnumerateDirectories().Count(di => (di.Attributes & FileAttributes.Hidden) == 0) +
+                    collection.DirectoryInfo.EnumerateFiles().Count(fi => (fi.Attributes & FileAttributes.Hidden) == 0)
             },
 
             // Win32 extensions
             new Win32CreationTime<DiskStoreCollection>
             {
-                Getter = (_, collection) => collection._directoryInfo.CreationTimeUtc,
+                Getter = (_, collection) => collection.DirectoryInfo.CreationTimeUtc,
                 Setter = (_, collection, value) =>
                 {
-                    collection._directoryInfo.CreationTimeUtc = value;
+                    collection.DirectoryInfo.CreationTimeUtc = value;
                     return DavStatusCode.Ok;
                 }
             },
             new Win32LastAccessTime<DiskStoreCollection>
             {
-                Getter = (_, collection) => collection._directoryInfo.LastAccessTimeUtc,
+                Getter = (_, collection) => collection.DirectoryInfo.LastAccessTimeUtc,
                 Setter = (_, collection, value) =>
                 {
-                    collection._directoryInfo.LastAccessTimeUtc = value;
+                    collection.DirectoryInfo.LastAccessTimeUtc = value;
                     return DavStatusCode.Ok;
                 }
             },
             new Win32LastModifiedTime<DiskStoreCollection>
             {
-                Getter = (_, collection) => collection._directoryInfo.LastWriteTimeUtc,
+                Getter = (_, collection) => collection.DirectoryInfo.LastWriteTimeUtc,
                 Setter = (_, collection, value) =>
                 {
-                    collection._directoryInfo.LastWriteTimeUtc = value;
+                    collection.DirectoryInfo.LastWriteTimeUtc = value;
                     return DavStatusCode.Ok;
                 }
             },
             new Win32FileAttributes<DiskStoreCollection>
             {
-                Getter = (_, collection) => collection._directoryInfo.Attributes,
+                Getter = (_, collection) => collection.DirectoryInfo.Attributes,
                 Setter = (_, collection, value) =>
                 {
-                    collection._directoryInfo.Attributes = value;
+                    collection.DirectoryInfo.Attributes = value;
                     return DavStatusCode.Ok;
                 }
             }
-        });
+        };
+    }
 
-        public ILockingManager LockingManager => _diskStore.LockingManager;
-        public string Name => _directoryInfo.Name;
-        public string UniqueKey => _directoryInfo.FullName;
-        public string FullPath => _directoryInfo.FullName;
+    [DebuggerDisplay("{DirectoryInfo.FullPath}\\")]
+    public sealed class DiskStoreCollection : IStoreCollection
+    {
+        private readonly DiskStore _diskStore;
+        private readonly ILogger<DiskStoreCollection> _logger;
+
+        public DiskStoreCollection(DiskStore diskStore, DiskStoreCollectionPropertyManager propertyManager, DirectoryInfo directoryInfo, ILogger<DiskStoreCollection> logger)
+        {
+            _diskStore = diskStore;
+            DirectoryInfo = directoryInfo;
+            _logger = logger;
+            PropertyManager = propertyManager;
+        }
+
+        public DirectoryInfo DirectoryInfo { get; }
+        public string Name => DirectoryInfo.Name;
+        public string UniqueKey => DirectoryInfo.FullName;
+        public string FullPath => DirectoryInfo.FullName;
         public bool IsWritable => _diskStore.IsWritable;
 
         // Disk collections (a.k.a. directories don't have their own data)
         public Task<Stream> GetReadableStreamAsync(CancellationToken cancellationToken) => Task.FromResult(Stream.Null);
         public Task<DavStatusCode> UploadFromStreamAsync(Stream inputStream, CancellationToken cancellationToken) => Task.FromResult(DavStatusCode.Conflict);
 
-        public IPropertyManager PropertyManager => DefaultPropertyManager;
+        public IPropertyManager PropertyManager { get; }
 
         public Task<IStoreItem?> GetItemAsync(string name, CancellationToken cancellationToken)
         {
@@ -177,12 +185,12 @@ namespace NWebDav.Server.Stores
             {
                 // Add all directories
                 cancellationToken.ThrowIfCancellationRequested();
-                foreach (var subDirectory in _directoryInfo.GetDirectories())
+                foreach (var subDirectory in DirectoryInfo.GetDirectories())
                     yield return _diskStore.CreateCollection(subDirectory);
 
                 // Add all files
                 cancellationToken.ThrowIfCancellationRequested();
-                foreach (var file in _directoryInfo.GetFiles())
+                foreach (var file in DirectoryInfo.GetFiles())
                     yield return _diskStore.CreateItem(file);
             }
 
@@ -241,7 +249,7 @@ namespace NWebDav.Server.Stores
                 return Task.FromResult(new StoreCollectionResult(DavStatusCode.PreconditionFailed));
 
             // Determine the destination path
-            var destinationPath = Path.Combine(_directoryInfo.FullName, name);
+            var destinationPath = Path.Combine(DirectoryInfo.FullName, name);
 
             // Check if the directory can be overwritten
             DavStatusCode result;
@@ -301,8 +309,8 @@ namespace NWebDav.Server.Stores
                         return new StoreItemResult(DavStatusCode.PreconditionFailed);
 
                     // Determine source and destination paths
-                    var sourcePath = Path.Combine(_directoryInfo.FullName, sourceName);
-                    var destinationPath = Path.Combine(destinationDiskStoreCollection._directoryInfo.FullName, destinationName);
+                    var sourcePath = Path.Combine(DirectoryInfo.FullName, sourceName);
+                    var destinationPath = Path.Combine(destinationDiskStoreCollection.DirectoryInfo.FullName, destinationName);
 
                     // Check if the file already exists
                     DavStatusCode result;
@@ -374,7 +382,7 @@ namespace NWebDav.Server.Stores
                 return Task.FromResult(DavStatusCode.PreconditionFailed);
 
             // Determine the full path
-            var fullPath = Path.Combine(_directoryInfo.FullName, name);
+            var fullPath = Path.Combine(DirectoryInfo.FullName, name);
             try
             {
                 // Check if the file exists
@@ -410,10 +418,10 @@ namespace NWebDav.Server.Stores
 
         public InfiniteDepthMode InfiniteDepthMode => InfiniteDepthMode.Rejected;
 
-        public override int GetHashCode() => _directoryInfo.FullName.GetHashCode();
+        public override int GetHashCode() => DirectoryInfo.FullName.GetHashCode();
 
         public override bool Equals(object? obj) =>
             obj is DiskStoreCollection storeCollection &&
-            storeCollection._directoryInfo.FullName.Equals(_directoryInfo.FullName, StringComparison.CurrentCultureIgnoreCase);
+            storeCollection.DirectoryInfo.FullName.Equals(DirectoryInfo.FullName, StringComparison.CurrentCultureIgnoreCase);
     }
 }

@@ -11,57 +11,57 @@ using NWebDav.Server.Props;
 
 namespace NWebDav.Server.Stores
 {
-    [DebuggerDisplay("{_fileInfo.FullPath}")]
-    public sealed class DiskStoreItem : IStoreItem
+    public class DiskStoreItemPropertyManager : PropertyManager<DiskStoreItem>
     {
-        private readonly DiskStore _diskStore;
-        private readonly FileInfo _fileInfo;
-        private readonly ILogger<DiskStoreItem> _logger;
-
-        public DiskStoreItem(DiskStore diskStore, FileInfo fileInfo, ILogger<DiskStoreItem> logger)
+        public DiskStoreItemPropertyManager(ILockingManager lockingManager) : base(GetProperties(lockingManager))
         {
-            _diskStore = diskStore;
-            _fileInfo = fileInfo;
-            _logger = logger;
         }
 
-        public static PropertyManager<DiskStoreItem> DefaultPropertyManager { get; } = new(new DavProperty<DiskStoreItem>[]
+        private static DavProperty<DiskStoreItem>[] GetProperties(ILockingManager lockingManager) => new DavProperty<DiskStoreItem>[]
         {
             // RFC-2518 properties
             new DavCreationDate<DiskStoreItem>
             {
-                Getter = (_, item) => item._fileInfo.CreationTimeUtc,
+                Getter = (_, item) => item.FileInfo.CreationTimeUtc,
                 Setter = (_, item, value) =>
                 {
-                    item._fileInfo.CreationTimeUtc = value;
+                    item.FileInfo.CreationTimeUtc = value;
                     return DavStatusCode.Ok;
                 }
             },
             new DavDisplayName<DiskStoreItem>
             {
-                Getter = (_, item) => item._fileInfo.Name
+                Getter = (_, item) => item.FileInfo.Name
             },
             new DavGetContentLength<DiskStoreItem>
             {
-                Getter = (_, item) => item._fileInfo.Length
+                Getter = (_, item) => item.FileInfo.Length
             },
             new DavGetContentType<DiskStoreItem>
             {
-                Getter = (_, item) => item.DetermineContentType()
+                Getter = (_, item) => MimeTypeHelper.GetMimeType(item.FileInfo.Name)
             },
             new DavGetEtag<DiskStoreItem>
             {
                 // Calculating the Etag is an expensive operation,
                 // because we need to scan the entire file.
                 IsExpensive = true,
-                Getter = (_, item) => item.CalculateEtag()
+                GetterAsync = async (httpContext, item) =>
+                {
+                    await using (var stream = File.OpenRead(item.FileInfo.FullName))
+                    {
+                        var hash = await SHA256.Create().ComputeHashAsync(stream, httpContext.RequestAborted).ConfigureAwait(false);
+                        return BitConverter.ToString(hash).Replace("-", string.Empty);
+                    }
+
+                }
             },
             new DavGetLastModified<DiskStoreItem>
             {
-                Getter = (_, item) => item._fileInfo.LastWriteTimeUtc,
+                Getter = (_, item) => item.FileInfo.LastWriteTimeUtc,
                 Setter = (_, item, value) =>
                 {
-                    item._fileInfo.LastWriteTimeUtc = value;
+                    item.FileInfo.LastWriteTimeUtc = value;
                     return DavStatusCode.Ok;
                 }
             },
@@ -71,60 +71,78 @@ namespace NWebDav.Server.Stores
             },
 
             // Default locking property handling via the LockingManager
-            new DavLockDiscoveryDefault<DiskStoreItem>(),
-            new DavSupportedLockDefault<DiskStoreItem>(),
+            new DavLockDiscoveryDefault<DiskStoreItem>(lockingManager),
+            new DavSupportedLockDefault<DiskStoreItem>(lockingManager),
 
             // Hopmann/Lippert collection properties
             // (although not a collection, the IsHidden property might be valuable)
             new DavExtCollectionIsHidden<DiskStoreItem>
             {
-                Getter = (_, item) => (item._fileInfo.Attributes & FileAttributes.Hidden) != 0
+                Getter = (_, item) => (item.FileInfo.Attributes & FileAttributes.Hidden) != 0
             },
 
             // Win32 extensions
             new Win32CreationTime<DiskStoreItem>
             {
-                Getter = (_, item) => item._fileInfo.CreationTimeUtc,
+                Getter = (_, item) => item.FileInfo.CreationTimeUtc,
                 Setter = (_, item, value) =>
                 {
-                    item._fileInfo.CreationTimeUtc = value;
+                    item.FileInfo.CreationTimeUtc = value;
                     return DavStatusCode.Ok;
                 }
             },
             new Win32LastAccessTime<DiskStoreItem>
             {
-                Getter = (_, item) => item._fileInfo.LastAccessTimeUtc,
+                Getter = (_, item) => item.FileInfo.LastAccessTimeUtc,
                 Setter = (_, item, value) =>
                 {
-                    item._fileInfo.LastAccessTimeUtc = value;
+                    item.FileInfo.LastAccessTimeUtc = value;
                     return DavStatusCode.Ok;
                 }
             },
             new Win32LastModifiedTime<DiskStoreItem>
             {
-                Getter = (_, item) => item._fileInfo.LastWriteTimeUtc,
+                Getter = (_, item) => item.FileInfo.LastWriteTimeUtc,
                 Setter = (_, item, value) =>
                 {
-                    item._fileInfo.LastWriteTimeUtc = value;
+                    item.FileInfo.LastWriteTimeUtc = value;
                     return DavStatusCode.Ok;
                 }
             },
             new Win32FileAttributes<DiskStoreItem>
             {
-                Getter = (_, item) => item._fileInfo.Attributes,
+                Getter = (_, item) => item.FileInfo.Attributes,
                 Setter = (_, item, value) =>
                 {
-                    item._fileInfo.Attributes = value;
+                    item.FileInfo.Attributes = value;
                     return DavStatusCode.Ok;
                 }
             }
-        });
+        };
+    }
 
+    [DebuggerDisplay("{FileInfo.FullPath}")]
+    public sealed class DiskStoreItem : IStoreItem
+    {
+        private readonly DiskStore _diskStore;
+        private readonly ILogger<DiskStoreItem> _logger;
+
+        public DiskStoreItem(DiskStore diskStore, DiskStoreItemPropertyManager propertyManager, FileInfo fileInfo, ILogger<DiskStoreItem> logger)
+        {
+            _diskStore = diskStore;
+            FileInfo = fileInfo;
+            PropertyManager = propertyManager;
+            _logger = logger;
+        }
+
+        public IPropertyManager PropertyManager { get; }
+
+        public FileInfo FileInfo { get; }
         public bool IsWritable => _diskStore.IsWritable;
-        public string Name => _fileInfo.Name;
-        public string UniqueKey => _fileInfo.FullName;
-        public string FullPath => _fileInfo.FullName;
-        public Task<Stream> GetReadableStreamAsync(CancellationToken cancellationToken) => Task.FromResult((Stream)_fileInfo.OpenRead());
+        public string Name => FileInfo.Name;
+        public string UniqueKey => FileInfo.FullName;
+        public string FullPath => FileInfo.FullName;
+        public Task<Stream> GetReadableStreamAsync(CancellationToken cancellationToken) => Task.FromResult((Stream)FileInfo.OpenRead());
 
         public async Task<DavStatusCode> UploadFromStreamAsync(Stream inputStream, CancellationToken cancellationToken)
         {
@@ -136,7 +154,7 @@ namespace NWebDav.Server.Stores
             try
             {
                 // Copy the information to the destination stream
-                await using (var outputStream = _fileInfo.OpenWrite())
+                await using (var outputStream = FileInfo.OpenWrite())
                 {
                     await inputStream.CopyToAsync(outputStream, cancellationToken).ConfigureAwait(false);
                 }
@@ -147,9 +165,6 @@ namespace NWebDav.Server.Stores
                 return DavStatusCode.InsufficientStorage;
             }
         }
-
-        public IPropertyManager PropertyManager => DefaultPropertyManager;
-        public ILockingManager LockingManager => _diskStore.LockingManager;
 
         public async Task<StoreItemResult> CopyAsync(IStoreCollection destination, string name, bool overwrite, CancellationToken cancellationToken)
         {
@@ -171,7 +186,7 @@ namespace NWebDav.Server.Stores
                         return new StoreItemResult(DavStatusCode.PreconditionFailed);
 
                     // Copy the file
-                    File.Copy(_fileInfo.FullName, destinationPath, true);
+                    File.Copy(FileInfo.FullName, destinationPath, true);
 
                     // Return the appropriate status
                     return new StoreItemResult(fileExists ? DavStatusCode.NoContent : DavStatusCode.Created);
@@ -203,21 +218,10 @@ namespace NWebDav.Server.Stores
             }
         }
 
-        public override int GetHashCode() => _fileInfo.FullName.GetHashCode();
+        public override int GetHashCode() => FileInfo.FullName.GetHashCode();
 
         public override bool Equals(object? obj) =>
                 obj is DiskStoreItem storeItem && 
-                storeItem._fileInfo.FullName.Equals(_fileInfo.FullName, StringComparison.CurrentCultureIgnoreCase);
-
-        private string DetermineContentType() =>  MimeTypeHelper.GetMimeType(_fileInfo.Name);
-
-        private string CalculateEtag()
-        {
-            using (var stream = File.OpenRead(_fileInfo.FullName))
-            {
-                var hash = SHA256.Create().ComputeHash(stream);
-                return BitConverter.ToString(hash).Replace("-", string.Empty);
-            }
-        }
+                storeItem.FileInfo.FullName.Equals(FileInfo.FullName, StringComparison.CurrentCultureIgnoreCase);
     }
 }

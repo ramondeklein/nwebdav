@@ -43,6 +43,8 @@ namespace NWebDav.Server
                     opts.BaseDirectory = Environment.GetEnvironmentVariable("HOME") ?? Environment.GetEnvironmentVariable("USERPROFILE") ?? string.Empty;
                     configure?.Invoke(opts);
                 })
+                .AddSingleton<DiskStoreCollectionPropertyManager>()
+                .AddSingleton<DiskStoreItemPropertyManager>()
                 .AddStore<DiskStore>();
         }
 

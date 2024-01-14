@@ -23,11 +23,13 @@ namespace NWebDav.Server.Handlers
     {
         private readonly IXmlReaderWriter _xmlReaderWriter;
         private readonly IStore _store;
+        private readonly ILockingManager _lockingManager;
 
-        public LockHandler(IXmlReaderWriter xmlReaderWriter, IStore store)
+        public LockHandler(IXmlReaderWriter xmlReaderWriter, IStore store, ILockingManager lockingManager)
         {
             _xmlReaderWriter = xmlReaderWriter;
             _store = store;
+            _lockingManager = lockingManager;
         }
         
         /// <summary>
@@ -59,15 +61,6 @@ namespace NWebDav.Server.Handlers
                 return true;
             }
 
-            // Check if we have a lock manager
-            var lockingManager = item.LockingManager;
-            if (lockingManager == null)
-            {
-                // Set status to not found
-                response.SetStatus(DavStatusCode.PreconditionFailed);
-                return true;
-            }
-
             LockResult lockResult;
 
             // Check if an IF header is present (this would refresh the lock)
@@ -75,7 +68,7 @@ namespace NWebDav.Server.Handlers
             if (refreshLockToken != null)
             {
                 // Obtain the token
-                lockResult = lockingManager.RefreshLock(item, depth > 0, timeouts, refreshLockToken);
+                lockResult = _lockingManager.RefreshLock(item, depth > 0, timeouts, refreshLockToken);
             }
             else
             {
@@ -130,7 +123,7 @@ namespace NWebDav.Server.Handlers
                 }
 
                 // Perform the lock
-                lockResult = lockingManager.Lock(item, lockType, lockScope, owner, request.GetUri(), depth > 0, timeouts);
+                lockResult = _lockingManager.Lock(item, lockType, lockScope, owner, request.GetUri(), depth > 0, timeouts);
             }
 
             // Check if result is fine

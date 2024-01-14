@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-
+using NWebDav.Server.Locking;
 using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Props
@@ -24,9 +24,9 @@ namespace NWebDav.Server.Props
         /// <see cref="NWebDav.Server.Locking.ILockingManager.GetActiveLockInfo"/> 
         /// method of the item's locking manager.
         /// </summary>
-        public DavLockDiscoveryDefault()
+        public DavLockDiscoveryDefault(ILockingManager lockingManager)
         {
-            Getter = (httpContext, item) => item.LockingManager.GetActiveLockInfo(item).Select(ali => ali.ToXml());
+            Getter = (httpContext, item) => lockingManager.GetActiveLockInfo(item).Select(ali => ali.ToXml());
         }
     }
 
@@ -50,9 +50,9 @@ namespace NWebDav.Server.Props
         /// <see cref="NWebDav.Server.Locking.ILockingManager.GetSupportedLocks"/>
         /// method of the item's locking manager.
         /// </summary>
-        public DavSupportedLockDefault()
+        public DavSupportedLockDefault(ILockingManager lockingManager)
         {
-            Getter = (httpContext, item) => item.LockingManager.GetSupportedLocks(item).Select(sl => sl.ToXml());
+            Getter = (_, item) => lockingManager.GetSupportedLocks(item).Select(sl => sl.ToXml());
         }
     }
 }

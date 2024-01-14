@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Http;
 using NWebDav.Server.Helpers;
+using NWebDav.Server.Locking;
 using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Handlers
@@ -21,11 +22,13 @@ namespace NWebDav.Server.Handlers
     {
         private readonly IXmlReaderWriter _xmlReaderWriter;
         private readonly IStore _store;
+        private readonly ILockingManager _lockingManager;
 
-        public DeleteHandler(IXmlReaderWriter xmlReaderWriter, IStore store)
+        public DeleteHandler(IXmlReaderWriter xmlReaderWriter, IStore store, ILockingManager lockingManager)
         {
             _xmlReaderWriter = xmlReaderWriter;
             _store = store;
+            _lockingManager = lockingManager;
         }
         
         /// <summary>
@@ -69,18 +72,18 @@ namespace NWebDav.Server.Handlers
             }
 
             // Check if the item is locked
-            if (deleteItem.LockingManager.IsLocked(deleteItem))
+            if (_lockingManager.IsLocked(deleteItem))
             {
                 // Obtain the lock token
                 var ifToken = request.GetIfLockToken();
-                if (!deleteItem.LockingManager.HasLock(deleteItem, ifToken))
+                if (!_lockingManager.HasLock(deleteItem, ifToken))
                 {
                     response.SetStatus(DavStatusCode.Locked);
                     return true;
                 }
 
                 // Remove the token
-                deleteItem.LockingManager.Unlock(deleteItem, ifToken);
+                _lockingManager.Unlock(deleteItem, ifToken);
             }
 
             // Delete item

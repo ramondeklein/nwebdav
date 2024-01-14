@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using NWebDav.Server.Helpers;
+using NWebDav.Server.Locking;
 using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Handlers
@@ -17,10 +18,12 @@ namespace NWebDav.Server.Handlers
     public class UnlockHandler : IRequestHandler
     {
         private readonly IStore _store;
+        private readonly ILockingManager _lockingManager;
 
-        public UnlockHandler(IStore store)
+        public UnlockHandler(IStore store, ILockingManager lockingManager)
         {
             _store = store;
+            _lockingManager = lockingManager;
         }
         
         /// <summary>
@@ -51,17 +54,8 @@ namespace NWebDav.Server.Handlers
                 return true;
             }
 
-            // Check if we have a lock manager
-            var lockingManager = item.LockingManager;
-            if (lockingManager == null)
-            {
-                // Set status to not found
-                response.SetStatus(DavStatusCode.PreconditionFailed);
-                return true;
-            }
-
             // Perform the lock
-            var result = lockingManager.Unlock(item, lockToken);
+            var result = _lockingManager.Unlock(item, lockToken);
 
             // Send response
             response.SetStatus(result);
