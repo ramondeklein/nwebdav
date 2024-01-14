@@ -1,52 +1,63 @@
 ﻿using System;
 using System.IO;
 using System.Security;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NWebDav.Server.Helpers;
-using NWebDav.Server.Http;
 using NWebDav.Server.Locking;
 
 namespace NWebDav.Server.Stores
 {
+    public class DiskStoreOptions
+    {
+        public required string BaseDirectory { get; set; }
+        public bool IsWritable { get; set; } = true;
+    }
+    
     public sealed class DiskStore : IStore
     {
-        public DiskStore(string directory, bool isWritable = true, ILockingManager lockingManager = null)
+        private readonly IOptions<DiskStoreOptions> _options;
+        private readonly ILoggerFactory _loggerFactory;
+
+        public DiskStore(IOptions<DiskStoreOptions> options, ILockingManager lockingManager, ILoggerFactory loggerFactory)
         {
-            BaseDirectory = directory ?? throw new ArgumentNullException(nameof(directory));
-            IsWritable = isWritable;
-            LockingManager = lockingManager ?? new InMemoryLockingManager();
+            _options = options;
+            LockingManager = lockingManager;
+            _loggerFactory = loggerFactory;
         }
 
-        public string BaseDirectory { get; }
-        public bool IsWritable { get; }
-        public ILockingManager LockingManager { get; }
+        internal ILockingManager LockingManager { get; }
+        internal bool IsWritable => _options.Value.IsWritable;
+        private string BaseDirectory => _options.Value.BaseDirectory;
 
-        public Task<IStoreItem> GetItemAsync(Uri uri, IHttpContext httpContext)
+        public Task<IStoreItem?> GetItemAsync(Uri uri, CancellationToken cancellationToken)
         {
             // Determine the path from the uri
             var path = GetPathFromUri(uri);
 
             // Check if it's a directory
             if (Directory.Exists(path))
-                return Task.FromResult<IStoreItem>(new DiskStoreCollection(LockingManager, new DirectoryInfo(path), IsWritable));
+                return Task.FromResult<IStoreItem?>(CreateCollection(new DirectoryInfo(path)));
 
             // Check if it's a file
             if (File.Exists(path))
-                return Task.FromResult<IStoreItem>(new DiskStoreItem(LockingManager, new FileInfo(path), IsWritable));
+                return Task.FromResult<IStoreItem?>(CreateItem(new FileInfo(path)));
 
             // The item doesn't exist
-            return Task.FromResult<IStoreItem>(null);
+            return Task.FromResult<IStoreItem?>(null);
         }
 
-        public Task<IStoreCollection> GetCollectionAsync(Uri uri, IHttpContext httpContext)
+        public Task<IStoreCollection?> GetCollectionAsync(Uri uri, CancellationToken cancellationToken)
         {
             // Determine the path from the uri
             var path = GetPathFromUri(uri);
             if (!Directory.Exists(path))
-                return Task.FromResult<IStoreCollection>(null);
+                return Task.FromResult<IStoreCollection?>(null);
 
             // Return the item
-            return Task.FromResult<IStoreCollection>(new DiskStoreCollection(LockingManager, new DirectoryInfo(path), IsWritable));
+            return Task.FromResult<IStoreCollection?>(CreateCollection(new DirectoryInfo(path)));
         }
 
         private string GetPathFromUri(Uri uri)
@@ -64,5 +75,11 @@ namespace NWebDav.Server.Stores
             // Return the combined path
             return fullPath;
         }
+
+        internal DiskStoreCollection CreateCollection(DirectoryInfo directoryInfo) =>
+            new(this, directoryInfo, _loggerFactory.CreateLogger<DiskStoreCollection>());
+
+        internal DiskStoreItem CreateItem(FileInfo file) =>
+            new(this, file, _loggerFactory.CreateLogger<DiskStoreItem>());
     }
 }

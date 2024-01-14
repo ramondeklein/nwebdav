@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
-
+using Microsoft.AspNetCore.Http;
 using NWebDav.Server.Helpers;
-using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Handlers
@@ -17,20 +16,24 @@ namespace NWebDav.Server.Handlers
     /// </remarks>
     public class UnlockHandler : IRequestHandler
     {
+        private readonly IStore _store;
+
+        public UnlockHandler(IStore store)
+        {
+            _store = store;
+        }
+        
         /// <summary>
         /// Handle a UNLOCK request.
         /// </summary>
         /// <param name="httpContext">
         /// The HTTP context of the request.
         /// </param>
-        /// <param name="store">
-        /// Store that is used to access the collections and items.
-        /// </param>
         /// <returns>
         /// A task that represents the asynchronous UNLOCK operation. The task
         /// will always return <see langword="true"/> upon completion.
         /// </returns>
-        public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)
+        public async Task<bool> HandleRequestAsync(HttpContext httpContext)
         {
             // Obtain request and response
             var request = httpContext.Request;
@@ -40,7 +43,7 @@ namespace NWebDav.Server.Handlers
             var lockToken = request.GetLockToken();
 
             // Obtain the WebDAV item
-            var item = await store.GetItemAsync(request.Url, httpContext).ConfigureAwait(false);
+            var item = await _store.GetItemAsync(request.GetUri(), httpContext.RequestAborted).ConfigureAwait(false);
             if (item == null)
             {
                 // Set status to not found

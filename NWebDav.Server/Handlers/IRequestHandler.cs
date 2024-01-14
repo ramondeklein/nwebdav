@@ -1,9 +1,7 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
-using NWebDav.Server.Http;
-using NWebDav.Server.Stores;
-
-namespace NWebDav.Server
+namespace NWebDav.Server.Handlers
 {
     /// <summary>
     /// Interface for all request handlers.
@@ -21,12 +19,7 @@ namespace NWebDav.Server
     /// the handler is re-entrant, because it can be called multiple times in
     /// parallel.
     /// </para>
-    /// <para>
-    /// Request handlers are typically created via request handler factories
-    /// implementing the <see cref="IRequestHandlerFactory"/> interface.
-    /// </para>
     /// </remarks>
-    /// <seealso cref="IRequestHandlerFactory"/>
     public interface IRequestHandler
     {
         /// <summary>
@@ -34,9 +27,6 @@ namespace NWebDav.Server
         /// </summary>
         /// <param name="httpContext">
         /// The HTTP context of the request.
-        /// </param>
-        /// <param name="store">
-        /// Store that is used to access the collections and items.
         /// </param>
         /// <returns>
         /// A task that represents the asynchronous handle request operation.
@@ -47,6 +37,6 @@ namespace NWebDav.Server
         /// <see cref="DavStatusCode.NotImplemented"/> is returned to the
         /// requester.
         /// </returns>
-        Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store);
+        Task<bool> HandleRequestAsync(HttpContext httpContext);
     }
 }

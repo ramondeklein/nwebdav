@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-
-using NWebDav.Server.Http;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 
 namespace NWebDav.Server.Helpers
 {
@@ -19,12 +16,12 @@ namespace NWebDav.Server.Helpers
         /// <summary>
         /// Collection URI that holds the collection/document.
         /// </summary>
-        public Uri CollectionUri { get; set; }
+        public required Uri CollectionUri { get; init; }
 
         /// <summary>
         /// Name of the collection/document within its container collection.
         /// </summary>
-        public string Name { get; set; }
+        public required string Name { get; init; }
     }
 
     /// <summary>
@@ -35,12 +32,12 @@ namespace NWebDav.Server.Helpers
         /// <summary>
         /// Optional start value.
         /// </summary>
-        public long? Start { get; set; }
+        public long? Start { get; init; }
 
         /// <summary>
         /// Optional end value.
         /// </summary>
-        public long? End { get; set; }
+        public long? End { get; init; }
 
         /// <summary>
         /// Optional conditional date/time.
@@ -49,14 +46,12 @@ namespace NWebDav.Server.Helpers
     }
 
     /// <summary>
-    /// Helper methods for <see cref="IHttpRequest"/> objects.
+    /// Helper methods for <see cref="HttpRequest"/> objects.
     /// </summary>
     public static class RequestHelper
     {
-#if DEBUG
-        private static readonly NWebDav.Server.Logging.ILogger s_log = NWebDav.Server.Logging.LoggerFactory.CreateLogger(typeof(ResponseHelper));
-#endif
-        private static readonly Regex s_rangeRegex = new Regex("bytes\\=(?<start>[0-9]*)-(?<end>[0-9]*)");
+        private static readonly Regex s_rangeRegex = new("bytes\\=(?<start>[0-9]*)-(?<end>[0-9]*)");
+        private static readonly char[] s_splitChars = {','};
 
         /// <summary>
         /// Split an URI into a collection and name part.
@@ -65,12 +60,12 @@ namespace NWebDav.Server.Helpers
         /// <returns>
         /// Split URI in a collection URI and a name string.
         /// </returns>
-        public static SplitUri SplitUri(Uri uri)
+        public static SplitUri? SplitUri(Uri uri)
         {
             // Strip a trailing slash
             var trimmedUri = uri.AbsoluteUri;
-            if (trimmedUri.EndsWith("/"))
-                trimmedUri = trimmedUri.Substring(0, trimmedUri.Length - 1);
+            if (trimmedUri.EndsWith('/'))
+                trimmedUri = trimmedUri[..^1];
 
             // Determine the offset of the name
             var slashOffset = trimmedUri.LastIndexOf('/');
@@ -80,11 +75,23 @@ namespace NWebDav.Server.Helpers
             // Separate name from path
             return new SplitUri
             {
-                CollectionUri = new Uri(trimmedUri.Substring(0, slashOffset)),
-                Name = Uri.UnescapeDataString(trimmedUri.Substring(slashOffset + 1))
+                CollectionUri = new Uri(trimmedUri[..slashOffset]),
+                Name = Uri.UnescapeDataString(trimmedUri[(slashOffset + 1)..])
             };
         }
 
+        /// <summary>
+        /// Obtain the uri from the request.
+        /// </summary>
+        /// <param name="request">HTTP request.</param>
+        /// <returns>
+        /// URI for this HTTP request.
+        /// </returns>
+        public static Uri GetUri(this HttpRequest request)
+        {
+            return new Uri(request.GetEncodedUrl());
+        }
+        
         /// <summary>
         /// Obtain the destination uri from the request.
         /// </summary>
@@ -93,15 +100,15 @@ namespace NWebDav.Server.Helpers
         /// Destination for this HTTP request (or <see langword="null"/> if no
         /// destination is specified).
         /// </returns>
-        public static Uri GetDestinationUri(this IHttpRequest request)
+        public static Uri? GetDestinationUri(this HttpRequest request)
         {
             // Obtain the destination
-            var destinationHeader = request.GetHeaderValue("Destination");
+            var destinationHeader = request.Headers["Destination"].FirstOrDefault();
             if (destinationHeader == null)
                 return null;
 
             // Create the destination URI
-            return destinationHeader.StartsWith("/") ? new Uri(request.Url, destinationHeader) : new Uri(destinationHeader);
+            return destinationHeader.StartsWith("/") ? new Uri(new Uri(request.GetEncodedUrl()), destinationHeader) : new Uri(destinationHeader);
         }        
 
         /// <summary>
@@ -115,10 +122,10 @@ namespace NWebDav.Server.Helpers
         /// If the Depth header is not set, then the specification specifies
         /// that it should be interpreted as infinity.
         /// </remarks>
-        public static int GetDepth(this IHttpRequest request)
+        public static int GetDepth(this HttpRequest request)
         {
             // Obtain the depth header (no header means infinity)
-            var depthHeader = request.GetHeaderValue("Depth");
+            var depthHeader = request.Headers["Depth"].FirstOrDefault();
             if (depthHeader == null || depthHeader == "infinity")
                 return int.MaxValue;
 
@@ -143,10 +150,10 @@ namespace NWebDav.Server.Helpers
         /// specifies that it should be interpreted as 
         /// <see langwordk="true"/>.
         /// </remarks>
-        public static bool GetOverwrite(this IHttpRequest request)
+        public static bool GetOverwrite(this HttpRequest request)
         {
             // Get the Overwrite header
-            var overwriteHeader = request.GetHeaderValue("Overwrite") ?? "T";
+            var overwriteHeader = request.Headers["Overwrite"].FirstOrDefault() ?? "T";
 
             // It should be set to "T" (true) or "F" (false)
             return overwriteHeader.ToUpperInvariant() == "T";
@@ -163,10 +170,10 @@ namespace NWebDav.Server.Helpers
         /// If the Timeout header is not set, then <see langword="null"/> is
         /// returned.
         /// </remarks>
-        public static IList<int> GetTimeouts(this IHttpRequest request)
+        public static IList<int>? GetTimeouts(this HttpRequest request)
         {
             // Get the value of the timeout header as a string
-            var timeoutHeader = request.GetHeaderValue("Timeout");
+            var timeoutHeader = request.Headers["Timeout"].FirstOrDefault();
             if (string.IsNullOrEmpty(timeoutHeader))
                 return null;
 
@@ -184,7 +191,7 @@ namespace NWebDav.Server.Helpers
             }
 
             // Return the timeout values
-            return timeoutHeader.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(ParseTimeout).Where(t => t != 0).ToArray();
+            return timeoutHeader.Split(s_splitChars, StringSplitOptions.RemoveEmptyEntries).Select(ParseTimeout).Where(t => t != 0).ToArray();
         }
 
         /// <summary>
@@ -194,10 +201,10 @@ namespace NWebDav.Server.Helpers
         /// <returns>
         /// Lock token URI (<see langword="null"/> if not set).
         /// </returns>
-        public static Uri GetLockToken(this IHttpRequest request)
+        public static Uri? GetLockToken(this HttpRequest request)
         {
             // Get the value of the lock-token header as a string
-            var lockTokenHeader = request.GetHeaderValue("Lock-Token");
+            var lockTokenHeader = request.Headers["Lock-Token"].FirstOrDefault();
             if (string.IsNullOrEmpty(lockTokenHeader))
                 return null;
 
@@ -216,10 +223,10 @@ namespace NWebDav.Server.Helpers
         /// <returns>
         /// If lock token URI (<see langword="null"/> if not set).
         /// </returns>
-        public static Uri GetIfLockToken(this IHttpRequest request)
+        public static Uri? GetIfLockToken(this HttpRequest request)
         {
             // Get the value of the lock-token header as a string
-            var lockTokenHeader = request.GetHeaderValue("If");
+            var lockTokenHeader = request.Headers["If"].FirstOrDefault();
             if (string.IsNullOrEmpty(lockTokenHeader))
                 return null;
 
@@ -238,10 +245,10 @@ namespace NWebDav.Server.Helpers
         /// <returns>
         /// Range value (start/end) with an option if condition.
         /// </returns>
-        public static Range GetRange(this IHttpRequest request)
+        public static Range? GetRange(this HttpRequest request)
         {
             // Get the value of the range header as a string
-            var rangeHeader = request.GetHeaderValue("Range");
+            var rangeHeader = request.Headers["Range"].FirstOrDefault();
             if (string.IsNullOrEmpty(rangeHeader))
                 return null;
 
@@ -255,12 +262,12 @@ namespace NWebDav.Server.Helpers
             var endText = match.Groups["end"].Value;
             var range = new Range
             {
-                Start = !string.IsNullOrEmpty(startText) ? (long?)long.Parse(startText) : null,
-                End = !string.IsNullOrEmpty(endText) ? (long?)long.Parse(endText ) : null
+                Start = !string.IsNullOrEmpty(startText) ? long.Parse(startText) : null,
+                End = !string.IsNullOrEmpty(endText) ? long.Parse(endText ) : null
             };
 
             // Check if we also have an If-Range
-            var ifRangeHeader = request.GetHeaderValue("If-Range");
+            var ifRangeHeader = request.Headers.IfRange.FirstOrDefault();
             if (ifRangeHeader != null)
             {
                 // Attempt to parse the date. If we don't understand the If-Range
@@ -275,85 +282,6 @@ namespace NWebDav.Server.Helpers
 
             // Return the range
             return range;
-        }
-
-        /// <summary>
-        /// Load an XML document from the HTTP request body.
-        /// </summary>
-        /// <param name="request">HTTP request.</param>
-        /// <returns>
-        /// XML document that represents the body content (or 
-        /// <see langword="null"/> if no body content is specified).
-        /// </returns>
-
-        // The async version of XDocument.LoadAsync has become available with .NET Standard 2.1
-        // and is required for modern Kestrel versions that require all reads to be done async.
-        // Older versions use a synchronous version and have the additional penalty of using
-        // async, but if performance is an ultimate goal, then don't use WebDAV and you should
-        // be upgrading to .NET Core anyway :-) The other option is to put the burden on all
-        // the callers of this method, which I prefer to avoid.
-#if !USE_ASYNC_READ
-#pragma warning disable 1998
-#endif
-        public static async Task<XDocument> LoadXmlDocumentAsync(this IHttpRequest request)
-#if !USE_ASYNC_READ
-#pragma warning restore 1998
-#endif
-        {
-            // If there is no input stream, then there is no XML document
-            if (request.Stream == null || request.Stream == Stream.Null)
-                return null;
-
-            // Return null if no content has been specified
-            var contentLengthString = request.GetHeaderValue("Content-Length");
-            if (contentLengthString != null)
-            {
-                if (!int.TryParse(contentLengthString, out var contentLength) || contentLength == 0)
-                    return null;
-            }
-
-            // Return null if no stream is available
-            if (request.Stream == null || request.Stream == Stream.Null)
-                return null;
-
-            // Obtain an XML document from the stream
-#if USE_ASYNC_READ
-            var xDocument = await XDocument.LoadAsync(request.Stream, LoadOptions.None, cancellationToken: default);
-#else
-            var xDocument = XDocument.Load(request.Stream);
-#endif
-#if DEBUG
-            // Dump the XML document to the logging
-            if (xDocument.Root != null && s_log.IsLogEnabled(NWebDav.Server.Logging.LogLevel.Debug))
-            {
-                // Format the XML document as an in-memory text representation
-                using (var ms = new MemoryStream())
-                {
-                    using (var xmlWriter = System.Xml.XmlWriter.Create(ms, new System.Xml.XmlWriterSettings
-                    {
-                        OmitXmlDeclaration = false,
-                        Indent = true,
-                        Encoding = System.Text.Encoding.UTF8,
-                    }))
-                    {
-                        // Write the XML document to the stream
-                        xDocument.WriteTo(xmlWriter);
-                    }
-
-                    // Flush
-                    ms.Flush();
-
-                    // Reset stream and write the stream to the result
-                    ms.Seek(0, SeekOrigin.Begin);
-
-                    // Log the XML text to the logging
-                    var reader = new StreamReader(ms);
-                    s_log.Log(NWebDav.Server.Logging.LogLevel.Debug, () => reader.ReadToEnd());
-                }
-            }
-#endif
-            // Return the XML document
-            return xDocument;
         }
     }
 }

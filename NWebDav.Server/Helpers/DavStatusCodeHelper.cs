@@ -18,7 +18,7 @@ namespace NWebDav.Server.Helpers
         /// <returns>
         /// Human-readable representation of the WebDAV status code.
         /// </returns>
-        public static string GetStatusDescription(this DavStatusCode davStatusCode)
+        public static string? GetStatusDescription(this DavStatusCode davStatusCode)
         {
             // Obtain the member information
             var memberInfo = typeof(DavStatusCode).GetMember(davStatusCode.ToString()).FirstOrDefault();

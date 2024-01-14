@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using NWebDav.Server.Helpers;
-using NWebDav.Server.Http;
-using NWebDav.Server.Logging;
 using NWebDav.Server.Props;
 using NWebDav.Server.Stores;
 
@@ -23,17 +23,11 @@ namespace NWebDav.Server.Handlers
     /// </remarks>
     public class PropFindHandler : IRequestHandler
     {
-        private struct PropertyEntry
-        {
-            public Uri Uri { get; }
-            public IStoreItem Entry { get; }
+        private readonly IXmlReaderWriter _xmlReaderWriter;
+        private readonly IStore _store;
+        private readonly ILogger<PropFindHandler> _logger;
 
-            public PropertyEntry(Uri uri, IStoreItem entry)
-            {
-                Uri = uri;
-                Entry = entry;
-            }
-        }
+        private readonly record struct PropertyEntry(Uri Uri, IStoreItem Entry);
 
         [Flags]
         private enum PropertyMode
@@ -44,7 +38,12 @@ namespace NWebDav.Server.Handlers
             SelectedProperties = 4
         }
 
-        private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(PropFindHandler));
+        public PropFindHandler(IXmlReaderWriter xmlReaderWriter, IStore store, ILogger<PropFindHandler> logger)
+        {
+            _xmlReaderWriter = xmlReaderWriter;
+            _store = store;
+            _logger = logger;
+        }
 
         /// <summary>
         /// Handle a PROPFIND request.
@@ -52,14 +51,11 @@ namespace NWebDav.Server.Handlers
         /// <param name="httpContext">
         /// The HTTP context of the request.
         /// </param>
-        /// <param name="store">
-        /// Store that is used to access the collections and items.
-        /// </param>
         /// <returns>
         /// A task that represents the asynchronous PROPFIND operation. The task
         /// will always return <see langword="true"/> upon completion.
         /// </returns>
-        public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)
+        public async Task<bool> HandleRequestAsync(HttpContext httpContext)
         {
             // Obtain request and response
             var request = httpContext.Request;
@@ -67,13 +63,13 @@ namespace NWebDav.Server.Handlers
 
             // Determine the list of properties that need to be obtained
             var propertyList = new List<XName>();
-            var propertyMode = await GetRequestedPropertiesAsync(request, propertyList).ConfigureAwait(false);
+            var propertyMode = await GetRequestedPropertiesAsync(request, propertyList, httpContext.RequestAborted).ConfigureAwait(false);
 
             // Generate the list of items from which we need to obtain the properties
             var entries = new List<PropertyEntry>();
 
             // Obtain entry
-            var topEntry = await store.GetItemAsync(request.Url, httpContext).ConfigureAwait(false);
+            var topEntry = await _store.GetItemAsync(request.GetUri(), httpContext.RequestAborted).ConfigureAwait(false);
             if (topEntry == null)
             {
                 response.SetStatus(DavStatusCode.NotFound);
@@ -104,12 +100,12 @@ namespace NWebDav.Server.Handlers
                 }
 
                 // Add all the entries
-                await AddEntriesAsync(topCollection, depth, httpContext, request.Url, entries).ConfigureAwait(false);
+                await AddEntriesAsync(topCollection, depth, request.GetUri(), entries, httpContext.RequestAborted).ConfigureAwait(false);
             }
             else
             {
                 // It should be an item, so just use this item
-                entries.Add(new PropertyEntry(request.Url, topEntry));
+                entries.Add(new PropertyEntry(request.GetUri(), topEntry));
             }
 
             // Obtain the status document
@@ -169,13 +165,13 @@ namespace NWebDav.Server.Handlers
             }
 
             // Stream the document
-            await response.SendResponseAsync(DavStatusCode.MultiStatus, xDocument).ConfigureAwait(false);
+            await _xmlReaderWriter.SendResponseAsync(response, DavStatusCode.MultiStatus, xDocument).ConfigureAwait(false);
 
             // Finished writing
             return true;
         }
 
-        private async Task AddPropertyAsync(IHttpContext httpContext, XElement xResponse, XElement xPropStatValues, IPropertyManager propertyManager, IStoreItem item, XName propertyName, IList<XName> addedProperties)
+        private async Task AddPropertyAsync(HttpContext httpContext, XElement xResponse, XElement xPropStatValues, IPropertyManager propertyManager, IStoreItem item, XName propertyName, List<XName> addedProperties)
         {
             if (!addedProperties.Contains(propertyName))
             {
@@ -186,8 +182,8 @@ namespace NWebDav.Server.Handlers
                     if (propertyManager.Properties.Any(p => p.Name == propertyName))
                     {
                         var value = await propertyManager.GetPropertyAsync(httpContext, item, propertyName).ConfigureAwait(false);
-                        if (value is IEnumerable<XElement>)
-                            value = ((IEnumerable<XElement>) value).Cast<object>().ToArray();
+                        if (value is IEnumerable<XElement> elements)
+                            value = elements.Cast<object>().ToArray();
 
                         // Make sure we use the same 'prop' tag to add all properties
                         var xProp = xPropStatValues.Element(WebDavNamespaces.DavNs + "prop");
@@ -201,29 +197,29 @@ namespace NWebDav.Server.Handlers
                     }
                     else
                     {
-                        s_log.Log(LogLevel.Warning, () => $"Property {propertyName} is not supported on item {item.Name}.");
+                        _logger.LogWarning($"Property {propertyName} is not supported on item {item.Name}.");
                         xResponse.Add(new XElement(WebDavNamespaces.DavNs + "propstat",
-                            new XElement(WebDavNamespaces.DavNs + "prop", new XElement(propertyName, null)),
+                            new XElement(WebDavNamespaces.DavNs + "prop", new XElement(propertyName)),
                             new XElement(WebDavNamespaces.DavNs + "status", "HTTP/1.1 404 Not Found"),
                             new XElement(WebDavNamespaces.DavNs + "responsedescription", $"Property {propertyName} is not supported.")));
                     }
                 }
                 catch (Exception exc)
                 {
-                    s_log.Log(LogLevel.Error, () => $"Property {propertyName} on item {item.Name} raised an exception.", exc);
+                    _logger.LogError(exc, $"Property {propertyName} on item {item.Name} raised an exception.");
                     xResponse.Add(new XElement(WebDavNamespaces.DavNs + "propstat",
-                        new XElement(WebDavNamespaces.DavNs + "prop", new XElement(propertyName, null)),
+                        new XElement(WebDavNamespaces.DavNs + "prop", new XElement(propertyName)),
                         new XElement(WebDavNamespaces.DavNs + "status", "HTTP/1.1 500 Internal server error"),
                         new XElement(WebDavNamespaces.DavNs + "responsedescription", $"Property {propertyName} on item {item.Name} raised an exception.")));
                 }
             }
         }
 
-        private static async Task<PropertyMode> GetRequestedPropertiesAsync(IHttpRequest request, ICollection<XName> properties)
+        private async Task<PropertyMode> GetRequestedPropertiesAsync(HttpRequest request, List<XName> properties, CancellationToken cancellationToken)
         {
             // Create an XML document from the stream
-            var xDocument = await request.LoadXmlDocumentAsync().ConfigureAwait(false);
-            if (xDocument == null || xDocument?.Root == null || xDocument.Root.Name != WebDavNamespaces.DavNs + "propfind")
+            var xDocument = await _xmlReaderWriter.LoadXmlDocumentAsync(request, cancellationToken).ConfigureAwait(false);
+            if (xDocument?.Root == null || xDocument.Root.Name != WebDavNamespaces.DavNs + "propfind")
                 return PropertyMode.AllProperties;
 
             // Obtain the propfind node
@@ -269,7 +265,7 @@ namespace NWebDav.Server.Handlers
             return propertyMode;
         }
 
-        private async Task AddEntriesAsync(IStoreCollection collection, int depth, IHttpContext httpContext, Uri uri, IList<PropertyEntry> entries)
+        private async Task AddEntriesAsync(IStoreCollection collection, int depth, Uri uri, IList<PropertyEntry> entries, CancellationToken cancellationToken)
         {
             // Add the collection to the list
             entries.Add(new PropertyEntry(uri, collection));
@@ -278,11 +274,11 @@ namespace NWebDav.Server.Handlers
             if (depth > 0)
             {
                 // Add all child collections
-                foreach (var childEntry in await collection.GetItemsAsync(httpContext).ConfigureAwait(false))
+                foreach (var childEntry in await collection.GetItemsAsync(cancellationToken).ConfigureAwait(false))
                 {
                     var subUri = UriHelper.Combine(uri, childEntry.Name);
                     if (childEntry is IStoreCollection subCollection)
-                        await AddEntriesAsync(subCollection, depth - 1, httpContext, subUri, entries).ConfigureAwait(false);
+                        await AddEntriesAsync(subCollection, depth - 1, subUri, entries, cancellationToken).ConfigureAwait(false);
                     else
                         entries.Add(new PropertyEntry(subUri, childEntry));
                 }

@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Http;
 using NWebDav.Server.Helpers;
-using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Handlers
@@ -22,28 +22,17 @@ namespace NWebDav.Server.Handlers
     {
         private class PropSetCollection : List<PropSetCollection.PropSet>
         {
-            public class PropSet
+            private readonly List<PropSet> _propertySetters = new();
+
+            public record PropSet(XName Name, object Value)
             {
-                public XName Name { get; }
-                public object Value { get; }
                 public DavStatusCode Result { get; set; }
 
-                public PropSet(XName name, object value)
-                {
-                    Name = name;
-                    Value = value;
-                }
-
-                public XElement GetXmlResponse()
-                {
-                    var statusText = $"HTTP/1.1 {(int)Result} {Result.GetStatusDescription()}";
-                    return new XElement(WebDavNamespaces.DavNs + "propstat",
+                public XElement GetXmlResponse() =>
+                    new XElement(WebDavNamespaces.DavNs + "propstat",
                         new XElement(WebDavNamespaces.DavNs + "prop", new XElement(Name)),
-                        new XElement(WebDavNamespaces.DavNs + "status", statusText));
-                }
+                        new XElement(WebDavNamespaces.DavNs + "status", $"HTTP/1.1 {(int)Result} {Result.GetStatusDescription()}"));
             }
-
-            private readonly IList<PropSet> _propertySetters = new List<PropSet>();
 
             public PropSetCollection(XElement xPropertyUpdate)
             {
@@ -70,7 +59,7 @@ namespace NWebDav.Server.Handlers
                             if (xElement.Name == WebDavNamespaces.DavNs + "set")
                             {
                                 // If the descendant is XML, then use the XElement, otherwise use the string
-                                newValue = xActualProperty.HasElements ? (object)xActualProperty.Elements().FirstOrDefault() : xActualProperty.Value;
+                                newValue = xActualProperty.HasElements ? xActualProperty.Elements().FirstOrDefault() : xActualProperty.Value;
                             }
                             else
                             {
@@ -94,27 +83,33 @@ namespace NWebDav.Server.Handlers
             }
         }
 
+        private readonly IXmlReaderWriter _xmlReaderWriter;
+        private readonly IStore _store;
+
+        public PropPatchHandler(IXmlReaderWriter xmlReaderWriter, IStore store)
+        {
+            _xmlReaderWriter = xmlReaderWriter;
+            _store = store;
+        }
+
         /// <summary>
         /// Handle a PROPPATCH request.
         /// </summary>
         /// <param name="httpContext">
         /// The HTTP context of the request.
         /// </param>
-        /// <param name="store">
-        /// Store that is used to access the collections and items.
-        /// </param>
         /// <returns>
         /// A task that represents the asynchronous PROPPATCH operation. The task
         /// will always return <see langword="true"/> upon completion.
         /// </returns>
-        public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)
+        public async Task<bool> HandleRequestAsync(HttpContext httpContext)
         {
             // Obtain request and response
             var request = httpContext.Request;
             var response = httpContext.Response;
 
             // Obtain item
-            var item = await store.GetItemAsync(request.Url, httpContext).ConfigureAwait(false);
+            var item = await _store.GetItemAsync(request.GetUri(), httpContext.RequestAborted).ConfigureAwait(false);
             if (item == null)
             {
                 response.SetStatus(DavStatusCode.NotFound);
@@ -126,7 +121,7 @@ namespace NWebDav.Server.Handlers
             try
             {
                 // Create an XML document from the stream
-                var xDoc = await request.LoadXmlDocumentAsync().ConfigureAwait(false);
+                var xDoc = await _xmlReaderWriter.LoadXmlDocumentAsync(request, httpContext.RequestAborted).ConfigureAwait(false);
 
                 // Create an XML document from the stream
                 propSetCollection = new PropSetCollection(xDoc.Root);
@@ -155,10 +150,10 @@ namespace NWebDav.Server.Handlers
             }
 
             // Obtain the status document
-            var xDocument = new XDocument(propSetCollection.GetXmlMultiStatus(request.Url));
+            var xDocument = new XDocument(propSetCollection.GetXmlMultiStatus(request.GetUri()));
 
             // Stream the document
-            await response.SendResponseAsync(DavStatusCode.MultiStatus, xDocument).ConfigureAwait(false);
+            await _xmlReaderWriter.SendResponseAsync(response, DavStatusCode.MultiStatus, xDocument).ConfigureAwait(false);
             return true;
         }
     }

@@ -3,9 +3,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-
+using Microsoft.AspNetCore.Http;
 using NWebDav.Server.Helpers;
-using NWebDav.Server.Http;
 using NWebDav.Server.Locking;
 using NWebDav.Server.Stores;
 
@@ -22,20 +21,26 @@ namespace NWebDav.Server.Handlers
     /// </remarks>
     public class LockHandler : IRequestHandler
     {
+        private readonly IXmlReaderWriter _xmlReaderWriter;
+        private readonly IStore _store;
+
+        public LockHandler(IXmlReaderWriter xmlReaderWriter, IStore store)
+        {
+            _xmlReaderWriter = xmlReaderWriter;
+            _store = store;
+        }
+        
         /// <summary>
         /// Handle a LOCK request.
         /// </summary>
         /// <param name="httpContext">
         /// The HTTP context of the request.
         /// </param>
-        /// <param name="store">
-        /// Store that is used to access the collections and items.
-        /// </param>
         /// <returns>
         /// A task that represents the asynchronous LOCK operation. The task
         /// will always return <see langword="true"/> upon completion.
         /// </returns>
-        public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)
+        public async Task<bool> HandleRequestAsync(HttpContext httpContext)
         {
             // Obtain request and response
             var request = httpContext.Request;
@@ -46,7 +51,7 @@ namespace NWebDav.Server.Handlers
             var timeouts = request.GetTimeouts();
 
             // Obtain the WebDAV item
-            var item = await store.GetItemAsync(request.Url, httpContext).ConfigureAwait(false);
+            var item = await _store.GetItemAsync(request.GetUri(), httpContext.RequestAborted).ConfigureAwait(false);
             if (item == null)
             {
                 // Set status to not found
@@ -83,7 +88,7 @@ namespace NWebDav.Server.Handlers
                 try
                 {
                     // Create an XML document from the stream
-                    var xDoc = await request.LoadXmlDocumentAsync().ConfigureAwait(false);
+                    var xDoc = await _xmlReaderWriter.LoadXmlDocumentAsync(request, httpContext.RequestAborted).ConfigureAwait(false);
                     if (xDoc == null)
                         throw new Exception("Request-content couldn't be read");
 
@@ -125,7 +130,7 @@ namespace NWebDav.Server.Handlers
                 }
 
                 // Perform the lock
-                lockResult = lockingManager.Lock(item, lockType, lockScope, owner, request.Url, depth > 0, timeouts);
+                lockResult = lockingManager.Lock(item, lockType, lockScope, owner, request.GetUri(), depth > 0, timeouts);
             }
 
             // Check if result is fine
@@ -148,10 +153,10 @@ namespace NWebDav.Server.Handlers
             // Add the Lock-Token in the response
             // (only when creating a new lock)
             if (refreshLockToken == null)
-                response.SetHeaderValue("Lock-Token", $"<{lockResult.Lock.Value.LockToken.AbsoluteUri}>");
+                response.Headers["Lock-Token"] = $"<{lockResult.Lock.Value.LockToken.AbsoluteUri}>";
 
             // Stream the document
-            await response.SendResponseAsync(DavStatusCode.Ok, xDocument).ConfigureAwait(false);
+            await _xmlReaderWriter.SendResponseAsync(response, DavStatusCode.Ok, xDocument).ConfigureAwait(false);
             return true;
         }
     }

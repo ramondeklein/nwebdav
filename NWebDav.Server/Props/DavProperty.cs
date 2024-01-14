@@ -2,8 +2,7 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-
-using NWebDav.Server.Http;
+using Microsoft.AspNetCore.Http;
 using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Props
@@ -33,19 +32,19 @@ namespace NWebDav.Server.Props
         /// </summary>
         /// <returns>Delegate to obtain the property value.</returns>
         /// <remarks>
-        /// An <see cref="IHttpContext"/> object is passed to the getter
+        /// An <see cref="HttpContext"/> object is passed to the getter
         /// delegate that contains the HTTP context. It is typically used
         /// to deal with compatibility of certain WebDAV clients (can be
         /// determined using the user agent).
         /// </remarks>
-        public Func<IHttpContext, TEntry, Task<object>> GetterAsync { get; set; }
+        public Func<HttpContext, TEntry, Task<object?>>? GetterAsync { get; set; }
 
         /// <summary>
         /// Gets or sets the delegate that is responsible to set the property
         /// value of a store item/collection.
         /// </summary>
         /// <returns>Delegate to set the property value.</returns>
-        public Func<IHttpContext, TEntry, object, Task<DavStatusCode>> SetterAsync { get; set; }
+        public Func<HttpContext, TEntry, object, Task<DavStatusCode>>? SetterAsync { get; set; }
 
         /// <summary>
         /// Gets or sets the flag whether or not the property is expensive.
@@ -69,6 +68,6 @@ namespace NWebDav.Server.Props
         /// when requesting all the properties of an item.
         /// </para>
         /// </remarks>
-        public bool IsExpensive { get; set; }
+        public bool IsExpensive { get; init; }
     }
 }

@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using NWebDav.Server.Helpers;
-using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
+using UriHelper = NWebDav.Server.Helpers.UriHelper;
 
 namespace NWebDav.Server.Handlers
 {
@@ -19,20 +21,26 @@ namespace NWebDav.Server.Handlers
     /// </remarks>
     public class CopyHandler : IRequestHandler
     {
+        private readonly IXmlReaderWriter _xmlReaderWriter;
+        private readonly IStore _store;
+
+        public CopyHandler(IXmlReaderWriter xmlReaderWriter, IStore store)
+        {
+            _xmlReaderWriter = xmlReaderWriter;
+            _store = store;
+        }
+        
         /// <summary>
         /// Handle a COPY request.
         /// </summary>
         /// <param name="httpContext">
         /// The HTTP context of the request.
         /// </param>
-        /// <param name="store">
-        /// Store that is used to access the collections and items.
-        /// </param>
         /// <returns>
         /// A task that represents the asynchronous COPY operation. The task
         /// will always return <see langword="true"/> upon completion.
         /// </returns>
-        public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)
+        public async Task<bool> HandleRequestAsync(HttpContext httpContext)
         {
             // Obtain request and response
             var request = httpContext.Request;
@@ -48,7 +56,7 @@ namespace NWebDav.Server.Handlers
             }
 
             // Make sure the source and destination are different
-            if (request.Url.AbsoluteUri.Equals(destinationUri.AbsoluteUri, StringComparison.CurrentCultureIgnoreCase))
+            if (request.GetEncodedUrl().Equals(destinationUri.AbsoluteUri, StringComparison.CurrentCultureIgnoreCase))
             {
                 // Forbidden
                 response.SetStatus(DavStatusCode.Forbidden, "Source and destination cannot be the same.");
@@ -62,7 +70,7 @@ namespace NWebDav.Server.Handlers
             var destination = RequestHelper.SplitUri(destinationUri);
 
             // Obtain the destination collection
-            var destinationCollection = await store.GetCollectionAsync(destination.CollectionUri, httpContext).ConfigureAwait(false);
+            var destinationCollection = await _store.GetCollectionAsync(destination.CollectionUri, httpContext.RequestAborted).ConfigureAwait(false);
             if (destinationCollection == null)
             {
                 // Source not found
@@ -71,7 +79,7 @@ namespace NWebDav.Server.Handlers
             }
 
             // Obtain the source item
-            var sourceItem = await store.GetItemAsync(request.Url, httpContext).ConfigureAwait(false);
+            var sourceItem = await _store.GetItemAsync(request.GetUri(), httpContext.RequestAborted).ConfigureAwait(false);
             if (sourceItem == null)
             {
                 // Source not found
@@ -86,7 +94,7 @@ namespace NWebDav.Server.Handlers
             var errors = new UriResultCollection();
 
             // Copy collection
-            await CopyAsync(sourceItem, destinationCollection, destination.Name, overwrite, depth, httpContext, destination.CollectionUri, errors).ConfigureAwait(false);
+            await CopyAsync(sourceItem, destinationCollection, destination.Name, overwrite, depth, destination.CollectionUri, errors, httpContext.RequestAborted).ConfigureAwait(false);
 
             // Check if there are any errors
             if (errors.HasItems)
@@ -95,7 +103,7 @@ namespace NWebDav.Server.Handlers
                 var xDocument = new XDocument(errors.GetXmlMultiStatus());
 
                 // Stream the document
-                await response.SendResponseAsync(DavStatusCode.MultiStatus, xDocument).ConfigureAwait(false);
+                await _xmlReaderWriter.SendResponseAsync(response, DavStatusCode.MultiStatus, xDocument).ConfigureAwait(false);
             }
             else
             {
@@ -106,13 +114,13 @@ namespace NWebDav.Server.Handlers
             return true;
         }
 
-        private async Task CopyAsync(IStoreItem source, IStoreCollection destinationCollection, string name, bool overwrite, int depth, IHttpContext httpContext, Uri baseUri, UriResultCollection errors)
+        private async Task CopyAsync(IStoreItem source, IStoreCollection destinationCollection, string name, bool overwrite, int depth, Uri baseUri, UriResultCollection errors, CancellationToken cancellationToken)
         {
             // Determine the new base Uri
             var newBaseUri = UriHelper.Combine(baseUri, name);
 
             // Copy the item
-            var copyResult = await source.CopyAsync(destinationCollection, name, overwrite, httpContext).ConfigureAwait(false);
+            var copyResult = await source.CopyAsync(destinationCollection, name, overwrite, cancellationToken).ConfigureAwait(false);
             if (copyResult.Result != DavStatusCode.Created && copyResult.Result != DavStatusCode.NoContent)
             {
                 errors.AddResult(newBaseUri, copyResult.Result);
@@ -120,15 +128,14 @@ namespace NWebDav.Server.Handlers
             }
 
             // Check if the source is a collection and we are requested to copy recursively
-            var sourceCollection = source as IStoreCollection;
-            if (sourceCollection != null && depth > 0)
+            if (source is IStoreCollection sourceCollection && depth > 0)
             {
                 // The result should also contain a collection
                 var newCollection = (IStoreCollection)copyResult.Item;
 
-                // Copy all childs of the source collection
-                foreach (var entry in await sourceCollection.GetItemsAsync(httpContext).ConfigureAwait(false))
-                    await CopyAsync(entry, newCollection, entry.Name, overwrite, depth - 1, httpContext, newBaseUri, errors).ConfigureAwait(false);
+                // Copy all children of the source collection
+                foreach (var entry in await sourceCollection.GetItemsAsync(cancellationToken).ConfigureAwait(false))
+                    await CopyAsync(entry, newCollection, entry.Name, overwrite, depth - 1, newBaseUri, errors, cancellationToken).ConfigureAwait(false);
             }
         }
     }

@@ -9,34 +9,19 @@ namespace NWebDav.Server.Handlers
 {
     internal class UriResultCollection
     {
-        private struct UriResult
+        private readonly record struct UriResult(Uri Uri, DavStatusCode Result)
         {
-            private Uri Uri { get; }
-            private DavStatusCode Result { get; }
-
-            public UriResult(Uri uri, DavStatusCode result)
-            {
-                Uri = uri;
-                Result = result;
-            }
-
-            public XElement GetXmlResponse()
-            {
-                var statusText = $"HTTP/1.1 {(int)Result} {DavStatusCodeHelper.GetStatusDescription(Result)}";
-                return new XElement(WebDavNamespaces.DavNs + "response",
+            public XElement GetXmlResponse() =>
+                new XElement(WebDavNamespaces.DavNs + "response",
                     new XElement(WebDavNamespaces.DavNs + "href", UriHelper.ToEncodedString(Uri)),
-                    new XElement(WebDavNamespaces.DavNs + "status", statusText));
-            }
+                    new XElement(WebDavNamespaces.DavNs + "status", $"HTTP/1.1 {(int)Result} {DavStatusCodeHelper.GetStatusDescription(Result)}"));
         }
 
         private readonly IList<UriResult> _results = new List<UriResult>();
 
         public bool HasItems => _results.Any();
 
-        public void AddResult(Uri uri, DavStatusCode result)
-        {
-            _results.Add(new UriResult(uri, result));
-        }
+        public void AddResult(Uri uri, DavStatusCode result) => _results.Add(new UriResult(uri, result));
 
         public XElement GetXmlMultiStatus()
         {

@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-
-using NWebDav.Server.Http;
+using Microsoft.AspNetCore.Http;
 using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Props
@@ -16,10 +15,10 @@ namespace NWebDav.Server.Props
         private readonly IDictionary<XName, DavProperty<TEntry>> _properties;
         private readonly IPropertyManager _basePropertyManager;
 
-        public OverridePropertyManager(IEnumerable<DavProperty<TEntry>> properties, IPropertyManager basePropertyManager, Func<TEntry, IStoreItem> converter = null)
+        public OverridePropertyManager(IEnumerable<DavProperty<TEntry>> properties, IPropertyManager basePropertyManager, Func<TEntry, IStoreItem>? converter = null)
         {
             // Convert the properties to a dictionary for fast retrieval
-            _properties = properties?.ToDictionary(p => p.Name) ?? throw new ArgumentNullException(nameof(properties));
+            _properties = properties.ToDictionary(p => p.Name) ?? throw new ArgumentNullException(nameof(properties));
             _basePropertyManager = basePropertyManager ?? throw new ArgumentNullException(nameof(basePropertyManager));
             _converter = converter ?? (si => si);
 
@@ -29,7 +28,7 @@ namespace NWebDav.Server.Props
 
         public IList<PropertyInfo> Properties { get; }
 
-        public Task<object> GetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName propertyName, bool skipExpensive = false)
+        public Task<object?> GetPropertyAsync(HttpContext httpContext, IStoreItem item, XName propertyName, bool skipExpensive = false)
         {
             // Find the property
             if (!_properties.TryGetValue(propertyName, out var property))
@@ -41,13 +40,13 @@ namespace NWebDav.Server.Props
 
             // Skip expensive properties
             if (skipExpensive && property.IsExpensive)
-                return Task.FromResult((object)null);
+                return Task.FromResult((object?)null);
 
             // Obtain the value
             return property.GetterAsync(httpContext, (TEntry)item);
         }
 
-        public Task<DavStatusCode> SetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName propertyName, object value)
+        public Task<DavStatusCode> SetPropertyAsync(HttpContext httpContext, IStoreItem item, XName propertyName, object value)
         {
             // Find the property
             if (!_properties.TryGetValue(propertyName, out var property))

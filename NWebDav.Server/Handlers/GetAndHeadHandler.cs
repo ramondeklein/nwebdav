@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
-
+using Microsoft.AspNetCore.Http;
 using NWebDav.Server.Helpers;
-using NWebDav.Server.Http;
 using NWebDav.Server.Props;
 using NWebDav.Server.Stores;
 
@@ -22,33 +22,37 @@ namespace NWebDav.Server.Handlers
     /// </remarks>
     public class GetAndHeadHandler : IRequestHandler
     {
+        private readonly IStore _store;
+
+        public GetAndHeadHandler(IStore store)
+        {
+            _store = store;
+        }
+        
         /// <summary>
         /// Handle a GET or HEAD request.
         /// </summary>
         /// <param name="httpContext">
         /// The HTTP context of the request.
         /// </param>
-        /// <param name="store">
-        /// Store that is used to access the collections and items.
-        /// </param>
         /// <returns>
         /// A task that represents the asynchronous GET or HEAD operation. The
         /// task will always return <see langword="true"/> upon completion.
         /// </returns>
-        public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)
+        public async Task<bool> HandleRequestAsync(HttpContext httpContext)
         {
             // Obtain request and response
             var request = httpContext.Request;
             var response = httpContext.Response;
 
             // Determine if we are invoked as HEAD
-            var head = request.HttpMethod == "HEAD";
+            var isHeadRequest = request.Method == HttpMethods.Head;
 
             // Determine the requested range
             var range = request.GetRange();
 
             // Obtain the WebDAV collection
-            var entry = await store.GetItemAsync(request.Url, httpContext).ConfigureAwait(false);
+            var entry = await _store.GetItemAsync(request.GetUri(), httpContext.RequestAborted).ConfigureAwait(false);
             if (entry == null)
             {
                 // Set status to not found
@@ -57,37 +61,37 @@ namespace NWebDav.Server.Handlers
             }
 
             // ETag might be used for a conditional request
-            string etag = null;
+            string? etag = null;
 
             // Add non-expensive headers based on properties
             var propertyManager = entry.PropertyManager;
             if (propertyManager != null)
             {
                 // Add Last-Modified header
-                var lastModifiedUtc = (string)(await propertyManager.GetPropertyAsync(httpContext, entry, DavGetLastModified<IStoreItem>.PropertyName, true).ConfigureAwait(false));
+                var lastModifiedUtc = (string?)await propertyManager.GetPropertyAsync(httpContext, entry, DavGetLastModified<IStoreItem>.PropertyName, true).ConfigureAwait(false);
                 if (lastModifiedUtc != null)
-                    response.SetHeaderValue("Last-Modified", lastModifiedUtc);
+                    response.Headers.LastModified = lastModifiedUtc;
 
                 // Add ETag
-                etag = (string)(await propertyManager.GetPropertyAsync(httpContext, entry, DavGetEtag<IStoreItem>.PropertyName, true).ConfigureAwait(false));
+                etag = (string?)await propertyManager.GetPropertyAsync(httpContext, entry, DavGetEtag<IStoreItem>.PropertyName, true).ConfigureAwait(false);
                 if (etag != null)
-                    response.SetHeaderValue("Etag", etag);
+                    response.Headers.ETag = etag;
 
                 // Add type
-                var contentType = (string)(await propertyManager.GetPropertyAsync(httpContext, entry, DavGetContentType<IStoreItem>.PropertyName, true).ConfigureAwait(false));
+                var contentType = (string?)await propertyManager.GetPropertyAsync(httpContext, entry, DavGetContentType<IStoreItem>.PropertyName, true).ConfigureAwait(false);
                 if (contentType != null)
-                    response.SetHeaderValue("Content-Type", contentType);
+                    response.ContentType = contentType;
 
                 // Add language
-                var contentLanguage = (string)(await propertyManager.GetPropertyAsync(httpContext, entry, DavGetContentLanguage<IStoreItem>.PropertyName, true).ConfigureAwait(false));
+                var contentLanguage = (string?)await propertyManager.GetPropertyAsync(httpContext, entry, DavGetContentLanguage<IStoreItem>.PropertyName, true).ConfigureAwait(false);
                 if (contentLanguage != null)
-                    response.SetHeaderValue("Content-Language", contentLanguage);
+                    response.Headers.ContentLanguage = contentLanguage;
             }
 
             // Stream the actual entry
-            using (var stream = await entry.GetReadableStreamAsync(httpContext).ConfigureAwait(false))
+            await using (var stream = await entry.GetReadableStreamAsync(httpContext.RequestAborted).ConfigureAwait(false))
             {
-                if (stream != null && stream != Stream.Null)
+                if (stream != Stream.Null)
                 {
                     // Set the response
                     response.SetStatus(DavStatusCode.Ok);
@@ -100,7 +104,7 @@ namespace NWebDav.Server.Handlers
                         if (stream.CanSeek)
                         {
                             // Add a header that we accept ranges (bytes only)
-                            response.SetHeaderValue("Accept-Ranges", "bytes");
+                            response.Headers.AcceptRanges = "bytes";
 
                             // Determine the total length
                             var length = stream.Length;
@@ -108,7 +112,7 @@ namespace NWebDav.Server.Handlers
                             // Check if an 'If-Range' was specified
                             if (range?.If != null && propertyManager != null)
                             {
-                                var lastModifiedText = (string)await propertyManager.GetPropertyAsync(httpContext, entry, DavGetLastModified<IStoreItem>.PropertyName, true).ConfigureAwait(false);
+                                var lastModifiedText = (string?)await propertyManager.GetPropertyAsync(httpContext, entry, DavGetLastModified<IStoreItem>.PropertyName, true).ConfigureAwait(false);
                                 var lastModified = DateTime.Parse(lastModifiedText, CultureInfo.InvariantCulture);
                                 if (lastModified != range.If)
                                     range = null;
@@ -122,7 +126,7 @@ namespace NWebDav.Server.Handlers
                                 length = end - start + 1;
 
                                 // Write the range
-                                response.SetHeaderValue("Content-Range", $"bytes {start}-{end} / {stream.Length}");
+                                response.Headers.ContentRange = $"bytes {start}-{end} / {stream.Length}";
 
                                 // Set status to partial result if not all data can be sent
                                 if (length < stream.Length)
@@ -130,7 +134,7 @@ namespace NWebDav.Server.Handlers
                             }
 
                             // Set the header, so the client knows how much data is required
-                            response.SetHeaderValue("Content-Length", $"{length}");
+                            response.ContentLength = length;
                         }
                     }
                     catch (NotSupportedException)
@@ -139,16 +143,16 @@ namespace NWebDav.Server.Handlers
                     }
 
                     // Do not return the actual item data if ETag matches
-                    if (etag != null && request.GetHeaderValue("If-None-Match") == etag)
+                    if (etag != null && request.Headers.IfNoneMatch == etag)
                     {
-                        response.SetHeaderValue("Content-Length", "0");
+                        response.ContentLength = 0;
                         response.SetStatus(DavStatusCode.NotModified);
                         return true;
                     }
 
                     // HEAD method doesn't require the actual item data
-                    if (!head)
-                        await CopyToAsync(stream, response.Stream, range?.Start ?? 0, range?.End).ConfigureAwait(false);
+                    if (!isHeadRequest)
+                        await CopyToAsync(stream, response.Body, range?.Start ?? 0, range?.End, httpContext.RequestAborted).ConfigureAwait(false);
                 }
                 else
                 {
@@ -159,7 +163,7 @@ namespace NWebDav.Server.Handlers
             return true;
         }
 
-        private async Task CopyToAsync(Stream src, Stream dest, long start, long? end)
+        private async Task CopyToAsync(Stream src, Stream dest, long start, long? end, CancellationToken cancellationToken)
         {
             // Skip to the first offset
             if (start > 0)
@@ -182,14 +186,14 @@ namespace NWebDav.Server.Handlers
             {
                 // Read the requested bytes into memory
                 var requestedBytes = (int)Math.Min(bytesToRead, buffer.Length);
-                var bytesRead = await src.ReadAsync(buffer, 0, requestedBytes).ConfigureAwait(false);
+                var bytesRead = await src.ReadAsync(buffer, 0, requestedBytes, cancellationToken).ConfigureAwait(false);
 
                 // We're done, if we cannot read any data anymore
                 if (bytesRead == 0)
                     return;
                 
                 // Write the data to the destination stream
-                await dest.WriteAsync(buffer, 0, bytesRead).ConfigureAwait(false);
+                await dest.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
 
                 // Decrement the number of bytes left to read
                 bytesToRead -= bytesRead;

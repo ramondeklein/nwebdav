@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
-
+using Microsoft.AspNetCore.Http;
 using NWebDav.Server.Helpers;
-using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Handlers
@@ -17,30 +16,34 @@ namespace NWebDav.Server.Handlers
     /// </remarks>
     public class MkcolHandler : IRequestHandler
     {
+        private readonly IStore _store;
+
+        public MkcolHandler(IStore store)
+        {
+            _store = store;
+        }
+        
         /// <summary>
         /// Handle a MKCOL request.
         /// </summary>
         /// <param name="httpContext">
         /// The HTTP context of the request.
         /// </param>
-        /// <param name="store">
-        /// Store that is used to access the collections and items.
-        /// </param>
         /// <returns>
         /// A task that represents the asynchronous MKCOL operation. The task
         /// will always return <see langword="true"/> upon completion.
         /// </returns>
-        public async Task<bool> HandleRequestAsync(IHttpContext httpContext, IStore store)
+        public async Task<bool> HandleRequestAsync(HttpContext httpContext)
         {
             // Obtain request and response
             var request = httpContext.Request;
             var response = httpContext.Response;
 
             // The collection must always be created inside another collection
-            var splitUri = RequestHelper.SplitUri(request.Url);
+            var splitUri = RequestHelper.SplitUri(request.GetUri());
 
             // Obtain the parent entry
-            var collection = await store.GetCollectionAsync(splitUri.CollectionUri, httpContext).ConfigureAwait(false);
+            var collection = await _store.GetCollectionAsync(splitUri.CollectionUri, httpContext.RequestAborted).ConfigureAwait(false);
             if (collection == null)
             {
                 // Source not found
@@ -49,7 +52,7 @@ namespace NWebDav.Server.Handlers
             }
 
             // Create the collection
-            var result = await collection.CreateCollectionAsync(splitUri.Name, false, httpContext).ConfigureAwait(false);
+            var result = await collection.CreateCollectionAsync(splitUri.Name, false, httpContext.RequestAborted).ConfigureAwait(false);
 
             // Finished
             response.SetStatus(result.Result);

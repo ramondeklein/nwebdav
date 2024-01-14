@@ -40,7 +40,7 @@ namespace NWebDav.Server.Locking
 
             public void RefreshExpiration(int timeout)
             {
-                Expires = timeout >= 0 ? (DateTime?)DateTime.UtcNow.AddSeconds(timeout) : null;
+                Expires = timeout >= 0 ? DateTime.UtcNow.AddSeconds(timeout) : null;
             }
         }
 
@@ -58,8 +58,8 @@ namespace NWebDav.Server.Locking
 
         private static readonly LockEntry[] s_supportedLocks =
         {
-            new LockEntry(LockScope.Exclusive, LockType.Write),
-            new LockEntry(LockScope.Shared, LockType.Write)
+            new(LockScope.Exclusive, LockType.Write),
+            new(LockScope.Shared, LockType.Write)
         };
 
         public LockResult Lock(IStoreItem item, LockType lockType, LockScope lockScope, XElement owner, Uri lockRootUri, bool recursive, IEnumerable<int> timeouts)

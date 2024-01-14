@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-
-using NWebDav.Server.Http;
+using Microsoft.AspNetCore.Http;
 using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Props
@@ -71,19 +70,19 @@ namespace NWebDav.Server.Props
         /// <paramref name="skipExpensive"/> is set to <see langword="true"/>
         /// and the parameter is expensive to compute.
         /// </returns>
-        public Task<object> GetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName propertyName, bool skipExpensive = false)
+        public Task<object?> GetPropertyAsync(HttpContext httpContext, IStoreItem item, XName propertyName, bool skipExpensive = false)
         {
             // Find the property
             if (!_properties.TryGetValue(propertyName, out var property))
-                return Task.FromResult((object)null);
+                return Task.FromResult((object?)null);
 
             // Check if the property has a getter
             if (property.GetterAsync == null)
-                return Task.FromResult((object)null);
+                return Task.FromResult((object?)null);
 
             // Skip expensive properties
             if (skipExpensive && property.IsExpensive)
-                return Task.FromResult((object)null);
+                return Task.FromResult((object?)null);
 
             // Obtain the value
             return property.GetterAsync(httpContext, (TEntry)item);
@@ -108,7 +107,7 @@ namespace NWebDav.Server.Props
         /// A task that represents the set property operation. The task will
         /// return the WebDAV status code of the set operation upon completion.
         /// </returns>
-        public Task<DavStatusCode> SetPropertyAsync(IHttpContext httpContext, IStoreItem item, XName propertyName, object value)
+        public Task<DavStatusCode> SetPropertyAsync(HttpContext httpContext, IStoreItem item, XName propertyName, object value)
         {
             // Find the property
             if (!_properties.TryGetValue(propertyName, out var property))

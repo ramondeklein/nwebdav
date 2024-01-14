@@ -6,17 +6,7 @@ using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Locking
 {
-    public struct LockResult
-    {
-        public DavStatusCode Result { get; }
-        public ActiveLock? Lock { get; }
-
-        public LockResult(DavStatusCode result, ActiveLock? @lock = null)
-        {
-            Result = result;
-            Lock = @lock;
-        }
-    }
+    public readonly record struct LockResult(DavStatusCode Result, ActiveLock? Lock = null);
 
     // TODO: Call the locking methods from the handlers
     public interface ILockingManager
