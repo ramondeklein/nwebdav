@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using NWebDav.Server.Locking;
 using NWebDav.Server.Props;
@@ -16,17 +17,17 @@ namespace NWebDav.Server.Stores
     {
         private static readonly XElement s_xDavCollection = new(WebDavNamespaces.DavNs + "collection");
         
-        public DiskStoreCollectionPropertyManager(ILockingManager lockingManager) : base(GetProperties(lockingManager))
+        public DiskStoreCollectionPropertyManager(IHttpContextAccessor httpContextAccessor, ILockingManager lockingManager) : base(GetProperties(httpContextAccessor, lockingManager))
         {
         }
 
-        private static DavProperty<DiskStoreCollection>[] GetProperties(ILockingManager lockingManager) => new DavProperty<DiskStoreCollection>[]
+        private static DavProperty<DiskStoreCollection>[] GetProperties(IHttpContextAccessor httpContextAccessor, ILockingManager lockingManager) => new DavProperty<DiskStoreCollection>[]
         {
             // RFC-2518 properties
-            new DavCreationDate<DiskStoreCollection>
+            new DavCreationDate<DiskStoreCollection>(httpContextAccessor)
             {
-                Getter = (_, collection) => collection.DirectoryInfo.CreationTimeUtc,
-                Setter = (_, collection, value) =>
+                Getter = collection => collection.DirectoryInfo.CreationTimeUtc,
+                Setter = (collection, value) =>
                 {
                     collection.DirectoryInfo.CreationTimeUtc = value;
                     return DavStatusCode.Ok;
@@ -34,12 +35,12 @@ namespace NWebDav.Server.Stores
             },
             new DavDisplayName<DiskStoreCollection>
             {
-                Getter = (_, collection) => collection.DirectoryInfo.Name
+                Getter = collection => collection.DirectoryInfo.Name
             },
             new DavGetLastModified<DiskStoreCollection>
             {
-                Getter = (_, collection) => collection.DirectoryInfo.LastWriteTimeUtc,
-                Setter = (_, collection, value) =>
+                Getter = collection => collection.DirectoryInfo.LastWriteTimeUtc,
+                Setter = (collection, value) =>
                 {
                     collection.DirectoryInfo.LastWriteTimeUtc = value;
                     return DavStatusCode.Ok;
@@ -47,7 +48,7 @@ namespace NWebDav.Server.Stores
             },
             new DavGetResourceType<DiskStoreCollection>
             {
-                Getter = (_, _) => new[] { s_xDavCollection }
+                Getter = _ => new[] { s_xDavCollection }
             },
 
             // Default locking property handling via the LockingManager
@@ -57,39 +58,39 @@ namespace NWebDav.Server.Stores
             // Hopmann/Lippert collection properties
             new DavExtCollectionChildCount<DiskStoreCollection>
             {
-                Getter = (_, collection) => collection.DirectoryInfo.EnumerateFiles().Count() + collection.DirectoryInfo.EnumerateDirectories().Count()
+                Getter = collection => collection.DirectoryInfo.EnumerateFiles().Count() + collection.DirectoryInfo.EnumerateDirectories().Count()
             },
             new DavExtCollectionIsFolder<DiskStoreCollection>
             {
-                Getter = (_, _) => true
+                Getter = _ => true
             },
             new DavExtCollectionIsHidden<DiskStoreCollection>
             {
-                Getter = (_, collection) => (collection.DirectoryInfo.Attributes & FileAttributes.Hidden) != 0
+                Getter = collection => (collection.DirectoryInfo.Attributes & FileAttributes.Hidden) != 0
             },
             new DavExtCollectionIsStructuredDocument<DiskStoreCollection>
             {
-                Getter = (_, _) => false
+                Getter = _ => false
             },
             new DavExtCollectionHasSubs<DiskStoreCollection>
             {
-                Getter = (_, collection) => collection.DirectoryInfo.EnumerateDirectories().Any()
+                Getter = collection => collection.DirectoryInfo.EnumerateDirectories().Any()
             },
             new DavExtCollectionNoSubs<DiskStoreCollection>
             {
-                Getter = (_, _) => false
+                Getter = _ => false
             },
             new DavExtCollectionObjectCount<DiskStoreCollection>
             {
-                Getter = (_, collection) => collection.DirectoryInfo.EnumerateFiles().Count()
+                Getter = collection => collection.DirectoryInfo.EnumerateFiles().Count()
             },
             new DavExtCollectionReserved<DiskStoreCollection>
             {
-                Getter = (_, collection) => !collection.IsWritable
+                Getter = collection => !collection.IsWritable
             },
             new DavExtCollectionVisibleCount<DiskStoreCollection>
             {
-                Getter = (_, collection) =>
+                Getter = collection =>
                     collection.DirectoryInfo.EnumerateDirectories().Count(di => (di.Attributes & FileAttributes.Hidden) == 0) +
                     collection.DirectoryInfo.EnumerateFiles().Count(fi => (fi.Attributes & FileAttributes.Hidden) == 0)
             },
@@ -97,8 +98,8 @@ namespace NWebDav.Server.Stores
             // Win32 extensions
             new Win32CreationTime<DiskStoreCollection>
             {
-                Getter = (_, collection) => collection.DirectoryInfo.CreationTimeUtc,
-                Setter = (_, collection, value) =>
+                Getter = collection => collection.DirectoryInfo.CreationTimeUtc,
+                Setter = (collection, value) =>
                 {
                     collection.DirectoryInfo.CreationTimeUtc = value;
                     return DavStatusCode.Ok;
@@ -106,8 +107,8 @@ namespace NWebDav.Server.Stores
             },
             new Win32LastAccessTime<DiskStoreCollection>
             {
-                Getter = (_, collection) => collection.DirectoryInfo.LastAccessTimeUtc,
-                Setter = (_, collection, value) =>
+                Getter = collection => collection.DirectoryInfo.LastAccessTimeUtc,
+                Setter = (collection, value) =>
                 {
                     collection.DirectoryInfo.LastAccessTimeUtc = value;
                     return DavStatusCode.Ok;
@@ -115,8 +116,8 @@ namespace NWebDav.Server.Stores
             },
             new Win32LastModifiedTime<DiskStoreCollection>
             {
-                Getter = (_, collection) => collection.DirectoryInfo.LastWriteTimeUtc,
-                Setter = (_, collection, value) =>
+                Getter = collection => collection.DirectoryInfo.LastWriteTimeUtc,
+                Setter = (collection, value) =>
                 {
                     collection.DirectoryInfo.LastWriteTimeUtc = value;
                     return DavStatusCode.Ok;
@@ -124,8 +125,8 @@ namespace NWebDav.Server.Stores
             },
             new Win32FileAttributes<DiskStoreCollection>
             {
-                Getter = (_, collection) => collection.DirectoryInfo.Attributes,
-                Setter = (_, collection, value) =>
+                Getter = collection => collection.DirectoryInfo.Attributes,
+                Setter = (collection, value) =>
                 {
                     collection.DirectoryInfo.Attributes = value;
                     return DavStatusCode.Ok;

@@ -1,5 +1,5 @@
 ﻿using System.Xml.Linq;
-
+using Microsoft.AspNetCore.Http;
 using NWebDav.Server.Stores;
 
 namespace NWebDav.Server.Props
@@ -24,6 +24,9 @@ namespace NWebDav.Server.Props
         /// </summary>
         // ReSharper disable once StaticMemberInGenericType
         public static readonly XName PropertyName = WebDavNamespaces.DavNs + "creationdate";
+
+        public DavCreationDate(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
+        {}
 
         /// <summary>
         /// Name of the property.

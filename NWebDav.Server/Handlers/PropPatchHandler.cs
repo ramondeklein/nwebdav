@@ -139,7 +139,7 @@ namespace NWebDav.Server.Handlers
                 DavStatusCode result;
                 try
                 {
-                    result = await item.PropertyManager.SetPropertyAsync(httpContext, item, propSet.Name, propSet.Value).ConfigureAwait(false);
+                    result = await item.PropertyManager.SetPropertyAsync(item, propSet.Name, propSet.Value, httpContext.RequestAborted).ConfigureAwait(false);
                 }
                 catch (Exception)
                 {

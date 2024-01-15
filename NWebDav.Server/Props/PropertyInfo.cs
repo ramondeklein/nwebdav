@@ -5,7 +5,7 @@ namespace NWebDav.Server.Props
     /// <summary>
     /// Information structure about a property.
     /// </summary>
-    public struct PropertyInfo
+    public readonly struct PropertyInfo
     {
         /// <summary>
         /// Name of the property.

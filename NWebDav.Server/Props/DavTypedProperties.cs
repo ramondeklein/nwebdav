@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
@@ -36,9 +38,6 @@ namespace NWebDav.Server.Props
             /// <summary>
             /// Get the XML representation of the specified value.
             /// </summary>
-            /// <param name="httpContext">
-            /// Current HTTP context.
-            /// </param>
             /// <param name="value">
             /// Value that needs to be converted to XML output.
             /// </param>
@@ -51,14 +50,11 @@ namespace NWebDav.Server.Props
             /// The current HTTP context can be used to generate XML that is
             /// compatible with the requesting WebDAV client.
             /// </remarks>
-            object ToXml(HttpContext httpContext, TType value);
+            object ToXml(TType value);
             
             /// <summary>
             /// Get the typed value of the specified XML representation.
             /// </summary>
-            /// <param name="httpContext">
-            /// Current HTTP context.
-            /// </param>
             /// <param name="value">
             /// The XML value that needs to be converted to the target
             /// type. This value is always a <see cref="System.String"/>
@@ -71,13 +67,13 @@ namespace NWebDav.Server.Props
             /// The current HTTP context can be used to generate XML that is
             /// compatible with the requesting WebDAV client.
             /// </remarks>
-            TType FromXml(HttpContext httpContext, object value);
+            TType FromXml(object value);
         }
 
-        private Func<HttpContext, TEntry, TType> _getter;
-        private Func<HttpContext, TEntry, TType, DavStatusCode> _setter;
-        private Func<HttpContext, TEntry, Task<TType>> _getterAsync;
-        private Func<HttpContext, TEntry, TType, Task<DavStatusCode>> _setterAsync;
+        private Func<TEntry, TType> _getter;
+        private Func<TEntry, TType, DavStatusCode> _setter;
+        private Func<TEntry, CancellationToken, Task<TType>> _getterAsync;
+        private Func<TEntry, TType, CancellationToken, Task<DavStatusCode>> _setterAsync;
 
         /// <summary>
         /// Converter to convert property values from/to XML for this type.
@@ -85,21 +81,22 @@ namespace NWebDav.Server.Props
         /// <remarks>
         /// This property should be set from the derived typed property implementation.
         /// </remarks>
-        public abstract IConverter Converter { get; }
+        public abstract IConverter? Converter { get; }
 
         /// <summary>
         /// Synchronous getter to obtain the property value.
         /// </summary>
-        public Func<HttpContext, TEntry, TType> Getter
+        public Func<TEntry, TType> Getter
         {
             get => _getter;
-            set
+            init
             {
                 _getter = value;
-                base.GetterAsync = (c, s) =>
+                base.GetterAsync = (s, ct) =>
                 {
-                    var v = _getter(c, s);
-                    return Task.FromResult(Converter != null ? Converter.ToXml(c, v) : v);
+                    ct.ThrowIfCancellationRequested();
+                    var v = _getter(s);
+                    return Task.FromResult(Converter != null ? Converter.ToXml(v) : v);
                 };
             }
         }
@@ -107,16 +104,17 @@ namespace NWebDav.Server.Props
         /// <summary>
         /// Synchronous setter to set the property value.
         /// </summary>
-        public Func<HttpContext, TEntry, TType, DavStatusCode> Setter
+        public Func<TEntry, TType, DavStatusCode> Setter
         {
             get => _setter;
-            set
+            init
             {
                 _setter = value;
-                base.SetterAsync = (c, s, v) =>
+                base.SetterAsync = (s, v, ct) =>
                 {
-                    var tv = Converter != null ? Converter.FromXml(c, v) : (TType)v;
-                    return Task.FromResult(_setter(c, s, tv));
+                    ct.ThrowIfCancellationRequested();
+                    var tv = Converter != null ? Converter.FromXml(v) : (TType)v;
+                    return Task.FromResult(_setter(s, tv));
                 };
             }
         }
@@ -124,16 +122,16 @@ namespace NWebDav.Server.Props
         /// <summary>
         /// Asynchronous getter to obtain the property value.
         /// </summary>
-        public new Func<HttpContext, TEntry, Task<TType>> GetterAsync
+        public new Func<TEntry, CancellationToken, Task<TType>> GetterAsync
         {
             get => _getterAsync;
-            set
+            init
             {
                 _getterAsync = value;
-                base.GetterAsync = async (c, s) =>
+                base.GetterAsync = async (s, ct) =>
                 {
-                    var v = await _getterAsync(c, s).ConfigureAwait(false);
-                    return Converter != null ? Converter.ToXml(c, v) : v;
+                    var v = await _getterAsync(s, ct).ConfigureAwait(false);
+                    return Converter != null ? Converter.ToXml(v) : v;
                 };
             }
         }
@@ -141,16 +139,16 @@ namespace NWebDav.Server.Props
         /// <summary>
         /// Asynchronous setter to set the property value.
         /// </summary>
-        public new Func<HttpContext, TEntry, TType, Task<DavStatusCode>> SetterAsync
+        public new Func<TEntry, TType, CancellationToken, Task<DavStatusCode>> SetterAsync
         {
             get => _setterAsync;
-            set
+            init
             {
                 _setterAsync = value;
-                base.SetterAsync = (c, s, v) =>
+                base.SetterAsync = (s, v, ct) =>
                 {
-                    var tv = Converter != null ? Converter.FromXml(c, v) : (TType)v;
-                    return _setterAsync(c, s, tv);
+                    var tv = Converter != null ? Converter.FromXml(v) : (TType)v;
+                    return _setterAsync(s, tv, ct);
                 };
             }
         }
@@ -167,11 +165,11 @@ namespace NWebDav.Server.Props
     {
         private class Rfc1123DateConverter : IConverter
         {
-            public object ToXml(HttpContext httpContext, DateTime value) => value.ToString("R");
-            public DateTime FromXml(HttpContext httpContext, object value) => DateTime.Parse((string)value, CultureInfo.InvariantCulture);
+            public object ToXml(DateTime value) => value.ToString("R");
+            public DateTime FromXml(object value) => DateTime.Parse((string)value, CultureInfo.InvariantCulture);
         }
 
-        public static IConverter TypeConverter { get; } = new Rfc1123DateConverter();
+        private static IConverter TypeConverter { get; } = new Rfc1123DateConverter();
 
         /// <summary>
         /// Converter to map RFC1123 dates to/from a <see cref="DateTime"/>.
@@ -188,14 +186,28 @@ namespace NWebDav.Server.Props
     /// </typeparam>
     public abstract class DavIso8601Date<TEntry> : DavTypedProperty<TEntry, DateTime> where TEntry : IStoreItem
     {
+        private readonly Iso8601DateConverter _converter;
+        
+        protected DavIso8601Date(IHttpContextAccessor httpContextAccessor)
+        {
+            _converter = new Iso8601DateConverter(httpContextAccessor);
+        }
+        
         private class Iso8601DateConverter : IConverter
         {
-            public object ToXml(HttpContext httpContext, DateTime value)
+            private readonly IHttpContextAccessor _httpContextAccessor;
+
+            public Iso8601DateConverter(IHttpContextAccessor httpContextAccessor)
+            {
+                _httpContextAccessor = httpContextAccessor;
+            }
+            
+            public object ToXml(DateTime value)
             {
                 // The older built-in Windows WebDAV clients have a problem, so
                 // they cannot deal with more than 3 digits for the
                 // milliseconds.
-                if (HasIso8601FractionBug(httpContext))
+                if (HasIso8601FractionBug)
                 {
                     // We need to recreate the date again, because the Windows 7
                     // WebDAV client cannot 
@@ -206,21 +218,23 @@ namespace NWebDav.Server.Props
                 return XmlConvert.ToString(value, XmlDateTimeSerializationMode.Utc);
             }
 
-            public DateTime FromXml(HttpContext httpContext, object value) => XmlConvert.ToDateTime((string)value, XmlDateTimeSerializationMode.Utc);
+            public DateTime FromXml(object value) => XmlConvert.ToDateTime((string)value, XmlDateTimeSerializationMode.Utc);
 
-            private bool HasIso8601FractionBug(HttpContext httpContext)
+            private bool HasIso8601FractionBug
             {
-                // TODO: Determine which WebDAV clients have this bug
-                return true;
+                get
+                {
+                    var userAgent = _httpContextAccessor.HttpContext?.Request.Headers.UserAgent.FirstOrDefault();
+                    _ = userAgent;  // TODO: Determine if this bug is present based on the user-agent
+                    return true;
+                }
             }
         }
-
-        public static IConverter TypeConverter { get; } = new Iso8601DateConverter();
 
         /// <summary>
         /// Converter to map ISO 8601 dates to/from a <see cref="DateTime"/>.
         /// </summary>
-        public override IConverter Converter => TypeConverter;
+        public override IConverter Converter => _converter;
     }
 
     /// <summary>
@@ -230,12 +244,12 @@ namespace NWebDav.Server.Props
     /// <typeparam name="TEntry">
     /// Store item or collection to which this DAV property applies.
     /// </typeparam>
-    public abstract class DavBoolean<TEntry> : DavTypedProperty<TEntry, Boolean> where TEntry : IStoreItem
+    public abstract class DavBoolean<TEntry> : DavTypedProperty<TEntry, bool> where TEntry : IStoreItem
     {
         private class BooleanConverter : IConverter
         {
-            public object ToXml(HttpContext httpContext, Boolean value) => value ? "1" : "0";
-            public Boolean FromXml(HttpContext httpContext, object value) => int.Parse(value.ToString()) != 0;
+            public object ToXml(bool value) => value ? "1" : "0";
+            public bool FromXml(object value) => int.Parse(value.ToString()) != 0;
         }
 
         public static IConverter TypeConverter { get; } = new BooleanConverter();
@@ -257,8 +271,8 @@ namespace NWebDav.Server.Props
     {
         private class StringConverter : IConverter
         {
-            public object ToXml(HttpContext httpContext, string value) => value;
-            public string FromXml(HttpContext httpContext, object value) => value.ToString();
+            public object ToXml(string value) => value;
+            public string FromXml(object value) => value.ToString();
         }
 
         public static IConverter TypeConverter { get; } = new StringConverter();
@@ -276,12 +290,12 @@ namespace NWebDav.Server.Props
     /// <typeparam name="TEntry">
     /// Store item or collection to which this DAV property applies.
     /// </typeparam>
-    public abstract class DavInt32<TEntry> : DavTypedProperty<TEntry, Int32> where TEntry : IStoreItem
+    public abstract class DavInt32<TEntry> : DavTypedProperty<TEntry, int> where TEntry : IStoreItem
     {
         private class Int32Converter : IConverter
         {
-            public object ToXml(HttpContext httpContext, Int32 value) => value.ToString(CultureInfo.InvariantCulture);
-            public Int32 FromXml(HttpContext httpContext, object value) => int.Parse(value.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture);
+            public object ToXml(int value) => value.ToString(CultureInfo.InvariantCulture);
+            public int FromXml(object value) => int.Parse(value.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture);
         }
 
         public static IConverter TypeConverter { get; } = new Int32Converter();
@@ -299,12 +313,12 @@ namespace NWebDav.Server.Props
     /// <typeparam name="TEntry">
     /// Store item or collection to which this DAV property applies.
     /// </typeparam>
-    public abstract class DavInt64<TEntry> : DavTypedProperty<TEntry, Int64> where TEntry : IStoreItem
+    public abstract class DavInt64<TEntry> : DavTypedProperty<TEntry, long> where TEntry : IStoreItem
     {
         private class Int64Converter : IConverter
         {
-            public object ToXml(HttpContext httpContext, Int64 value) => value.ToString(CultureInfo.InvariantCulture);
-            public Int64 FromXml(HttpContext httpContext, object value) => int.Parse(value.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture);
+            public object ToXml(long value) => value.ToString(CultureInfo.InvariantCulture);
+            public long FromXml(object value) => int.Parse(value.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture);
         }
 
         public static IConverter TypeConverter { get; } = new Int64Converter();
@@ -326,8 +340,8 @@ namespace NWebDav.Server.Props
     {
         private class XElementArrayConverter : IConverter
         {
-            public object ToXml(HttpContext httpContext, IEnumerable<XElement> value) => value;
-            public IEnumerable<XElement> FromXml(HttpContext httpContext, object value) => (IEnumerable<XElement>)value;
+            public object ToXml(IEnumerable<XElement> value) => value;
+            public IEnumerable<XElement> FromXml(object value) => (IEnumerable<XElement>)value;
         }
 
         public static IConverter TypeConverter { get; } = new XElementArrayConverter();
@@ -349,8 +363,8 @@ namespace NWebDav.Server.Props
     {
         private class XElementConverter : IConverter
         {
-            public object ToXml(HttpContext httpContext, XElement value) => value;
-            public XElement FromXml(HttpContext httpContext, object value) => (XElement)value;
+            public object ToXml(XElement value) => value;
+            public XElement FromXml(object value) => (XElement)value;
         }
 
         public static IConverter TypeConverter { get; } = new XElementConverter();
@@ -372,8 +386,8 @@ namespace NWebDav.Server.Props
     {
         private class UriConverter : IConverter
         {
-            public object ToXml(HttpContext httpContext, Uri value) => value.ToString();
-            public Uri FromXml(HttpContext httpContext, object value) => new Uri((string)value);
+            public object ToXml(Uri value) => value.ToString();
+            public Uri FromXml(object value) => new Uri((string)value);
         }
 
         public static IConverter TypeConverter { get; } = new UriConverter();

@@ -14,6 +14,7 @@ namespace NWebDav.Server
         public static IServiceCollection AddNWebDav(this IServiceCollection services)
         {
             return services
+                .AddHttpContextAccessor()
                 .AddSingleton<NWebDavMiddleware>()
                 .AddScoped<IXmlReaderWriter, XmlReaderWriter>()
                 .AddScoped<CopyHandler>()

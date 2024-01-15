@@ -4,6 +4,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Locking;
@@ -13,17 +14,17 @@ namespace NWebDav.Server.Stores
 {
     public class DiskStoreItemPropertyManager : PropertyManager<DiskStoreItem>
     {
-        public DiskStoreItemPropertyManager(ILockingManager lockingManager) : base(GetProperties(lockingManager))
+        public DiskStoreItemPropertyManager(IHttpContextAccessor httpContextAccessor, ILockingManager lockingManager) : base(GetProperties(httpContextAccessor, lockingManager))
         {
         }
 
-        private static DavProperty<DiskStoreItem>[] GetProperties(ILockingManager lockingManager) => new DavProperty<DiskStoreItem>[]
+        private static DavProperty<DiskStoreItem>[] GetProperties(IHttpContextAccessor httpContextAccessor, ILockingManager lockingManager) => new DavProperty<DiskStoreItem>[]
         {
             // RFC-2518 properties
-            new DavCreationDate<DiskStoreItem>
+            new DavCreationDate<DiskStoreItem>(httpContextAccessor)
             {
-                Getter = (_, item) => item.FileInfo.CreationTimeUtc,
-                Setter = (_, item, value) =>
+                Getter = item => item.FileInfo.CreationTimeUtc,
+                Setter = (item, value) =>
                 {
                     item.FileInfo.CreationTimeUtc = value;
                     return DavStatusCode.Ok;
@@ -31,26 +32,26 @@ namespace NWebDav.Server.Stores
             },
             new DavDisplayName<DiskStoreItem>
             {
-                Getter = (_, item) => item.FileInfo.Name
+                Getter = item => item.FileInfo.Name
             },
             new DavGetContentLength<DiskStoreItem>
             {
-                Getter = (_, item) => item.FileInfo.Length
+                Getter = item => item.FileInfo.Length
             },
             new DavGetContentType<DiskStoreItem>
             {
-                Getter = (_, item) => MimeTypeHelper.GetMimeType(item.FileInfo.Name)
+                Getter = item => MimeTypeHelper.GetMimeType(item.FileInfo.Name)
             },
             new DavGetEtag<DiskStoreItem>
             {
                 // Calculating the Etag is an expensive operation,
                 // because we need to scan the entire file.
                 IsExpensive = true,
-                GetterAsync = async (httpContext, item) =>
+                GetterAsync = async (item, ct) =>
                 {
                     await using (var stream = File.OpenRead(item.FileInfo.FullName))
                     {
-                        var hash = await SHA256.Create().ComputeHashAsync(stream, httpContext.RequestAborted).ConfigureAwait(false);
+                        var hash = await SHA256.Create().ComputeHashAsync(stream, ct).ConfigureAwait(false);
                         return BitConverter.ToString(hash).Replace("-", string.Empty);
                     }
 
@@ -58,8 +59,8 @@ namespace NWebDav.Server.Stores
             },
             new DavGetLastModified<DiskStoreItem>
             {
-                Getter = (_, item) => item.FileInfo.LastWriteTimeUtc,
-                Setter = (_, item, value) =>
+                Getter = item => item.FileInfo.LastWriteTimeUtc,
+                Setter = (item, value) =>
                 {
                     item.FileInfo.LastWriteTimeUtc = value;
                     return DavStatusCode.Ok;
@@ -67,7 +68,7 @@ namespace NWebDav.Server.Stores
             },
             new DavGetResourceType<DiskStoreItem>
             {
-                Getter = (_, _) => null
+                Getter = _ => null
             },
 
             // Default locking property handling via the LockingManager
@@ -78,14 +79,14 @@ namespace NWebDav.Server.Stores
             // (although not a collection, the IsHidden property might be valuable)
             new DavExtCollectionIsHidden<DiskStoreItem>
             {
-                Getter = (_, item) => (item.FileInfo.Attributes & FileAttributes.Hidden) != 0
+                Getter = item => (item.FileInfo.Attributes & FileAttributes.Hidden) != 0
             },
 
             // Win32 extensions
             new Win32CreationTime<DiskStoreItem>
             {
-                Getter = (_, item) => item.FileInfo.CreationTimeUtc,
-                Setter = (_, item, value) =>
+                Getter = item => item.FileInfo.CreationTimeUtc,
+                Setter = (item, value) =>
                 {
                     item.FileInfo.CreationTimeUtc = value;
                     return DavStatusCode.Ok;
@@ -93,8 +94,8 @@ namespace NWebDav.Server.Stores
             },
             new Win32LastAccessTime<DiskStoreItem>
             {
-                Getter = (_, item) => item.FileInfo.LastAccessTimeUtc,
-                Setter = (_, item, value) =>
+                Getter = item => item.FileInfo.LastAccessTimeUtc,
+                Setter = (item, value) =>
                 {
                     item.FileInfo.LastAccessTimeUtc = value;
                     return DavStatusCode.Ok;
@@ -102,8 +103,8 @@ namespace NWebDav.Server.Stores
             },
             new Win32LastModifiedTime<DiskStoreItem>
             {
-                Getter = (_, item) => item.FileInfo.LastWriteTimeUtc,
-                Setter = (_, item, value) =>
+                Getter = item => item.FileInfo.LastWriteTimeUtc,
+                Setter = (item, value) =>
                 {
                     item.FileInfo.LastWriteTimeUtc = value;
                     return DavStatusCode.Ok;
@@ -111,8 +112,8 @@ namespace NWebDav.Server.Stores
             },
             new Win32FileAttributes<DiskStoreItem>
             {
-                Getter = (_, item) => item.FileInfo.Attributes,
-                Setter = (_, item, value) =>
+                Getter = item => item.FileInfo.Attributes,
+                Setter = (item, value) =>
                 {
                     item.FileInfo.Attributes = value;
                     return DavStatusCode.Ok;

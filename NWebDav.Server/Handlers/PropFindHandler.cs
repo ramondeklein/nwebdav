@@ -142,13 +142,13 @@ namespace NWebDav.Server.Handlers
                         if ((propertyMode & PropertyMode.AllProperties) != 0)
                         {
                             foreach (var propertyName in propertyManager.Properties.Where(p => !p.IsExpensive).Select(p => p.Name))
-                                await AddPropertyAsync(httpContext, xResponse, xPropStatValues, propertyManager, entry.Entry, propertyName, addedProperties).ConfigureAwait(false);
+                                await AddPropertyAsync(xResponse, xPropStatValues, propertyManager, entry.Entry, propertyName, addedProperties, httpContext.RequestAborted).ConfigureAwait(false);
                         }
 
                         if ((propertyMode & PropertyMode.SelectedProperties) != 0)
                         {
                             foreach (var propertyName in propertyList)
-                                await AddPropertyAsync(httpContext, xResponse, xPropStatValues, propertyManager, entry.Entry, propertyName, addedProperties).ConfigureAwait(false);
+                                await AddPropertyAsync(xResponse, xPropStatValues, propertyManager, entry.Entry, propertyName, addedProperties, httpContext.RequestAborted).ConfigureAwait(false);
                         }
 
                         // Add the values (if any)
@@ -171,7 +171,7 @@ namespace NWebDav.Server.Handlers
             return true;
         }
 
-        private async Task AddPropertyAsync(HttpContext httpContext, XElement xResponse, XElement xPropStatValues, IPropertyManager propertyManager, IStoreItem item, XName propertyName, List<XName> addedProperties)
+        private async Task AddPropertyAsync(XElement xResponse, XElement xPropStatValues, IPropertyManager propertyManager, IStoreItem item, XName propertyName, List<XName> addedProperties, CancellationToken cancellationToken)
         {
             if (!addedProperties.Contains(propertyName))
             {
@@ -181,7 +181,7 @@ namespace NWebDav.Server.Handlers
                     // Check if the property is supported
                     if (propertyManager.Properties.Any(p => p.Name == propertyName))
                     {
-                        var value = await propertyManager.GetPropertyAsync(httpContext, item, propertyName).ConfigureAwait(false);
+                        var value = await propertyManager.GetPropertyAsync(item, propertyName, cancellationToken: cancellationToken).ConfigureAwait(false);
                         if (value is IEnumerable<XElement> elements)
                             value = elements.Cast<object>().ToArray();
 
