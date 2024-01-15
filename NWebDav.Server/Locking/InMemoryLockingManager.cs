@@ -9,7 +9,7 @@ namespace NWebDav.Server.Locking
 {
     // TODO: Remove auto-expired locks
     // TODO: Add support for recursive locks
-    public class InMemoryLockingManager : ILockingManager
+    public class InMemoryLockingManager : LockingManager
     {
         private class ItemLockInfo
         {
@@ -62,7 +62,7 @@ namespace NWebDav.Server.Locking
             new(LockScope.Shared, LockType.Write)
         };
 
-        public LockResult Lock(IStoreItem item, LockType lockType, LockScope lockScope, XElement owner, Uri lockRootUri, bool recursive, IEnumerable<int> timeouts)
+        protected override LockResult Lock(IStoreItem item, LockType lockType, LockScope lockScope, XElement owner, Uri lockRootUri, bool recursive, IEnumerable<int> timeouts) 
         {
             // Determine the expiration based on the first time-out
             var timeout = timeouts.Cast<int?>().FirstOrDefault();
@@ -100,7 +100,7 @@ namespace NWebDav.Server.Locking
             }
         }
 
-        public DavStatusCode Unlock(IStoreItem item, Uri lockTokenUri)
+        protected override DavStatusCode Unlock(IStoreItem item, Uri lockTokenUri)
         {
             // Determine the actual lock token
             var lockToken = GetTokenFromLockToken(lockTokenUri);
@@ -151,7 +151,7 @@ namespace NWebDav.Server.Locking
             return DavStatusCode.PreconditionFailed;
         }
 
-        public LockResult RefreshLock(IStoreItem item, bool recursiveLock, IEnumerable<int> timeouts, Uri lockTokenUri)
+        protected override LockResult RefreshLock(IStoreItem item, bool recursiveLock, IEnumerable<int> timeouts, Uri lockTokenUri)
         {
             // Determine the actual lock token
             var lockToken = GetTokenFromLockToken(lockTokenUri);
@@ -188,7 +188,7 @@ namespace NWebDav.Server.Locking
             return new LockResult(DavStatusCode.PreconditionFailed);
         }
 
-        public IEnumerable<ActiveLock> GetActiveLockInfo(IStoreItem item)
+        protected override IEnumerable<ActiveLock> GetActiveLockInfo(IStoreItem item)
         {
             // Determine the item's key
             var key = item.UniqueKey;
@@ -197,20 +197,20 @@ namespace NWebDav.Server.Locking
             {
                 // Make sure the item is in the dictionary
                 if (!_itemLocks.TryGetValue(key, out var itemLockTypeDictionary))
-                    return new ActiveLock[0];
+                    return Enumerable.Empty<ActiveLock>();
 
                 // Return all non-expired locks
                 return itemLockTypeDictionary.SelectMany(kv => kv.Value).Where(l => !l.IsExpired).Select(GetActiveLockInfo).ToList();
             }
         }
 
-        public IEnumerable<LockEntry> GetSupportedLocks(IStoreItem item)
+        public override IEnumerable<LockEntry> GetSupportedLocks(IStoreItem item)
         {
             // We support both shared and exclusive locks for items and collections
             return s_supportedLocks;
         }
 
-        public bool IsLocked(IStoreItem item)
+        protected override bool IsLocked(IStoreItem item)
         {
             // Determine the item's key
             var key = item.UniqueKey;
@@ -232,33 +232,29 @@ namespace NWebDav.Server.Locking
             return false;
         }
 
-        public bool HasLock(IStoreItem item, Uri lockTokenUri)
+        protected override bool HasLock(IStoreItem item, Uri lockTokenUri)
         {
-            // If no lock is specified, then we should abort
-            if (lockTokenUri == null)
-                return false;
-
             // Determine the item's key
             var key = item.UniqueKey;
 
             // Determine the actual lock token
             var lockToken = GetTokenFromLockToken(lockTokenUri);
-            if (lockToken == null)
-                return false;
-
-            lock (_itemLocks)
+            if (lockToken != null)
             {
-                // Make sure the item is in the dictionary
-                if (!_itemLocks.TryGetValue(key, out var itemLockTypeDictionary))
-                    return false;
-
-                // Scan both the dictionaries for the token
-                foreach (var kv in itemLockTypeDictionary)
+                lock (_itemLocks)
                 {
-                    // Refresh the lock
-                    var itemLockInfo = kv.Value.FirstOrDefault(lt => lt.Token == lockToken.Value && !lt.IsExpired);
-                    if (itemLockInfo != null)
-                        return true;
+                    // Make sure the item is in the dictionary
+                    if (_itemLocks.TryGetValue(key, out var itemLockTypeDictionary))
+                    {
+                        // Scan both the dictionaries for the token
+                        foreach (var kv in itemLockTypeDictionary)
+                        {
+                            // Refresh the lock
+                            var itemLockInfo = kv.Value.FirstOrDefault(lt => lt.Token == lockToken.Value && !lt.IsExpired);
+                            if (itemLockInfo != null)
+                                return true;
+                        }
+                    }
                 }
             }
 

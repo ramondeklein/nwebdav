@@ -9,7 +9,7 @@ namespace NWebDav.Server.Props
     /// </summary>
     /// <remarks>
     /// This property implementation calls the
-    /// <see cref="NWebDav.Server.Locking.ILockingManager.GetActiveLockInfo"/>
+    /// <see cref="ILockingManager.GetActiveLockInfo"/>
     /// of the item's <see cref="IStoreItem.LockingManager"/> to determine the
     /// active locks.
     /// </remarks>
@@ -21,12 +21,16 @@ namespace NWebDav.Server.Props
         /// <summary>
         /// Create an instance of the <see cref="DavLockDiscovery{TEntry}"/>
         /// property that implements the property using the
-        /// <see cref="NWebDav.Server.Locking.ILockingManager.GetActiveLockInfo"/> 
+        /// <see cref="ILockingManager.GetActiveLockInfoAsync"/> 
         /// method of the item's locking manager.
         /// </summary>
         public DavLockDiscoveryDefault(ILockingManager lockingManager)
         {
-            Getter = item => lockingManager.GetActiveLockInfo(item).Select(ali => ali.ToXml());
+            GetterAsync = async (item, ct) =>
+            {
+                var locks = await lockingManager.GetActiveLockInfoAsync(item, ct).ConfigureAwait(false); 
+                return locks.Select(ali => ali.ToXml());
+            };
         }
     }
 
@@ -35,8 +39,7 @@ namespace NWebDav.Server.Props
     /// </summary>
     /// <remarks>
     /// This property implementation calls the
-    /// <see cref="NWebDav.Server.Locking.ILockingManager.GetSupportedLocks"/>
-    /// of the item's <see cref="IStoreItem.LockingManager"/> to determine the
+    /// <see cref="ILockingManager.GetSupportedLocks"/> to determine the
     /// supported locks.
     /// </remarks>
     /// <typeparam name="TEntry">
@@ -46,9 +49,7 @@ namespace NWebDav.Server.Props
     {
         /// <summary>
         /// Create an instance of the <see cref="DavSupportedLock{TEntry}"/>
-        /// property that implements the property using the
-        /// <see cref="NWebDav.Server.Locking.ILockingManager.GetSupportedLocks"/>
-        /// method of the item's locking manager.
+        /// property that implements the property using the locking manager.
         /// </summary>
         public DavSupportedLockDefault(ILockingManager lockingManager)
         {

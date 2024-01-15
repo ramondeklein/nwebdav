@@ -72,18 +72,18 @@ namespace NWebDav.Server.Handlers
             }
 
             // Check if the item is locked
-            if (_lockingManager.IsLocked(deleteItem))
+            if (await _lockingManager.IsLockedAsync(deleteItem, httpContext.RequestAborted).ConfigureAwait(false))
             {
                 // Obtain the lock token
                 var ifToken = request.GetIfLockToken();
-                if (!_lockingManager.HasLock(deleteItem, ifToken))
+                if (!await _lockingManager.HasLockAsync(deleteItem, ifToken, httpContext.RequestAborted))
                 {
                     response.SetStatus(DavStatusCode.Locked);
                     return true;
                 }
 
                 // Remove the token
-                _lockingManager.Unlock(deleteItem, ifToken);
+                await _lockingManager.UnlockAsync(deleteItem, ifToken, httpContext.RequestAborted).ConfigureAwait(false);
             }
 
             // Delete item
