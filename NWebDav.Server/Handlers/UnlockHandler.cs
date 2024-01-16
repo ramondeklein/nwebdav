@@ -47,7 +47,7 @@ namespace NWebDav.Server.Handlers
             if (lockToken == null)
             {
                 // Set status to not found
-                response.SetStatus(DavStatusCode.BadRequest);
+                response.SetStatus(DavStatusCode.BadRequest, "Lock-Token is missing");
                 return true;
             }
 

@@ -310,6 +310,16 @@ namespace NWebDav.Server
         /// </summary>
         [DavStatusCode("Precondition Failed")]
         PreconditionFailed = HttpStatusCode.PreconditionFailed,
+        
+        /// <summary>
+        /// <para>
+        /// The request was directed to the server that is not able to produce
+        /// a response. This might be possible if a connection is reused or
+        /// if an alternative service is selected.
+        /// </para>
+        /// </summary>
+        [DavStatusCode("Misdirected Request")]
+        MisdirectedRequest = HttpStatusCode.MisdirectedRequest,
 
         /// <summary>
         /// <para>

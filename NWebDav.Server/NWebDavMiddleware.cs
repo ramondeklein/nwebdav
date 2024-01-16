@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NWebDav.Server.Handlers;
+using NWebDav.Server.Helpers;
 
 namespace NWebDav.Server
 {
@@ -31,6 +33,12 @@ namespace NWebDav.Server
                 if (opts.Handlers.TryGetValue(context.Request.Method, out var handlerType))
                 {
                     _logger.LogTrace("Using handler type '{HandlerType}'.", handlerType);
+
+                    if (opts.RequireAuthentication && context.Request.Method != HttpMethods.Options && !(context.User.Identity?.IsAuthenticated ?? false))
+                    {
+                        await context.ChallengeAsync().ConfigureAwait(false);
+                        return;
+                    }
                     
                     var handler = (IRequestHandler)_serviceProvider.GetRequiredService(handlerType);
                     var handled = await handler.HandleRequestAsync(context).ConfigureAwait(false);
