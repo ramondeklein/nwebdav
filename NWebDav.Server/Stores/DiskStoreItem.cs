@@ -7,109 +7,108 @@ using Microsoft.Extensions.Logging;
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Props;
 
-namespace NWebDav.Server.Stores
+namespace NWebDav.Server.Stores;
+
+[DebuggerDisplay("{FileInfo.FullPath}")]
+public sealed class DiskStoreItem : IStoreItem
 {
-    [DebuggerDisplay("{FileInfo.FullPath}")]
-    public sealed class DiskStoreItem : IStoreItem
+    private readonly DiskStoreBase _diskStore;
+    private readonly ILogger<DiskStoreItem> _logger;
+
+    public DiskStoreItem(DiskStoreBase diskStore, DiskStoreItemPropertyManager propertyManager, FileInfo fileInfo, ILogger<DiskStoreItem> logger)
     {
-        private readonly DiskStoreBase _diskStore;
-        private readonly ILogger<DiskStoreItem> _logger;
-
-        public DiskStoreItem(DiskStoreBase diskStore, DiskStoreItemPropertyManager propertyManager, FileInfo fileInfo, ILogger<DiskStoreItem> logger)
-        {
-            _diskStore = diskStore;
-            FileInfo = fileInfo;
-            PropertyManager = propertyManager;
-            _logger = logger;
-        }
-
-        public IPropertyManager PropertyManager { get; }
-
-        public FileInfo FileInfo { get; }
-        public bool IsWritable => _diskStore.IsWritable;
-        public string Name => FileInfo.Name;
-        public string UniqueKey => FileInfo.FullName;
-        public string FullPath => FileInfo.FullName;
-        public Task<Stream> GetReadableStreamAsync(CancellationToken cancellationToken) => Task.FromResult((Stream)FileInfo.OpenRead());
-
-        public async Task<DavStatusCode> UploadFromStreamAsync(Stream inputStream, CancellationToken cancellationToken)
-        {
-            // Check if the item is writable
-            if (!IsWritable)
-                return DavStatusCode.Conflict;
-
-            // Copy the stream
-            try
-            {
-                // Copy the information to the destination stream
-                await using (var outputStream = FileInfo.OpenWrite())
-                {
-                    await inputStream.CopyToAsync(outputStream, cancellationToken).ConfigureAwait(false);
-                }
-                return DavStatusCode.Ok;
-            }
-            catch (IOException ioException) when (ioException.IsDiskFull())
-            {
-                return DavStatusCode.InsufficientStorage;
-            }
-        }
-
-        public async Task<StoreItemResult> CopyAsync(IStoreCollection destination, string name, bool overwrite, CancellationToken cancellationToken)
-        {
-            try
-            {
-                // If the destination is also a disk-store, then we can use the FileCopy API
-                // (it's probably a bit more efficient than copying in C#)
-                if (destination is DiskStoreCollection diskCollection)
-                {
-                    // Check if the collection is writable
-                    if (!diskCollection.IsWritable)
-                        return new StoreItemResult(DavStatusCode.PreconditionFailed);
-
-                    var destinationPath = Path.Combine(diskCollection.FullPath, name);
-
-                    // Check if the file already exists
-                    var fileExists = File.Exists(destinationPath);
-                    if (fileExists && !overwrite)
-                        return new StoreItemResult(DavStatusCode.PreconditionFailed);
-
-                    // Copy the file
-                    File.Copy(FileInfo.FullName, destinationPath, true);
-
-                    // Return the appropriate status
-                    return new StoreItemResult(fileExists ? DavStatusCode.NoContent : DavStatusCode.Created);
-                }
-                else
-                {
-                    // Create the item in the destination collection
-                    var result = await destination.CreateItemAsync(name, overwrite, cancellationToken).ConfigureAwait(false);
-
-                    // Check if the item could be created
-                    if (result.Item != null)
-                    {
-                        await using (var sourceStream = await GetReadableStreamAsync(cancellationToken).ConfigureAwait(false))
-                        {
-                            var copyResult = await result.Item.UploadFromStreamAsync(sourceStream, cancellationToken).ConfigureAwait(false);
-                            if (copyResult != DavStatusCode.Ok)
-                                return new StoreItemResult(copyResult, result.Item);
-                        }
-                    }
-
-                    // Return result
-                    return new StoreItemResult(result.Result, result.Item);
-                }
-            }
-            catch (Exception exc)
-            {
-                _logger.LogError(exc, "Unexpected exception while copying data.");
-                return new StoreItemResult(DavStatusCode.InternalServerError);
-            }
-        }
-
-        public override int GetHashCode() => FileInfo.FullName.GetHashCode();
-
-        public override bool Equals(object? obj) =>
-                obj is DiskStoreItem storeItem && 
-                storeItem.FileInfo.FullName.Equals(FileInfo.FullName, StringComparison.CurrentCultureIgnoreCase);
+        _diskStore = diskStore;
+        FileInfo = fileInfo;
+        PropertyManager = propertyManager;
+        _logger = logger;
     }
+
+    public IPropertyManager PropertyManager { get; }
+
+    public FileInfo FileInfo { get; }
+    public bool IsWritable => _diskStore.IsWritable;
+    public string Name => FileInfo.Name;
+    public string UniqueKey => FileInfo.FullName;
+    public string FullPath => FileInfo.FullName;
+    public Task<Stream> GetReadableStreamAsync(CancellationToken cancellationToken) => Task.FromResult((Stream)FileInfo.OpenRead());
+
+    public async Task<DavStatusCode> UploadFromStreamAsync(Stream inputStream, CancellationToken cancellationToken)
+    {
+        // Check if the item is writable
+        if (!IsWritable)
+            return DavStatusCode.Conflict;
+
+        // Copy the stream
+        try
+        {
+            // Copy the information to the destination stream
+            await using (var outputStream = FileInfo.OpenWrite())
+            {
+                await inputStream.CopyToAsync(outputStream, cancellationToken).ConfigureAwait(false);
+            }
+            return DavStatusCode.Ok;
+        }
+        catch (IOException ioException) when (ioException.IsDiskFull())
+        {
+            return DavStatusCode.InsufficientStorage;
+        }
+    }
+
+    public async Task<StoreItemResult> CopyAsync(IStoreCollection destination, string name, bool overwrite, CancellationToken cancellationToken)
+    {
+        try
+        {
+            // If the destination is also a disk-store, then we can use the FileCopy API
+            // (it's probably a bit more efficient than copying in C#)
+            if (destination is DiskStoreCollection diskCollection)
+            {
+                // Check if the collection is writable
+                if (!diskCollection.IsWritable)
+                    return new StoreItemResult(DavStatusCode.PreconditionFailed);
+
+                var destinationPath = Path.Combine(diskCollection.FullPath, name);
+
+                // Check if the file already exists
+                var fileExists = File.Exists(destinationPath);
+                if (fileExists && !overwrite)
+                    return new StoreItemResult(DavStatusCode.PreconditionFailed);
+
+                // Copy the file
+                File.Copy(FileInfo.FullName, destinationPath, true);
+
+                // Return the appropriate status
+                return new StoreItemResult(fileExists ? DavStatusCode.NoContent : DavStatusCode.Created);
+            }
+            else
+            {
+                // Create the item in the destination collection
+                var result = await destination.CreateItemAsync(name, overwrite, cancellationToken).ConfigureAwait(false);
+
+                // Check if the item could be created
+                if (result.Item != null)
+                {
+                    await using (var sourceStream = await GetReadableStreamAsync(cancellationToken).ConfigureAwait(false))
+                    {
+                        var copyResult = await result.Item.UploadFromStreamAsync(sourceStream, cancellationToken).ConfigureAwait(false);
+                        if (copyResult != DavStatusCode.Ok)
+                            return new StoreItemResult(copyResult, result.Item);
+                    }
+                }
+
+                // Return result
+                return new StoreItemResult(result.Result, result.Item);
+            }
+        }
+        catch (Exception exc)
+        {
+            _logger.LogError(exc, "Unexpected exception while copying data.");
+            return new StoreItemResult(DavStatusCode.InternalServerError);
+        }
+    }
+
+    public override int GetHashCode() => FileInfo.FullName.GetHashCode();
+
+    public override bool Equals(object? obj) =>
+        obj is DiskStoreItem storeItem && 
+        storeItem.FileInfo.FullName.Equals(FileInfo.FullName, StringComparison.CurrentCultureIgnoreCase);
 }

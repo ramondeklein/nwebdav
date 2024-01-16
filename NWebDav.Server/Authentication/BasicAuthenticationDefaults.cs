@@ -1,7 +1,6 @@
-﻿namespace NWebDav.Server.Authentication
+﻿namespace NWebDav.Server.Authentication;
+
+public static class BasicAuthenticationDefaults
 {
-    public static class BasicAuthenticationDefaults
-    {
-        public const string AuthenticationScheme = "Basic";
-    }
+    public const string AuthenticationScheme = "Basic";
 }
