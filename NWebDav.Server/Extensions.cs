@@ -19,7 +19,6 @@ public static class Extensions
     {
         services
             .AddHttpContextAccessor()
-            .AddSingleton<NWebDavMiddleware>()
             .AddScoped<IXmlReaderWriter, XmlReaderWriter>()
             .AddScoped<CopyHandler>()
             .AddScoped<DeleteHandler>()

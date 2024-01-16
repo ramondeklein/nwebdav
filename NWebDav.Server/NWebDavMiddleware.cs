@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,14 +11,12 @@ namespace NWebDav.Server;
 internal class NWebDavMiddleware
 {
     private readonly RequestDelegate _next;
-    private readonly IServiceProvider _serviceProvider;
     private readonly IOptions<NWebDavOptions> _options;
     private readonly ILogger<NWebDavMiddleware> _logger;
 
-    public NWebDavMiddleware(RequestDelegate next, IServiceProvider serviceProvider, IOptions<NWebDavOptions> options, ILogger<NWebDavMiddleware> logger)
+    public NWebDavMiddleware(RequestDelegate next, IOptions<NWebDavOptions> options, ILogger<NWebDavMiddleware> logger)
     {
         _next = next;
-        _serviceProvider = serviceProvider;
         _options = options;
         _logger = logger;
     }
@@ -39,7 +36,7 @@ internal class NWebDavMiddleware
                     return;
                 }
                     
-                var handler = (IRequestHandler)_serviceProvider.GetRequiredService(handlerType);
+                var handler = (IRequestHandler)context.RequestServices.GetRequiredService(handlerType);
                 var handled = await handler.HandleRequestAsync(context).ConfigureAwait(false);
                 if (handled)
                     return;
