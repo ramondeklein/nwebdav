@@ -20,7 +20,7 @@ public class BasicAuthenticationHandler : AuthenticationHandler<BasicAuthenticat
 {
     private readonly ILogger<BasicAuthenticationHandler> _logger;
 
-    public BasicAuthenticationHandler(IOptionsMonitor<BasicAuthenticationOptions> options, ILoggerFactory loggerFactory, UrlEncoder encoder) : base(options, loggerFactory, encoder)
+    public BasicAuthenticationHandler(IOptionsMonitor<BasicAuthenticationOptions> options, ILoggerFactory loggerFactory, UrlEncoder encoder, ISystemClock clock) : base(options, loggerFactory, encoder, clock)
     {
         _logger = loggerFactory.CreateLogger<BasicAuthenticationHandler>();
     }
