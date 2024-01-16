@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
@@ -64,7 +65,7 @@ public static class Extensions
         return services;
     }
 
-    public static IServiceCollection AddStore<TStore>(this IServiceCollection services) where TStore : class, IStore
+    public static IServiceCollection AddStore<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TStore>(this IServiceCollection services) where TStore : class, IStore
     {
         return services.AddScoped<IStore, TStore>();
     }
@@ -80,7 +81,7 @@ public static class Extensions
             .AddDiskStore<DiskStore>();
     }
 
-    public static IServiceCollection AddDiskStore<TDiskStore>(this IServiceCollection services)
+    public static IServiceCollection AddDiskStore<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TDiskStore>(this IServiceCollection services)
         where TDiskStore : DiskStoreBase
     {
         return services

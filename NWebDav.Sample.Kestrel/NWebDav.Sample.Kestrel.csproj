@@ -9,6 +9,12 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>full</TrimMode>
+    <PublishSingleFile>true</PublishSingleFile>
+  </PropertyGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\NWebDav.Server\NWebDav.Server.csproj" />
   </ItemGroup>
