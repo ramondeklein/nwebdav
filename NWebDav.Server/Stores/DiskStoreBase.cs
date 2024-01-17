@@ -55,7 +55,7 @@ public abstract class DiskStoreBase : IStore
     private string GetPathFromUri(Uri uri)
     {
         // Determine the path
-        var requestedPath = UriHelper.GetDecodedPath(uri).Substring(1).Replace('/', Path.DirectorySeparatorChar);
+        var requestedPath = UriHelper.GetDecodedPath(uri)[1..].Replace('/', Path.DirectorySeparatorChar);
 
         // Determine the full path
         var fullPath = Path.GetFullPath(Path.Combine(BaseDirectory, requestedPath));

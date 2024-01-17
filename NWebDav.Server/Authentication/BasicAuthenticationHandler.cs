@@ -25,14 +25,6 @@ public class BasicAuthenticationHandler : AuthenticationHandler<BasicAuthenticat
         _logger = loggerFactory.CreateLogger<BasicAuthenticationHandler>();
     }
     
-    protected new BasicAuthenticationEvents Events
-    {
-        get => (BasicAuthenticationEvents)base.Events;
-        set => base.Events = value;
-    }
-
-    protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new BasicAuthenticationEvents());
-
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         if (!Request.IsHttps && !Options.AllowInsecureProtocol)
@@ -45,6 +37,8 @@ public class BasicAuthenticationHandler : AuthenticationHandler<BasicAuthenticat
         if (cachedCredential != null)
             return AuthenticateResult.Success(new AuthenticationTicket(cachedCredential, Scheme.Name));
 
+        var events = (BasicAuthenticationEvents)base.Events!; 
+        
         foreach (var authHeader in Request.Headers.Authorization)
         {
             if (!AuthenticationHeaderValue.TryParse(authHeader, out var auth)) continue;
@@ -52,21 +46,21 @@ public class BasicAuthenticationHandler : AuthenticationHandler<BasicAuthenticat
             if (!ParseBasicAuthenticationValue(auth.Parameter, out var username, out var password)) continue;
             try
             {
-                var validateCredentialsContext = new ValidateCredentialsContext(Context, Scheme, Options)
+                var validateContext = new ValidateCredentialsContext(Context, Scheme, Options)
                 {
                     Username = username,
                     Password = password
                 };
-                await Events.ValidateCredentials(validateCredentialsContext).ConfigureAwait(false);
+                await events.ValidateCredentials(validateContext).ConfigureAwait(false);
 
-                if (validateCredentialsContext.Result.Succeeded)
+                if (validateContext.Result.Succeeded)
                 {
                     _logger.LogTrace("Authenticated user '{Username}'", username);
-                    CacheCredentials(validateCredentialsContext.Principal!);
-                    return AuthenticateResult.Success(validateCredentialsContext.Result.Ticket);
+                    CacheCredentials(validateContext.Principal!);
+                    return AuthenticateResult.Success(validateContext.Result.Ticket);
                 }
 
-                var exc = validateCredentialsContext.Result.Failure; 
+                var exc = validateContext.Result.Failure; 
                 if (exc != null)
                 {
                     _logger.LogTrace(exc, "Failed to authenticate user '{Username}'", username);
@@ -77,13 +71,13 @@ public class BasicAuthenticationHandler : AuthenticationHandler<BasicAuthenticat
             {
                 _logger.LogTrace(exc, "Failed to authenticate user '{Username}'", username);
                 
-                var authenticationFailedContext = new BasicAuthenticationFailedContext(Context, Scheme, Options)
+                var failContext = new BasicAuthenticationFailedContext(Context, Scheme, Options)
                 {
                     Exception = exc
                 };
 
-                await Events.AuthenticationFailed(authenticationFailedContext).ConfigureAwait(false);
-                return authenticationFailedContext.Result;
+                await events.AuthenticationFailed(failContext).ConfigureAwait(false);
+                return failContext.Result;
             }
         }
 
@@ -102,7 +96,7 @@ public class BasicAuthenticationHandler : AuthenticationHandler<BasicAuthenticat
         else
         {
             Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-            if (!Options.SuppressWwwAuthenticateHeader)
+            if (!Options.SuppressChallenge)
                 Response.Headers.WWWAuthenticate = $"Basic realm=\"{Options.Realm}\"";
         }
         return Task.CompletedTask;
@@ -198,12 +192,10 @@ public class BasicAuthenticationHandler : AuthenticationHandler<BasicAuthenticat
         _logger.LogTrace("Saving cached credentials into cookie '{CookieName}' and expires at {Expiration}", Options.CacheCookieName, cookieOptions.Expires);
     }
 
-    private IDataProtector DataProtector
-    {
-        get
-        {
-            var dataProtectionProvider = Context.RequestServices.GetRequiredService<IDataProtectionProvider>();
-            return dataProtectionProvider.CreateProtector(Options.DataProtectorName);
-        }
-    }
+    private IDataProtector DataProtector =>
+        // The data-protection provider is requested on-demand, because
+        // we don't need it, when cached cookies are not used.
+        Context.RequestServices
+            .GetRequiredService<IDataProtectionProvider>()
+            .CreateProtector(Options.DataProtectorName);
 }

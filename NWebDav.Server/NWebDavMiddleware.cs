@@ -38,8 +38,7 @@ internal class NWebDavMiddleware
                     
                 var handler = (IRequestHandler)context.RequestServices.GetRequiredService(handlerType);
                 var handled = await handler.HandleRequestAsync(context).ConfigureAwait(false);
-                if (handled)
-                    return;
+                if (handled) return;
             }
             else
             {

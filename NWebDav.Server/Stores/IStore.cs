@@ -4,15 +4,8 @@ using System.Threading.Tasks;
 
 namespace NWebDav.Server.Stores;
 
-public readonly record struct StoreItemResult(DavStatusCode Result, IStoreItem? Item = null)
-{
-    public override int GetHashCode() => Result.GetHashCode() ^ (Item?.GetHashCode() ?? 0);
-}
-
-public readonly record struct StoreCollectionResult(DavStatusCode Result, IStoreCollection? Collection = null)
-{
-    public override int GetHashCode() => Result.GetHashCode() ^ (Collection?.GetHashCode() ?? 0);
-}
+public readonly record struct StoreItemResult(DavStatusCode Result, IStoreItem? Item = null);
+public readonly record struct StoreCollectionResult(DavStatusCode Result, IStoreCollection? Collection = null);
 
 public interface IStore
 {

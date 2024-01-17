@@ -33,19 +33,21 @@ public static class Extensions
             .AddScoped<UnlockHandler>()
             .AddSingleton<ILockingManager, InMemoryLockingManager>();
 
-        var optionsBuilder = services.AddOptions<NWebDavOptions>();
+        var optionsBuilder = services
+            .AddOptions<NWebDavOptions>()
+            .Validate(o => o.Handlers.All(h => h.Key.ToUpperInvariant() == h.Key), "Handler methods should be uppercase");
 
         var methods = new[] { "COPY", "DELETE", "GET", "HEAD", "MKCOL", "MOVE", "OPTIONS", "PROPFIND", "PROPPATCH", "PUT", "UNLOCK" };
         foreach (var method in methods)
         {
-            optionsBuilder.Validate(o => o.Handlers.TryGetValue(method, out _), $"No handler for '{method}'");
-            optionsBuilder.Validate(o => !o.Handlers.TryGetValue(method, out var handlerType) || typeof(IRequestHandler).IsAssignableFrom(handlerType), $"Handler for '{method}' doesn't implement {nameof(IRequestHandler)}");
+            optionsBuilder
+                .Validate(o => o.Handlers.TryGetValue(method, out _), $"No handler for '{method}'")
+                .Validate(o => !o.Handlers.TryGetValue(method, out var handlerType) || typeof(IRequestHandler).IsAssignableFrom(handlerType), $"Handler for '{method}' doesn't implement {nameof(IRequestHandler)}");
         }
-
-        optionsBuilder.Validate(o => o.Handlers.All(h => h.Key.ToUpperInvariant() == h.Key), "Handler methods should be uppercase");
 
         services.Configure<NWebDavOptions>(opts =>
         {
+            // TODO: Find out if there is a more suitable way of doing this
             opts.Handlers["COPY"] = typeof(CopyHandler);
             opts.Handlers["DELETE"] = typeof(DeleteHandler);
             opts.Handlers["GET"] = typeof(GetAndHeadHandler);
@@ -65,29 +67,23 @@ public static class Extensions
     }
 
     public static IServiceCollection AddStore<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TStore>(this IServiceCollection services) where TStore : class, IStore
-    {
-        return services.AddScoped<IStore, TStore>();
-    }
+        => services.AddScoped<IStore, TStore>();
 
     public static IServiceCollection AddDiskStore(this IServiceCollection services, Action<DiskStoreOptions>? configure = null)
-    {
-        return services
+        => services
             .Configure<DiskStoreOptions>(opts =>
             {
                 opts.BaseDirectory = Environment.GetEnvironmentVariable("HOME") ?? Environment.GetEnvironmentVariable("USERPROFILE") ?? string.Empty;
                 configure?.Invoke(opts);
             })
             .AddDiskStore<DiskStore>();
-    }
 
     public static IServiceCollection AddDiskStore<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TDiskStore>(this IServiceCollection services)
         where TDiskStore : DiskStoreBase
-    {
-        return services
+        => services
             .AddSingleton<DiskStoreCollectionPropertyManager>()
             .AddSingleton<DiskStoreItemPropertyManager>()
             .AddStore<TDiskStore>();
-    }
 
     public static IApplicationBuilder UseNWebDav(this IApplicationBuilder app)
     {

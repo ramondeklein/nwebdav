@@ -107,7 +107,7 @@ public sealed class DiskStoreCollection : IStoreCollection
         catch (Exception exc)
         {
             // Log exception
-            _logger.LogError(exc, $"Unable to create '{destinationPath}' file.");
+            _logger.LogError(exc, "Unable to create '{Path}' file.", destinationPath);
             return Task.FromResult(new StoreItemResult(DavStatusCode.InternalServerError));
         }
 

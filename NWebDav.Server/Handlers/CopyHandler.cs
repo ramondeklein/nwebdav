@@ -68,6 +68,12 @@ public class CopyHandler : IRequestHandler
 
         // Split the destination Uri
         var destination = RequestHelper.SplitUri(destinationUri);
+        if (destination == null)
+        {
+            // Bad request
+            response.SetStatus(DavStatusCode.BadRequest, "Invalid destination.");
+            return true;
+        }
 
         // Obtain the destination collection
         var destinationCollection = await _store.GetCollectionAsync(destination.CollectionUri, httpContext.RequestAborted).ConfigureAwait(false);
@@ -131,7 +137,7 @@ public class CopyHandler : IRequestHandler
         if (source is IStoreCollection sourceCollection && depth > 0)
         {
             // The result should also contain a collection
-            var newCollection = (IStoreCollection)copyResult.Item;
+            var newCollection = (IStoreCollection)copyResult.Item!;
 
             // Copy all children of the source collection
             foreach (var entry in await sourceCollection.GetItemsAsync(cancellationToken).ConfigureAwait(false))

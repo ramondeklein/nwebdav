@@ -6,31 +6,27 @@ namespace NWebDav.Server.Authentication;
 public class BasicAuthenticationOptions : AuthenticationSchemeOptions
 {
     /// <summary>
-    /// Default realm for <seealso cref="Realm"/>.
+    /// Default constructor.
     /// </summary>
-    public const string DefaultRealm = "WebDAV";
-    
-    /// <summary>
-    /// Default data-protector name for <seealso cref="DataProtectorName"/>.
-    /// </summary>
-    public const string DefaultDataProtectorName = "NWebDAV";
-
-    /// <summary>
-    /// Default cookie expiration for <seealso cref="CacheCookieExpiration"/>.
-    /// </summary>
-    /// <remarks>
-    /// Note that credential caching needs to be explicitly be set, by also setting
-    /// the cookie name via <seealso cref="CacheCookieName"/>.
-    /// </remarks>
-    public static readonly TimeSpan DefaultCacheCookieExpiration = TimeSpan.FromMinutes(5);
-
     public BasicAuthenticationOptions()
     {
         Events = new BasicAuthenticationEvents();
     }
+
+    /// <summary>
+    /// Suppress sending the <c>WWW-Authenticate</c> during a challenge. 
+    /// </summary>
+    public bool SuppressChallenge { get; set; }
     
-    public bool SuppressWwwAuthenticateHeader { get; set; }
-    public string Realm { get; set; } = DefaultRealm;
+    /// <summary>
+    /// The Realm is offered to the client, when the basic authentication
+    /// issues a challenge.
+    /// </summary>
+    /// <remarks>
+    /// When <seealso cref="SuppressChallenge"/> is set, then no
+    /// challenge will be issued.
+    /// </remarks>
+    public string Realm { get; set; } = "WebDAV";
     
     /// <summary>
     /// Allow using basic authentication via an insecure protocol. The default
@@ -54,16 +50,15 @@ public class BasicAuthenticationOptions : AuthenticationSchemeOptions
     /// <summary>
     /// CacheCookieExpiration specifies the expiration of the cached claims.
     /// Both the cookie and its value will expire after this duration. The
-    /// default value is <seealso cref="DefaultCacheCookieExpiration"/>. Setting
-    /// this value to <see cref="TimeSpan.Zero"/> (or a negative value) will
-    /// disable caching.
+    /// default value is 5 minutes. Setting this value to
+    /// <see cref="TimeSpan.Zero"/> (or a negative value) will disable caching.
     /// </summary>
     /// <remarks>
     /// Note that all claims are cached during this period, so the identity
     /// provider won't be checked (unless done explicitly from handlers and/or
     /// the stores).
     /// </remarks>
-    public TimeSpan CacheCookieExpiration { get; set; } = DefaultCacheCookieExpiration;
+    public TimeSpan CacheCookieExpiration { get; set; } = TimeSpan.FromMinutes(5);
 
     /// <summary>
     /// Name of the data-protector that is used to protect the cached cookie
@@ -73,12 +68,15 @@ public class BasicAuthenticationOptions : AuthenticationSchemeOptions
     /// There is no typically no reason to change this name, so it's best to
     /// leave it to the default value.
     /// </remarks>
-    public string DataProtectorName { get; set; } = DefaultDataProtectorName;
+    public string DataProtectorName { get; set; } = "NWebDAV";
     
+    /// <summary>
+    /// Gets or sets the <see cref="BasicAuthenticationEvents"/> used to
+    /// handle authentication events.
+    /// </summary>
     public new BasicAuthenticationEvents Events
-
     {
-        get => (BasicAuthenticationEvents)base.Events;
+        get => (BasicAuthenticationEvents)base.Events!;
         set => base.Events = value;
     }
 }
