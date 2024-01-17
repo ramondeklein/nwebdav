@@ -1,26 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
     <AssemblyName>NWebDav.Server</AssemblyName>
     <Title>NWebDav server library</Title>
     <OutputType>Library</OutputType>
     <PackageId>NWebDav.Server</PackageId>
-    <Description>NWebDav.Server is a flexible WebDAV server library that can be used to expose files or other data using WebDAV.</Description>
+    <Description>NWebDav.Server is a flexible WebDAV server library that can be used to expose files or other data using WebDAV</Description>
     <PackageTags>C# .NET WebDAV Server</PackageTags>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <IsPackable>true</IsPackable>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Properties\launchSettings.json" />
   </ItemGroup>
 
 </Project>

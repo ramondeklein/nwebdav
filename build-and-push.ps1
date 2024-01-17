@@ -3,7 +3,7 @@ $file.load("$pwd/Directory.build.props")
 $version = ($file.SelectNodes("/Project/PropertyGroup/VersionPrefix/text()")).Value
 
 $apiKey = Get-Content nuget.apikey
-$folders = @("NWebDav.Server", "NWebDav.Server.AspNet", "NWebDav.Server.AspNetCore", "NWebDav.Server.HttpListener")
+$folders = @("NWebDav.Server")
 ForEach ($folder in $folders) {
 	Push-Location $folder
 	& dotnet build -c Release
