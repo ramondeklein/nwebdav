@@ -1,12 +1,13 @@
 using System.IO;
 using System.Security.Authentication;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using NWebDav.Server.Stores;
 
 namespace NWebDav.Sample.Kestrel;
 
-public sealed class UserDiskStore : DiskStoreBase
+internal sealed class UserDiskStore : DiskStoreBase
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
 
@@ -21,11 +22,17 @@ public sealed class UserDiskStore : DiskStoreBase
     {
         get
         {
-            var username = _httpContextAccessor.HttpContext?.User.Identity?.Name;
+            // Each user has a dedicated directory
+            var username = User?.Identity?.Name;
             if (username == null) throw new AuthenticationException("not authenticated");
             var path = Path.Combine(Path.GetTempPath(), username);
             Directory.CreateDirectory(path);
             return path;
         }
     }
+
+    // Even though the store is a singleton, the HttpContext will still hold
+    // the current request's principal. IHttpContextAccessor uses AsyncLocal
+    // internally that flows the async operation.
+    private ClaimsPrincipal? User => _httpContextAccessor.HttpContext?.User;
 }

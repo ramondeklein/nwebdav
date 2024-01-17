@@ -10,10 +10,15 @@ using NWebDav.Server;
 using NWebDav.Server.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add NWebDAV services and set the options 
 builder.Services
     .AddNWebDav(opts => opts.RequireAuthentication = true)
     .AddDiskStore<UserDiskStore>();
 
+// Data protection is used to protect cached cookies. If you're
+// not using cached cookies, then data protection is not required
+// by NWebDAV.
 builder.Services
     .AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo(Path.GetTempPath()));
@@ -22,11 +27,14 @@ builder.Services
     .AddAuthentication(opts => opts.DefaultScheme = BasicAuthenticationDefaults.AuthenticationScheme)
     .AddBasicAuthentication(opts =>
     {
-        opts.AllowInsecureProtocol = true;
-        opts.CacheCookieName = "NWebDAV";
-        opts.CacheCookieExpiration = TimeSpan.FromHours(1);
+        opts.AllowInsecureProtocol = true;  // This will enable NWebDAV to allow authentication via HTTP, but your client may not allow it
+        opts.CacheCookieName = "NWebDAV";   // Cache the authorization result in a cookie
+        opts.CacheCookieExpiration = TimeSpan.FromHours(1); // Cached credentials in the cookie are valid for an hour
         opts.Events.OnValidateCredentials = context =>
         {
+            // In a real-world application, this is where you would contact
+            // you identity provider and validate the credentials and determine
+            // the claims.
             if (context is { Username: "test", Password: "nwebdav" })
             {
                 var claims = new[]

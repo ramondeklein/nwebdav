@@ -11,7 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Files", "Files", "{942BBBEF
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NWebDav.Server", "NWebDav.Server\NWebDav.Server.csproj", "{6F982556-E0C2-46E9-A90C-7477B3ED19CC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NWebDav.Sample.Kestrel", "NWebDav.Sample.Kestrel\NWebDav.Sample.Kestrel.csproj", "{31CB7C10-0A3F-4760-BDFD-5097046721A6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NWebDav.Sample.BasicAuth", "NWebDav.Sample.BasicAuth\NWebDav.Sample.BasicAuth.csproj", "{31CB7C10-0A3F-4760-BDFD-5097046721A6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

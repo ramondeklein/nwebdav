@@ -1,18 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <AssemblyName>NWebDav.Sample.Kestrel</AssemblyName>
-    <Title>NWebDav example using Kestrel</Title>
+    <Title>NWebDAV example using Basic authentication</Title>
     <OutputType>Exe</OutputType>
-    <Description>WebDAV server sample application (using Kestrel).</Description>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <PublishTrimmed>true</PublishTrimmed>
-    <TrimMode>full</TrimMode>
-    <PublishSingleFile>true</PublishSingleFile>
+    <Description>WebDAV server sample application using Basic authentication</Description>
+    <RootNamespace>NWebDav.Sample.BasicAuth</RootNamespace>
   </PropertyGroup>
   
   <ItemGroup>
