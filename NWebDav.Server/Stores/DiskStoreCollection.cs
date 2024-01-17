@@ -12,12 +12,12 @@ namespace NWebDav.Server.Stores;
 [DebuggerDisplay("{DirectoryInfo.FullPath}\\")]
 public sealed class DiskStoreCollection : IStoreCollection
 {
-    private readonly DiskStoreBase _diskStore;
+    private readonly DiskStoreBase _store;
     private readonly ILogger<DiskStoreCollection> _logger;
 
-    public DiskStoreCollection(DiskStoreBase diskStore, DiskStoreCollectionPropertyManager propertyManager, DirectoryInfo directoryInfo, ILogger<DiskStoreCollection> logger)
+    public DiskStoreCollection(DiskStoreBase store, DiskStoreCollectionPropertyManager propertyManager, DirectoryInfo directoryInfo, ILogger<DiskStoreCollection> logger)
     {
-        _diskStore = diskStore;
+        _store = store;
         DirectoryInfo = directoryInfo;
         _logger = logger;
         PropertyManager = propertyManager;
@@ -27,7 +27,7 @@ public sealed class DiskStoreCollection : IStoreCollection
     public string Name => DirectoryInfo.Name;
     public string UniqueKey => DirectoryInfo.FullName;
     public string FullPath => DirectoryInfo.FullName;
-    public bool IsWritable => _diskStore.IsWritable;
+    public bool IsWritable => _store.IsWritable;
 
     // Disk collections (a.k.a. directories don't have their own data)
     public Task<Stream> GetReadableStreamAsync(CancellationToken cancellationToken) => Task.FromResult(Stream.Null);
@@ -39,19 +39,8 @@ public sealed class DiskStoreCollection : IStoreCollection
     {
         cancellationToken.ThrowIfCancellationRequested();
             
-        // Determine the full path
         var fullPath = Path.Combine(FullPath, name);
-
-        // Check if the item is a file
-        if (File.Exists(fullPath))
-            return Task.FromResult<IStoreItem?>(_diskStore.CreateItem(new FileInfo(fullPath)));
-
-        // Check if the item is a directory
-        if (Directory.Exists(fullPath))
-            return Task.FromResult<IStoreItem?>(_diskStore.CreateCollection(new DirectoryInfo(fullPath)));
-
-        // Item not found
-        return Task.FromResult<IStoreItem?>(null);
+        return Task.FromResult(_store.CreateFromPath(fullPath));
     }
 
     public Task<IEnumerable<IStoreItem>> GetItemsAsync(CancellationToken cancellationToken)
@@ -61,12 +50,12 @@ public sealed class DiskStoreCollection : IStoreCollection
             // Add all directories
             cancellationToken.ThrowIfCancellationRequested();
             foreach (var subDirectory in DirectoryInfo.GetDirectories())
-                yield return _diskStore.CreateCollection(subDirectory);
+                yield return _store.CreateCollection(subDirectory);
 
             // Add all files
             cancellationToken.ThrowIfCancellationRequested();
             foreach (var file in DirectoryInfo.GetFiles())
-                yield return _diskStore.CreateItem(file);
+                yield return _store.CreateItem(file);
         }
 
         return Task.FromResult(GetItemsInternal());
@@ -112,7 +101,7 @@ public sealed class DiskStoreCollection : IStoreCollection
         }
 
         // Return result
-        return Task.FromResult(new StoreItemResult(result, _diskStore.CreateItem(new FileInfo(destinationPath))));
+        return Task.FromResult(new StoreItemResult(result, _store.CreateItem(new FileInfo(destinationPath))));
     }
 
     public Task<StoreCollectionResult> CreateCollectionAsync(string name, bool overwrite, CancellationToken cancellationToken)
@@ -147,7 +136,7 @@ public sealed class DiskStoreCollection : IStoreCollection
         Directory.CreateDirectory(destinationPath);
 
         // Return the collection
-        return Task.FromResult(new StoreCollectionResult(result, _diskStore.CreateCollection(new DirectoryInfo(destinationPath))));
+        return Task.FromResult(new StoreCollectionResult(result, _store.CreateCollection(new DirectoryInfo(destinationPath))));
     }
 
     public async Task<StoreItemResult> CopyAsync(IStoreCollection destinationCollection, string name, bool overwrite, CancellationToken cancellationToken)
@@ -220,12 +209,12 @@ public sealed class DiskStoreCollection : IStoreCollection
                     case DiskStoreItem _:
                         // Move the file
                         File.Move(sourcePath, destinationPath);
-                        return new StoreItemResult(result, _diskStore.CreateItem(new FileInfo(destinationPath)));
+                        return new StoreItemResult(result, _store.CreateItem(new FileInfo(destinationPath)));
 
                     case DiskStoreCollection _:
                         // Move the directory
                         Directory.Move(sourcePath, destinationPath);
-                        return new StoreItemResult(result, _diskStore.CreateCollection(new DirectoryInfo(destinationPath)));
+                        return new StoreItemResult(result, _store.CreateCollection(new DirectoryInfo(destinationPath)));
 
                     default:
                         // Invalid item
@@ -292,10 +281,4 @@ public sealed class DiskStoreCollection : IStoreCollection
     }
 
     public InfiniteDepthMode InfiniteDepthMode => InfiniteDepthMode.Rejected;
-
-    public override int GetHashCode() => DirectoryInfo.FullName.GetHashCode();
-
-    public override bool Equals(object? obj) =>
-        obj is DiskStoreCollection storeCollection &&
-        storeCollection.DirectoryInfo.FullName.Equals(DirectoryInfo.FullName, StringComparison.CurrentCultureIgnoreCase);
 }

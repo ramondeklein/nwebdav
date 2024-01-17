@@ -12,12 +12,12 @@ namespace NWebDav.Server.Stores;
 [DebuggerDisplay("{FileInfo.FullPath}")]
 public sealed class DiskStoreItem : IStoreItem
 {
-    private readonly DiskStoreBase _diskStore;
+    private readonly DiskStoreBase _store;
     private readonly ILogger<DiskStoreItem> _logger;
 
-    public DiskStoreItem(DiskStoreBase diskStore, DiskStoreItemPropertyManager propertyManager, FileInfo fileInfo, ILogger<DiskStoreItem> logger)
+    public DiskStoreItem(DiskStoreBase store, DiskStoreItemPropertyManager propertyManager, FileInfo fileInfo, ILogger<DiskStoreItem> logger)
     {
-        _diskStore = diskStore;
+        _store = store;
         FileInfo = fileInfo;
         PropertyManager = propertyManager;
         _logger = logger;
@@ -26,7 +26,7 @@ public sealed class DiskStoreItem : IStoreItem
     public IPropertyManager PropertyManager { get; }
 
     public FileInfo FileInfo { get; }
-    public bool IsWritable => _diskStore.IsWritable;
+    public bool IsWritable => _store.IsWritable;
     public string Name => FileInfo.Name;
     public string UniqueKey => FileInfo.FullName;
     public string FullPath => FileInfo.FullName;
@@ -105,10 +105,4 @@ public sealed class DiskStoreItem : IStoreItem
             return new StoreItemResult(DavStatusCode.InternalServerError);
         }
     }
-
-    public override int GetHashCode() => FileInfo.FullName.GetHashCode();
-
-    public override bool Equals(object? obj) =>
-        obj is DiskStoreItem storeItem && 
-        storeItem.FileInfo.FullName.Equals(FileInfo.FullName, StringComparison.CurrentCultureIgnoreCase);
 }

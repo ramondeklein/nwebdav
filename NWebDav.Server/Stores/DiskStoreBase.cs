@@ -26,23 +26,17 @@ public abstract class DiskStoreBase : IStore
 
     public Task<IStoreItem?> GetItemAsync(Uri uri, CancellationToken cancellationToken)
     {
-        // Determine the path from the uri
+        cancellationToken.ThrowIfCancellationRequested();
+            
         var path = GetPathFromUri(uri);
-
-        // Check if it's a directory
-        if (Directory.Exists(path))
-            return Task.FromResult<IStoreItem?>(CreateCollection(new DirectoryInfo(path)));
-
-        // Check if it's a file
-        if (File.Exists(path))
-            return Task.FromResult<IStoreItem?>(CreateItem(new FileInfo(path)));
-
-        // The item doesn't exist
-        return Task.FromResult<IStoreItem?>(null);
+        var item = CreateFromPath(path);
+        return Task.FromResult(item);
     }
 
     public Task<IStoreCollection?> GetCollectionAsync(Uri uri, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+            
         // Determine the path from the uri
         var path = GetPathFromUri(uri);
         if (!Directory.Exists(path))
@@ -66,6 +60,20 @@ public abstract class DiskStoreBase : IStore
 
         // Return the combined path
         return fullPath;
+    }
+
+    internal IStoreItem? CreateFromPath(string path)
+    {
+        // Check if it's a directory
+        if (Directory.Exists(path))
+            return CreateCollection(new DirectoryInfo(path));
+
+        // Check if it's a file
+        if (File.Exists(path))
+            return CreateItem(new FileInfo(path));
+
+        // The item doesn't exist
+        return null;
     }
 
     internal DiskStoreCollection CreateCollection(DirectoryInfo directoryInfo) =>
