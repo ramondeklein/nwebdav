@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NWebDav.Server", "NWebDav.S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NWebDav.Sample.BasicAuth", "NWebDav.Sample.BasicAuth\NWebDav.Sample.BasicAuth.csproj", "{31CB7C10-0A3F-4760-BDFD-5097046721A6}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NWebDav.Sample.Simple", "NWebDav.Sample.Simple\NWebDav.Sample.Simple.csproj", "{A1699A74-FDD6-4080-A15A-6BACF3BD4279}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{31CB7C10-0A3F-4760-BDFD-5097046721A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{31CB7C10-0A3F-4760-BDFD-5097046721A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{31CB7C10-0A3F-4760-BDFD-5097046721A6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1699A74-FDD6-4080-A15A-6BACF3BD4279}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1699A74-FDD6-4080-A15A-6BACF3BD4279}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1699A74-FDD6-4080-A15A-6BACF3BD4279}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1699A74-FDD6-4080-A15A-6BACF3BD4279}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
