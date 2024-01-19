@@ -42,7 +42,8 @@ public sealed class DiskStoreItem : IStoreItem
         try
         {
             // Copy the information to the destination stream
-            await using (var outputStream = FileInfo.OpenWrite())
+            var outputStream = FileInfo.OpenWrite();
+            await using (outputStream.ConfigureAwait(false))
             {
                 await inputStream.CopyToAsync(outputStream, cancellationToken).ConfigureAwait(false);
             }
@@ -87,7 +88,8 @@ public sealed class DiskStoreItem : IStoreItem
                 // Check if the item could be created
                 if (result.Item != null)
                 {
-                    await using (var sourceStream = await GetReadableStreamAsync(cancellationToken).ConfigureAwait(false))
+                var sourceStream = await GetReadableStreamAsync(cancellationToken).ConfigureAwait(false);
+                await using (sourceStream.ConfigureAwait(false))
                     {
                         var copyResult = await result.Item.UploadFromStreamAsync(sourceStream, cancellationToken).ConfigureAwait(false);
                         if (copyResult != DavStatusCode.Ok)

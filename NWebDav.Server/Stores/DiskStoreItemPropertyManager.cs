@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Locking;
@@ -45,7 +46,8 @@ public class DiskStoreItemPropertyManager : PropertyManager<DiskStoreItem>
             IsExpensive = true,
             GetterAsync = async (item, ct) =>
             {
-                await using (var stream = File.OpenRead(item.FileInfo.FullName))
+                var stream = File.OpenRead(item.FileInfo.FullName);
+                await using (stream.ConfigureAwait(false))
                 {
                     var hash = await SHA256.Create().ComputeHashAsync(stream, ct).ConfigureAwait(false);
                     return BitConverter.ToString(hash).Replace("-", string.Empty);

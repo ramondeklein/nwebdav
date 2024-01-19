@@ -89,7 +89,8 @@ public class GetAndHeadHandler : IRequestHandler
         }
 
         // Stream the actual entry
-        await using (var stream = await entry.GetReadableStreamAsync(httpContext.RequestAborted).ConfigureAwait(false))
+        var stream = await entry.GetReadableStreamAsync(httpContext.RequestAborted).ConfigureAwait(false);
+        await using (stream.ConfigureAwait(false))
         {
             if (stream != Stream.Null)
             {
