@@ -83,22 +83,11 @@ public sealed class DiskStoreItem : IStoreItem
             else
             {
                 // Create the item in the destination collection
-                var result = await destination.CreateItemAsync(name, overwrite, cancellationToken).ConfigureAwait(false);
-
-                // Check if the item could be created
-                if (result.Item != null)
-                {
                 var sourceStream = await GetReadableStreamAsync(cancellationToken).ConfigureAwait(false);
                 await using (sourceStream.ConfigureAwait(false))
-                    {
-                        var copyResult = await result.Item.UploadFromStreamAsync(sourceStream, cancellationToken).ConfigureAwait(false);
-                        if (copyResult != DavStatusCode.Ok)
-                            return new StoreItemResult(copyResult, result.Item);
-                    }
+                {
+                    return await destination.CreateItemAsync(name, sourceStream, overwrite, cancellationToken).ConfigureAwait(false);
                 }
-
-                // Return result
-                return new StoreItemResult(result.Result, result.Item);
             }
         }
         catch (Exception exc)

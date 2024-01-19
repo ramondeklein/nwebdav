@@ -52,18 +52,8 @@ public class PutHandler : IRequestHandler
         }
 
         // Obtain the item
-        var result = await collection.CreateItemAsync(splitUri.Name, true, httpContext.RequestAborted).ConfigureAwait(false);
-        var status = result.Result;
-        if (status == DavStatusCode.Created || status == DavStatusCode.NoContent)
-        {
-            // Upload the information to the item
-            var uploadStatus = await result.Item.UploadFromStreamAsync(request.Body, httpContext.RequestAborted).ConfigureAwait(false);
-            if (uploadStatus != DavStatusCode.Ok)
-                status = uploadStatus;
-        }
-
-        // Finished writing
-        response.SetStatus(status);
+        var result = await collection.CreateItemAsync(splitUri.Name, request.Body, true, httpContext.RequestAborted).ConfigureAwait(false);
+        response.SetStatus(result.Result);
         return true;
     }
 }

@@ -58,47 +58,39 @@ public sealed class DiskStoreCollection : IStoreCollection
             yield return _store.CreateItem(file);
     }
 
-    public Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, CancellationToken cancellationToken)
+    public async Task<StoreItemResult> CreateItemAsync(string name, Stream stream, bool overwrite, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
             
         // Return error
         if (!IsWritable)
-            return Task.FromResult(new StoreItemResult(DavStatusCode.PreconditionFailed));
+            return new StoreItemResult(DavStatusCode.PreconditionFailed);
 
         // Determine the destination path
         var destinationPath = Path.Combine(FullPath, name);
 
-        // Determine result
-        DavStatusCode result;
-
         // Check if the file can be overwritten
-        if (File.Exists(name))
-        {
-            if (!overwrite)
-                return Task.FromResult(new StoreItemResult(DavStatusCode.PreconditionFailed));
-
-            result = DavStatusCode.NoContent;
-        }
-        else
-        {
-            result = DavStatusCode.Created;
-        }
+        if (File.Exists(name) && !overwrite)
+            return new StoreItemResult(DavStatusCode.PreconditionFailed);
 
         try
         {
-            // Create a new file
-            File.Create(destinationPath).Dispose();
+            var file = File.Create(destinationPath);
+            await using (file.ConfigureAwait(false))
+            {
+                await stream.CopyToAsync(file, cancellationToken).ConfigureAwait(false);
+            }
         }
         catch (Exception exc)
         {
             // Log exception
             _logger.LogError(exc, "Unable to create '{Path}' file.", destinationPath);
-            return Task.FromResult(new StoreItemResult(DavStatusCode.InternalServerError));
+            return new StoreItemResult(DavStatusCode.InternalServerError);
         }
 
         // Return result
-        return Task.FromResult(new StoreItemResult(result, _store.CreateItem(new FileInfo(destinationPath))));
+        var item = _store.CreateItem(new FileInfo(destinationPath));
+        return new StoreItemResult(DavStatusCode.Created, item);
     }
 
     public Task<StoreCollectionResult> CreateCollectionAsync(string name, bool overwrite, CancellationToken cancellationToken)

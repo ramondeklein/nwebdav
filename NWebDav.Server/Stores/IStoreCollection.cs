@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,7 +13,7 @@ public interface IStoreCollection : IStoreItem
     IAsyncEnumerable<IStoreItem> GetItemsAsync(CancellationToken cancellationToken);
 
     // Create items and collections and add to the collection
-    Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, CancellationToken cancellationToken);
+    Task<StoreItemResult> CreateItemAsync(string name, Stream stream, bool overwrite, CancellationToken cancellationToken);
     Task<StoreCollectionResult> CreateCollectionAsync(string name, bool overwrite, CancellationToken cancellationToken);
 
     // Checks if the collection can be moved directly to the destination
