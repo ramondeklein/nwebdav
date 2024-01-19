@@ -116,7 +116,7 @@ public class DeleteHandler : IRequestHandler
             var subBaseUri = UriHelper.Combine(baseUri, name);
 
             // Delete all entries first
-            foreach (var entry in await deleteCollection.GetItemsAsync(cancellationToken).ConfigureAwait(false))
+            await foreach (var entry in deleteCollection.GetItemsAsync(cancellationToken).ConfigureAwait(false))
                 await DeleteItemAsync(deleteCollection, entry.Name, subBaseUri, cancellationToken).ConfigureAwait(false);
         }
 

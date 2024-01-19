@@ -149,7 +149,7 @@ public class MoveHandler : IRequestHandler
             }
 
             // Move all sub items
-            foreach (var entry in await moveCollection.GetItemsAsync(cancellationToken).ConfigureAwait(false))
+            await foreach (var entry in moveCollection.GetItemsAsync(cancellationToken).ConfigureAwait(false))
                 await MoveAsync(moveCollection, entry, newCollectionResult.Collection, entry.Name, overwrite, subBaseUri, errors, cancellationToken).ConfigureAwait(false);
 
             // Delete the source collection

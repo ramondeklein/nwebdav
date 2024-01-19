@@ -9,7 +9,7 @@ public interface IStoreCollection : IStoreItem
     // Get specific item (or all items)
     Task<IStoreItem?> GetItemAsync(string name, CancellationToken cancellationToken);
 
-    Task<IEnumerable<IStoreItem>> GetItemsAsync(CancellationToken cancellationToken);
+    IAsyncEnumerable<IStoreItem> GetItemsAsync(CancellationToken cancellationToken);
 
     // Create items and collections and add to the collection
     Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, CancellationToken cancellationToken);

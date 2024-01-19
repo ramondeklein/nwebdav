@@ -140,7 +140,7 @@ public class CopyHandler : IRequestHandler
             var newCollection = (IStoreCollection)copyResult.Item!;
 
             // Copy all children of the source collection
-            foreach (var entry in await sourceCollection.GetItemsAsync(cancellationToken).ConfigureAwait(false))
+            await foreach (var entry in sourceCollection.GetItemsAsync(cancellationToken).ConfigureAwait(false))
                 await CopyAsync(entry, newCollection, entry.Name, overwrite, depth - 1, newBaseUri, errors, cancellationToken).ConfigureAwait(false);
         }
     }

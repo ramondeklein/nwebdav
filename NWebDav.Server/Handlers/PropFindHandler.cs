@@ -274,7 +274,7 @@ public class PropFindHandler : IRequestHandler
         if (depth > 0)
         {
             // Add all child collections
-            foreach (var childEntry in await collection.GetItemsAsync(cancellationToken).ConfigureAwait(false))
+            await foreach (var childEntry in collection.GetItemsAsync(cancellationToken).ConfigureAwait(false))
             {
                 var subUri = UriHelper.Combine(uri, childEntry.Name);
                 if (childEntry is IStoreCollection subCollection)

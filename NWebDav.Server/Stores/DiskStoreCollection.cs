@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -43,22 +44,18 @@ public sealed class DiskStoreCollection : IStoreCollection
         return Task.FromResult(_store.CreateFromPath(fullPath));
     }
 
-    public Task<IEnumerable<IStoreItem>> GetItemsAsync(CancellationToken cancellationToken)
+    // Not async, but this is the easiest way to return an IAsyncEnumerable
+    public async IAsyncEnumerable<IStoreItem> GetItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        IEnumerable<IStoreItem> GetItemsInternal()
-        {
-            // Add all directories
-            cancellationToken.ThrowIfCancellationRequested();
-            foreach (var subDirectory in DirectoryInfo.GetDirectories())
-                yield return _store.CreateCollection(subDirectory);
+        // Add all directories
+        cancellationToken.ThrowIfCancellationRequested();
+        foreach (var subDirectory in DirectoryInfo.GetDirectories())
+            yield return _store.CreateCollection(subDirectory);
 
-            // Add all files
-            cancellationToken.ThrowIfCancellationRequested();
-            foreach (var file in DirectoryInfo.GetFiles())
-                yield return _store.CreateItem(file);
-        }
-
-        return Task.FromResult(GetItemsInternal());
+        // Add all files
+        cancellationToken.ThrowIfCancellationRequested();
+        foreach (var file in DirectoryInfo.GetFiles())
+            yield return _store.CreateItem(file);
     }
 
     public Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, CancellationToken cancellationToken)
