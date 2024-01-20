@@ -3,10 +3,10 @@ name: CI
 on:
   push:
     branches:
-    - net7.0
+    - main
   pull_request:
     branches:
-    - net7.0
+    - main
     
 jobs:
   build:
