@@ -2,6 +2,8 @@ name: CI
 
 on:
   push:
+    tags:
+    - v*
     branches:
     - main
   pull_request:
@@ -30,7 +32,7 @@ jobs:
     - name: Build
       run: dotnet build --configuration $BUILD_CONFIG --no-restore /p:Version=$VERSION
     - name: Create NuGet package
-      run: dotnet pack --output nupkgs --configuration $BUILD_CONFIG --no-restore --no-build /p:PackageVersion=$VERSION
+      run: dotnet pack --configuration $BUILD_CONFIG --no-restore --no-build /p:PackageVersion=$VERSION
     - name: Publish NuGet package
       if: github.ref_type == 'tag' && startsWith(github.ref, 'refs/tags/v')
-      run: nuget push nupkgs\*.nupkg -s 'https://api.nuget.org/v3/index.json' -k ${{secrets.NUGET_API_KEY}}
+      run: nuget push **/*.nupkg -Source https://api.nuget.org/v3/index.json -ApiKey ${{secrets.NUGET_API_KEY}}
