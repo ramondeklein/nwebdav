@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <Title>NWebDAV example using custom store</Title>
+        <OutputType>Exe</OutputType>
+        <Description>WebDAV server sample application using a custom store that access Azure Blob storage</Description>
+        <RootNamespace>NWebDav.Sample.AzureBlob</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\NWebDav.Server\NWebDav.Server.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Azure.Identity" Version="1.10.4" />
+        <PackageReference Include="Azure.Storage.Blobs" Version="12.19.1" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
+        <PackageReference Include="System.Linq.Async" Version="6.0.1" />
+    </ItemGroup>
+
+</Project>

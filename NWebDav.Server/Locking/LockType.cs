@@ -1,10 +1,9 @@
 ﻿using System.Xml.Serialization;
 
-namespace NWebDav.Server.Locking
+namespace NWebDav.Server.Locking;
+
+public enum LockType
 {
-    public enum LockType
-    {
-        [XmlEnum("write")]
-        Write
-    }
+    [XmlEnum("write")]
+    Write
 }

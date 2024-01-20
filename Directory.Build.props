@@ -1,0 +1,29 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <VersionPrefix>0.2.0</VersionPrefix>
+    <Product>NWebDav</Product>
+    <Authors>Ramon de Klein &lt;mail@ramondeklein.nl&gt;</Authors>
+    <Copyright>Copyright (C) 2016-2024 Ramon de Klein</Copyright>
+    <PackageProjectUrl>https://github.com/ramondeklein/nwebdav</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/ramondeklein/nwebdav.git</RepositoryUrl>
+    <PackageLicenseUrl>https://github.com/ramondeklein/nwebdav/blob/master/LICENSE</PackageLicenseUrl>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>full</TrimMode>
+    <PublishSingleFile>true</PublishSingleFile>
+    
+    <DebugType>portable</DebugType>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+  </PropertyGroup>
+</Project>

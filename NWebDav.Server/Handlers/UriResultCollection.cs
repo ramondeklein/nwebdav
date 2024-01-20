@@ -5,45 +5,29 @@ using System.Xml.Linq;
 
 using NWebDav.Server.Helpers;
 
-namespace NWebDav.Server.Handlers
+namespace NWebDav.Server.Handlers;
+
+internal class UriResultCollection
 {
-    internal class UriResultCollection
+    private readonly record struct UriResult(Uri Uri, DavStatusCode Result)
     {
-        private struct UriResult
-        {
-            private Uri Uri { get; }
-            private DavStatusCode Result { get; }
+        public XElement GetXmlResponse() =>
+            new XElement(WebDavNamespaces.DavNs + "response",
+                new XElement(WebDavNamespaces.DavNs + "href", UriHelper.ToEncodedString(Uri)),
+                new XElement(WebDavNamespaces.DavNs + "status", $"HTTP/1.1 {(int)Result} {DavStatusCodeHelper.GetStatusDescription(Result)}"));
+    }
 
-            public UriResult(Uri uri, DavStatusCode result)
-            {
-                Uri = uri;
-                Result = result;
-            }
+    private readonly IList<UriResult> _results = new List<UriResult>();
 
-            public XElement GetXmlResponse()
-            {
-                var statusText = $"HTTP/1.1 {(int)Result} {DavStatusCodeHelper.GetStatusDescription(Result)}";
-                return new XElement(WebDavNamespaces.DavNs + "response",
-                    new XElement(WebDavNamespaces.DavNs + "href", UriHelper.ToEncodedString(Uri)),
-                    new XElement(WebDavNamespaces.DavNs + "status", statusText));
-            }
-        }
+    public bool HasItems => _results.Any();
 
-        private readonly IList<UriResult> _results = new List<UriResult>();
+    public void AddResult(Uri uri, DavStatusCode result) => _results.Add(new UriResult(uri, result));
 
-        public bool HasItems => _results.Any();
-
-        public void AddResult(Uri uri, DavStatusCode result)
-        {
-            _results.Add(new UriResult(uri, result));
-        }
-
-        public XElement GetXmlMultiStatus()
-        {
-            var xMultiStatus = new XElement(WebDavNamespaces.DavNs + "multistatus");
-            foreach (var result in _results)
-                xMultiStatus.Add(result.GetXmlResponse());
-            return xMultiStatus;
-        }
+    public XElement GetXmlMultiStatus()
+    {
+        var xMultiStatus = new XElement(WebDavNamespaces.DavNs + "multistatus");
+        foreach (var result in _results)
+            xMultiStatus.Add(result.GetXmlResponse());
+        return xMultiStatus;
     }
 }
