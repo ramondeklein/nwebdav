@@ -1,7 +1,6 @@
 .idea/
 .vs
 .vscode
-nuget.apikey
 packages/
 Certificates/
 */obj/
@@ -11,4 +10,3 @@ Certificates/
 **/*.lock.json
 **/*.user
 **/*.userprefs
-Help/
