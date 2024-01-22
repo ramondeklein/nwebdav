@@ -11,7 +11,7 @@
     <Copyright>Copyright (C) 2016-2024 Ramon de Klein</Copyright>
     <PackageProjectUrl>https://github.com/ramondeklein/nwebdav</PackageProjectUrl>
     <RepositoryUrl>https://github.com/ramondeklein/nwebdav.git</RepositoryUrl>
-    <PackageLicenseUrl>https://github.com/ramondeklein/nwebdav/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
